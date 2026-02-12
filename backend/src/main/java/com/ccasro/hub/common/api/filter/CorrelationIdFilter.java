@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -12,17 +13,17 @@ import java.io.IOException;
 import java.util.UUID;
 
 @Component
+@Slf4j
 public class CorrelationIdFilter extends OncePerRequestFilter {
 
     public static final String HEADER_NAME = "X-Correlation-Id";
     public static final String MDC_KEY = "traceId";
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
         String traceId = request.getHeader(HEADER_NAME);
 
@@ -31,12 +32,22 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
         }
 
         MDC.put(MDC_KEY, traceId);
-        request.setAttribute(MDC_KEY, traceId);
         response.setHeader(HEADER_NAME, traceId);
+
+        long start = System.currentTimeMillis();
+
+        log.info("Incoming request: {} {}", request.getMethod(), request.getRequestURI());
 
         try {
             filterChain.doFilter(request, response);
         } finally {
+            long duration = System.currentTimeMillis() - start;
+            log.info("Completed request: {} {} -> {} ({} ms)",
+                    request.getMethod(),
+                    request.getRequestURI(),
+                    response.getStatus(),
+                    duration);
+
             MDC.remove(MDC_KEY);
         }
     }
