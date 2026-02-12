@@ -19,5 +19,10 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      - name: Format check
+        working-directory: backend
+        run: ./mvnw -B spotless:check
+
       - name: Build and test
+        working-directory: backend
         run: ./mvnw -B verify
