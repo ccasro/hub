@@ -19,6 +19,10 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      - name: Make mvnw executable
+        working-directory: backend
+        run: chmod +x mvnw
+
       - name: Format check
         working-directory: backend
         run: ./mvnw -B spotless:check
