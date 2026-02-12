@@ -1,6 +1,5 @@
 /**
- * Inbound adapters for the Identity module.
- * Contains REST controllers and request/response DTOs that expose the application
- * layer to external clients.
+ * Inbound adapters for the Identity module. Contains REST controllers and request/response DTOs
+ * that expose the application layer to external clients.
  */
 package com.ccasro.hub.modules.identity.api;
