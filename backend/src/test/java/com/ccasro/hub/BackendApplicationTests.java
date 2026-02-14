@@ -1,4 +1,4 @@
-package com.ccasro.hub.boot;
+package com.ccasro.hub;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

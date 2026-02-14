@@ -1,4 +1,4 @@
-package com.ccasro.hub.boot;
+package com.ccasro.hub;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
