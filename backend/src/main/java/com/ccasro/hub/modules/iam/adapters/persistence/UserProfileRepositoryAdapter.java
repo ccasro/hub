@@ -1,8 +1,8 @@
 package com.ccasro.hub.modules.iam.adapters.persistence;
 
-import com.ccasro.hub.modules.iam.domain.ports.UserProfileRepositoryPort;
 import com.ccasro.hub.modules.iam.domain.UserId;
 import com.ccasro.hub.modules.iam.domain.UserProfile;
+import com.ccasro.hub.modules.iam.domain.ports.UserProfileRepositoryPort;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
