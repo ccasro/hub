@@ -1,0 +1,16 @@
+security:
+  jwt:
+    enabled: false
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://dummy
+
+auth0:
+  issuer: http://dummy
+  audience: test-audience
+  userinfo:
+    enabled: false
