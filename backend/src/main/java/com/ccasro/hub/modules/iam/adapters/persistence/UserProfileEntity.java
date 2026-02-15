@@ -24,6 +24,9 @@ class UserProfileEntity {
   @Column(name = "avatar_url")
   String avatarUrl;
 
+  @Column(name = "avatar_public_id")
+  String avatarPublicId;
+
   @Column(name = "created_at", nullable = false)
   Instant createdAt;
 
