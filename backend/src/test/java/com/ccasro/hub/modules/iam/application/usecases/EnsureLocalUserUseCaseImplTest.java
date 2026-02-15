@@ -22,7 +22,7 @@ class EnsureLocalUserUseCaseImplTest {
 
     var principal = new AuthPrincipal("auth0|123");
 
-    var existing = UserProfile.create("auth0|123", "existing@test.local", null, null);
+    var existing = UserProfile.create("auth0|123", "existing@test.local", null, null, null);
 
     when(users.findByAuth0Sub("auth0|123")).thenReturn(Optional.of(existing));
 
