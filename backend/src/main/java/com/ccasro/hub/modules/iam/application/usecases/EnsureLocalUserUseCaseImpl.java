@@ -34,7 +34,7 @@ public class EnsureLocalUserUseCaseImpl implements EnsureLocalUserUseCase {
                 throw new IllegalStateException("userinfo sub mismatch");
               }
 
-              return users.save(UserProfile.create(principal.sub(), ui.email(), null, null));
+              return users.save(UserProfile.create(principal.sub(), ui.email(), null, null, null));
             });
   }
 }

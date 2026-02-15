@@ -11,6 +11,7 @@ final class UserProfileMapper {
         e.auth0Sub,
         e.email,
         e.displayName,
+        e.avatarPublicId,
         e.avatarUrl,
         e.createdAt,
         e.updatedAt);
@@ -22,6 +23,7 @@ final class UserProfileMapper {
     e.auth0Sub = d.getAuth0Sub();
     e.email = d.getEmail();
     e.displayName = d.getDisplayName();
+    e.avatarPublicId = d.getAvatarPublicId();
     e.avatarUrl = d.getAvatarUrl();
     e.createdAt = d.getCreatedAt();
     e.updatedAt = d.getUpdatedAt();

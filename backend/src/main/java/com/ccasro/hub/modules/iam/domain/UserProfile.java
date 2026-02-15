@@ -1,5 +1,6 @@
 package com.ccasro.hub.modules.iam.domain;
 
+import com.ccasro.hub.common.domain.media.MediaKey;
 import java.time.Instant;
 
 public class UserProfile {
@@ -8,6 +9,7 @@ public class UserProfile {
   private final String auth0Sub;
   private String email;
   private String displayName;
+  private String avatarPublicId;
   private String avatarUrl;
   private final Instant createdAt;
   private Instant updatedAt;
@@ -17,6 +19,7 @@ public class UserProfile {
       String auth0Sub,
       String email,
       String displayName,
+      String avatarPublicId,
       String avatarUrl,
       Instant createdAt,
       Instant updatedAt) {
@@ -31,21 +34,32 @@ public class UserProfile {
     this.auth0Sub = auth0Sub;
     this.email = email;
     this.displayName = displayName;
+    this.avatarPublicId = avatarPublicId;
     this.avatarUrl = avatarUrl;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
 
   public static UserProfile create(
-      String auth0Sub, String email, String displayName, String avatarUrl) {
+      String auth0Sub, String email, String displayName, String avatarPublicId, String avatarUrl) {
     Instant now = Instant.now();
-    return new UserProfile(UserId.newId(), auth0Sub, email, displayName, avatarUrl, now, now);
+    return new UserProfile(
+        UserId.newId(), auth0Sub, email, displayName, avatarPublicId, avatarUrl, now, now);
   }
 
-  public void updateBasicProfile(String email, String displayName, String avatarUrl) {
-    if (email != null) this.email = email;
-    if (displayName != null) this.displayName = displayName;
-    if (avatarUrl != null) this.avatarUrl = avatarUrl;
+  public void updateAvatar(String avatarPublicId, String avatarUrl) {
+    if (avatarPublicId == null || avatarPublicId.isBlank()) {
+      throw new IllegalArgumentException("avatarPublicId is required");
+    }
+
+    String expectedPrefix = MediaKey.avatarPrefix(this.auth0Sub);
+    if (!avatarPublicId.startsWith(expectedPrefix)) {
+      throw new IllegalArgumentException("avatar does not belong to user");
+    }
+    this.avatarPublicId = avatarPublicId;
+    if (avatarUrl != null && !avatarUrl.isBlank()) {
+      this.avatarUrl = avatarUrl;
+    }
     this.updatedAt = Instant.now();
   }
 
@@ -54,10 +68,12 @@ public class UserProfile {
       String auth0Sub,
       String email,
       String displayName,
+      String avatarPublicId,
       String avatarUrl,
       Instant createdAt,
       Instant updatedAt) {
-    return new UserProfile(id, auth0Sub, email, displayName, avatarUrl, createdAt, updatedAt);
+    return new UserProfile(
+        id, auth0Sub, email, displayName, avatarPublicId, avatarUrl, createdAt, updatedAt);
   }
 
   public UserId getId() {
@@ -74,6 +90,10 @@ public class UserProfile {
 
   public String getDisplayName() {
     return displayName;
+  }
+
+  public String getAvatarPublicId() {
+    return avatarPublicId;
   }
 
   public String getAvatarUrl() {

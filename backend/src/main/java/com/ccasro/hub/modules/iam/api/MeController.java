@@ -1,32 +1,43 @@
 package com.ccasro.hub.modules.iam.api;
 
 import com.ccasro.hub.common.application.ports.CurrentUserProvider;
-import com.ccasro.hub.modules.iam.domain.UserProfile;
-import com.ccasro.hub.modules.iam.domain.ports.UserProfileRepositoryPort;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.ccasro.hub.modules.iam.api.dto.MeResponse;
+import com.ccasro.hub.modules.iam.api.dto.UpdateAvatarRequest;
+import com.ccasro.hub.modules.iam.application.usecases.GetMeUseCase;
+import com.ccasro.hub.modules.iam.application.usecases.UpdateAvatarRequestUseCase;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/me")
 public class MeController {
 
-  private final UserProfileRepositoryPort users;
+  private final GetMeUseCase getMe;
+  private final UpdateAvatarRequestUseCase updAvatar;
   private final CurrentUserProvider currentUser;
 
-  public MeController(UserProfileRepositoryPort users, CurrentUserProvider currentUser) {
-    this.users = users;
+  public MeController(
+      GetMeUseCase getMe, UpdateAvatarRequestUseCase updAvatar, CurrentUserProvider currentUser) {
+    this.getMe = getMe;
+    this.updAvatar = updAvatar;
     this.currentUser = currentUser;
   }
 
-  @GetMapping("/me")
+  @GetMapping
   public MeResponse me() {
-    var sub = currentUser.getSub();
+    var u = getMe.get(currentUser.getSub());
+    return new MeResponse(
+        u.getId().toString(),
+        u.getEmail(),
+        u.getDisplayName(),
+        u.getAvatarPublicId(),
+        u.getAvatarUrl());
+  }
 
-    UserProfile u =
-        users
-            .findByAuth0Sub(sub)
-            .orElseThrow(
-                () -> new IllegalStateException("User not provisioned (should not happen)"));
-
-    return new MeResponse(u.getId().toString(), u.getEmail(), u.getDisplayName(), u.getAvatarUrl());
+  @PutMapping("/avatar")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void updateAvatar(@Valid @RequestBody UpdateAvatarRequest req) {
+    updAvatar.update(currentUser.getSub(), req);
   }
 }
