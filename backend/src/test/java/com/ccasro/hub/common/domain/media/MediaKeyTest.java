@@ -3,6 +3,7 @@ package com.ccasro.hub.common.domain.media;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.ccasro.hub.shared.domain.MediaKey;
 import org.junit.jupiter.api.Test;
 
 class MediaKeyTest {

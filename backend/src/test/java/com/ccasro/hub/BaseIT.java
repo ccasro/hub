@@ -3,8 +3,8 @@ package com.ccasro.hub;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-import com.ccasro.hub.modules.iam.adapters.auth0.Auth0UserInfo;
-import com.ccasro.hub.modules.iam.adapters.auth0.Auth0UserInfoClient;
+import com.ccasro.hub.modules.iam.infrastructure.auth0.Auth0UserInfo;
+import com.ccasro.hub.modules.iam.infrastructure.auth0.Auth0UserInfoClient;
 import com.ccasro.hub.modules.security.config.TestSecurityConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;

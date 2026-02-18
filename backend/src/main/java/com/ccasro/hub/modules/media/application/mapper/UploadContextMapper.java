@@ -1,7 +1,7 @@
 package com.ccasro.hub.modules.media.application.mapper;
 
-import com.ccasro.hub.modules.media.api.dto.UploadSignatureRequest;
 import com.ccasro.hub.modules.media.domain.UploadContext;
+import com.ccasro.hub.modules.media.infrastructure.api.dto.UploadSignatureRequest;
 import org.springframework.stereotype.Component;
 
 @Component

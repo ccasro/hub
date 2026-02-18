@@ -4,13 +4,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-import com.ccasro.hub.modules.media.api.dto.UploadSignatureRequest;
-import com.ccasro.hub.modules.media.api.dto.UploadSignatureResponse;
 import com.ccasro.hub.modules.media.application.FolderPolicy;
-import com.ccasro.hub.modules.media.application.MediaStoragePort;
 import com.ccasro.hub.modules.media.application.mapper.UploadContextMapper;
+import com.ccasro.hub.modules.media.application.ports.MediaStoragePort;
 import com.ccasro.hub.modules.media.domain.UploadContext;
 import com.ccasro.hub.modules.media.domain.UploadPurpose;
+import com.ccasro.hub.modules.media.infrastructure.api.dto.UploadSignatureRequest;
+import com.ccasro.hub.modules.media.infrastructure.api.dto.UploadSignatureResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

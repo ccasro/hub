@@ -1,6 +1,7 @@
 package com.ccasro.hub.modules.iam.domain;
 
-import com.ccasro.hub.common.domain.media.MediaKey;
+import com.ccasro.hub.modules.iam.domain.valueobjects.UserId;
+import com.ccasro.hub.shared.domain.MediaKey;
 import java.time.Instant;
 
 public class UserProfile {

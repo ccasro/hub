@@ -1,8 +1,8 @@
 package com.ccasro.hub.modules.media.application;
 
-import com.ccasro.hub.common.domain.media.MediaKey;
 import com.ccasro.hub.modules.media.domain.UploadContext;
 import com.ccasro.hub.modules.media.domain.UploadPurpose;
+import com.ccasro.hub.shared.domain.MediaKey;
 import org.springframework.stereotype.Component;
 
 @Component
