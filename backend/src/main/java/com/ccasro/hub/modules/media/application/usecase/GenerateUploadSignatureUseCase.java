@@ -1,11 +1,11 @@
 package com.ccasro.hub.modules.media.application.usecase;
 
-import com.ccasro.hub.modules.media.api.dto.UploadSignatureRequest;
-import com.ccasro.hub.modules.media.api.dto.UploadSignatureResponse;
 import com.ccasro.hub.modules.media.application.FolderPolicy;
-import com.ccasro.hub.modules.media.application.MediaStoragePort;
 import com.ccasro.hub.modules.media.application.mapper.UploadContextMapper;
+import com.ccasro.hub.modules.media.application.ports.MediaStoragePort;
 import com.ccasro.hub.modules.media.domain.UploadContext;
+import com.ccasro.hub.modules.media.infrastructure.api.dto.UploadSignatureRequest;
+import com.ccasro.hub.modules.media.infrastructure.api.dto.UploadSignatureResponse;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
