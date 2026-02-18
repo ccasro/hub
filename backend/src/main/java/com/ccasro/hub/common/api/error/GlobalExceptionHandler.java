@@ -1,6 +1,10 @@
 package com.ccasro.hub.common.api.error;
 
+import com.ccasro.hub.common.domain.exception.DomainException;
+import com.ccasro.hub.common.domain.exception.ForbiddenException;
+import com.ccasro.hub.common.domain.exception.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import java.net.URI;
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -47,6 +51,54 @@ public class GlobalExceptionHandler {
                 "/errors/unauthorized",
                 "Unauthorized",
                 "Authentication is required to access this resource",
+                request));
+  }
+
+  @ExceptionHandler(ForbiddenException.class)
+  public ResponseEntity<ProblemDetail> handleForbidden(
+      ForbiddenException ex, HttpServletRequest request) {
+
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        .body(
+            problem(
+                HttpStatus.FORBIDDEN, "/errors/forbidden", "Forbidden", ex.getMessage(), request));
+  }
+
+  @ExceptionHandler(NotFoundException.class)
+  public ResponseEntity<ProblemDetail> handleNotFound(
+      NotFoundException ex, HttpServletRequest request) {
+
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(
+            problem(
+                HttpStatus.NOT_FOUND, "/errors/not-found", "Not Found", ex.getMessage(), request));
+  }
+
+  @ExceptionHandler(DomainException.class)
+  public ResponseEntity<ProblemDetail> handleDomainException(
+      DomainException ex, HttpServletRequest request) {
+
+    return ResponseEntity.badRequest()
+        .body(
+            problem(
+                HttpStatus.BAD_REQUEST,
+                "/errors/domain-error",
+                "domain-error",
+                ex.getMessage(),
+                request));
+  }
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<ProblemDetail> handleConstraintViolation(
+      ConstraintViolationException ex, HttpServletRequest request) {
+
+    return ResponseEntity.badRequest()
+        .body(
+            problem(
+                HttpStatus.BAD_REQUEST,
+                "/errors/validation-error",
+                "Validation Error",
+                ex.getMessage(),
                 request));
   }
 

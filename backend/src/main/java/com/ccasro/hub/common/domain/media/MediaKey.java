@@ -21,4 +21,17 @@ public final class MediaKey {
   public static String avatarPublicId(String sub) {
     return avatarFolder(sub) + "/avatar";
   }
+
+  public static String venueImagesFolder(String principalId, String venueId) {
+    return "users/" + principalId + "/venues/" + venueId;
+  }
+
+  public static String resourceImagesFolder(String principalId, String resourceId) {
+    return "users/" + principalId + "/resources/" + resourceId;
+  }
+
+  public static String ensureTrailingSlash(String folder) {
+    if (folder.endsWith("/")) return folder;
+    return folder + "/";
+  }
 }
