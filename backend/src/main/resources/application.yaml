@@ -21,6 +21,12 @@ spring:
         jwt:
           issuer-uri: ${AUTH0_ISSUER}
 
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:true}
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:true}
+
 auth0:
   audience: ${AUTH0_AUDIENCE}
 
