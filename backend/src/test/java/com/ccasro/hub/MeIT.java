@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
+import com.ccasro.hub.modules.iam.domain.valueobjects.Auth0Id;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -14,15 +15,16 @@ public class MeIT extends BaseIT {
 
   @Test
   void me_without_token_returns_401() throws Exception {
-    mvc.perform(get("/me")).andExpect(status().isUnauthorized());
+    mvc.perform(get("api/me")).andExpect(status().isUnauthorized());
   }
 
   @Test
   void me_with_valid_jwt_returns_200_and_provisions_user() throws Exception {
-    assertThat(users.findByAuth0Sub("auth0|user")).isEmpty();
+    assertThat(users.findByAuth0Id(new Auth0Id("auth0|user"))).isEmpty();
 
-    mvc.perform(get("/me").header("Authorization", bearer(userToken()))).andExpect(status().isOk());
+    mvc.perform(get("api/me").header("Authorization", bearer(userToken())))
+        .andExpect(status().isOk());
 
-    assertThat(users.findByAuth0Sub("auth0|user")).isPresent();
+    assertThat(users.findByAuth0Id(new Auth0Id("auth0|user"))).isPresent();
   }
 }
