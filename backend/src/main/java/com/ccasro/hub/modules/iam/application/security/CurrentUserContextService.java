@@ -1,32 +1,36 @@
-package com.ccasro.hub.modules.iam.usecases;
+package com.ccasro.hub.modules.iam.application.security;
 
 import com.ccasro.hub.modules.iam.domain.UserProfile;
 import com.ccasro.hub.modules.iam.domain.exception.UserProfileNotFoundException;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import com.ccasro.hub.modules.iam.domain.valueobjects.Auth0Id;
 import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
-import com.ccasro.hub.shared.domain.valueobjects.ImageUrl;
-import java.time.Clock;
+import com.ccasro.hub.shared.domain.security.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class UpdateAvatarService {
+public class CurrentUserContextService {
 
-  private final UserProfileRepositoryPort users;
   private final CurrentUserProvider currentUser;
-  private final Clock clock;
+  private final UserProfileRepositoryPort users;
 
-  public UserProfile execute(ImageUrl newAvatar) {
+  public CurrentUserContext get() {
     Auth0Id auth0Id = new Auth0Id(currentUser.getSub());
 
     UserProfile profile =
         users.findByAuth0Id(auth0Id).orElseThrow(UserProfileNotFoundException::new);
 
-    profile.updateAvatar(newAvatar, clock);
+    return new CurrentUserContext(profile.getId(), profile.getAuth0Id(), profile.getRole());
+  }
 
-    users.save(profile);
-    return profile;
+  public boolean isAdmin() {
+    return get().role() == UserRole.ADMIN;
+  }
+
+  public boolean isOwner() {
+    var role = get().role();
+    return role == UserRole.OWNER || role == UserRole.ADMIN;
   }
 }

@@ -3,20 +3,23 @@ package com.ccasro.hub.modules.iam.usecases;
 import com.ccasro.hub.modules.iam.domain.UserProfile;
 import com.ccasro.hub.modules.iam.domain.exception.UserProfileNotFoundException;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
-import com.ccasro.hub.modules.iam.domain.valueobjects.Auth0Id;
 import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
+import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class GetMeService {
+public class RequestOwnerRoleService {
 
-  private final UserProfileRepositoryPort users;
+  private final UserProfileRepositoryPort repository;
   private final CurrentUserProvider currentUser;
+  private final Clock clock;
 
-  public UserProfile execute() {
-    Auth0Id auth0Id = new Auth0Id(currentUser.getSub());
-    return users.findByAuth0Id(auth0Id).orElseThrow(UserProfileNotFoundException::new);
+  public void execute() {
+    UserProfile profile =
+        repository.findById(currentUser.getUserId()).orElseThrow(UserProfileNotFoundException::new);
+    profile.requestOwnerRole(clock);
+    repository.save(profile);
   }
 }

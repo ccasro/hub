@@ -1,7 +1,8 @@
-package com.ccasro.hub.modules.iam.infrastructure.filter;
+package com.ccasro.hub.modules.iam.infrastructure.security;
 
 import com.ccasro.hub.modules.iam.application.dto.AuthPrincipal;
 import com.ccasro.hub.modules.iam.application.ports.in.EnsureLocalUserUseCase;
+import com.ccasro.hub.modules.iam.domain.UserProfile;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,7 +33,16 @@ public class EnsureLocalUserFilter extends OncePerRequestFilter {
     if (auth instanceof JwtAuthenticationToken jwtAuth) {
       Jwt jwt = jwtAuth.getToken();
 
-      ensureLocalUser.ensure(new AuthPrincipal(jwt.getSubject()), jwt.getTokenValue());
+      String sub = jwt.getSubject();
+
+      UserProfile profile = ensureLocalUser.ensure(new AuthPrincipal(sub), jwt.getTokenValue());
+
+      if (!profile.isActive()) {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"message\":\"Account deactivated\"}");
+        return;
+      }
     }
     chain.doFilter(request, response);
   }

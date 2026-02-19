@@ -49,6 +49,9 @@ backend-format:
 backend-format-check:
 	cd backend && ./mvnw spotless:check
 
+frontend-auth:
+	cd frontend && python3 -m http.server 3000
+
 # DB shell
 db-shell:
 	docker compose exec postgres psql -U $$DB_USER -d $$DB_NAME

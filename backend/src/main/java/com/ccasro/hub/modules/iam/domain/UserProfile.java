@@ -1,104 +1,252 @@
 package com.ccasro.hub.modules.iam.domain;
 
-import com.ccasro.hub.modules.iam.domain.valueobjects.UserId;
-import com.ccasro.hub.shared.domain.MediaKey;
+import com.ccasro.hub.modules.iam.domain.valueobjects.*;
+import com.ccasro.hub.shared.domain.security.UserRole;
+import com.ccasro.hub.shared.domain.valueobjects.CountryCode;
+import com.ccasro.hub.shared.domain.valueobjects.ImageUrl;
+import com.ccasro.hub.shared.domain.valueobjects.UserId;
+import java.time.Clock;
 import java.time.Instant;
+import java.util.Optional;
 
 public class UserProfile {
 
   private final UserId id;
-  private final String auth0Sub;
-  private String email;
-  private String displayName;
-  private String avatarPublicId;
-  private String avatarUrl;
+  private final Auth0Id auth0Id;
+  private Email email;
+  private boolean emailVerified;
+
+  private DisplayName displayName;
+  private String description;
+  private PhoneNumber phoneNumber;
+
+  private ImageUrl avatar;
+
+  private UserRole role;
+  private OwnerRequestStatus ownerRequestStatus;
+  private SportPreference preferredSport;
+  private SkillLevel skillLevel;
+
+  private String city;
+  private CountryCode countryCode;
+
+  private boolean active;
+  private boolean onboardingCompleted;
+
   private final Instant createdAt;
   private Instant updatedAt;
+  private Instant lastLoginAt;
 
-  private UserProfile(
-      UserId id,
-      String auth0Sub,
-      String email,
-      String displayName,
-      String avatarPublicId,
-      String avatarUrl,
-      Instant createdAt,
-      Instant updatedAt) {
-    if (auth0Sub == null || auth0Sub.isBlank()) {
-      throw new IllegalArgumentException("auth0Sub is required");
-    }
-    if (id == null) {
-      throw new IllegalArgumentException("id is required");
-    }
-
+  private UserProfile(UserId id, Auth0Id auth0Id, Email email, boolean emailVerified, Instant now) {
     this.id = id;
-    this.auth0Sub = auth0Sub;
+    this.auth0Id = auth0Id;
     this.email = email;
-    this.displayName = displayName;
-    this.avatarPublicId = avatarPublicId;
-    this.avatarUrl = avatarUrl;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
+    this.emailVerified = emailVerified;
+    this.role = UserRole.PLAYER;
+    this.ownerRequestStatus = OwnerRequestStatus.NONE;
+    this.active = true;
+    this.onboardingCompleted = false;
+    this.createdAt = now;
+    this.updatedAt = now;
+    this.lastLoginAt = now;
   }
 
-  public static UserProfile create(
-      String auth0Sub, String email, String displayName, String avatarPublicId, String avatarUrl) {
-    Instant now = Instant.now();
-    return new UserProfile(
-        UserId.newId(), auth0Sub, email, displayName, avatarPublicId, avatarUrl, now, now);
+  private UserProfile(UserId id, Auth0Id auth0Id, Instant now) {
+    this(id, auth0Id, null, false, now);
   }
 
-  public void updateAvatar(String avatarPublicId, String avatarUrl) {
-    if (avatarPublicId == null || avatarPublicId.isBlank()) {
-      throw new IllegalArgumentException("avatarPublicId is required");
-    }
-
-    String expectedPrefix = MediaKey.avatarPrefix(this.auth0Sub);
-    if (!avatarPublicId.startsWith(expectedPrefix)) {
-      throw new IllegalArgumentException("avatar does not belong to user");
-    }
-    this.avatarPublicId = avatarPublicId;
-    if (avatarUrl != null && !avatarUrl.isBlank()) {
-      this.avatarUrl = avatarUrl;
-    }
-    this.updatedAt = Instant.now();
+  public static UserProfile create(Auth0Id auth0Id, Clock clock) {
+    Instant now = clock.instant();
+    return new UserProfile(UserId.newId(), auth0Id, now);
   }
 
-  public static UserProfile rehydrate(
+  public void updateEmailFromRaw(String raw, Clock clock) {
+    if (raw == null) return;
+    String cleaned = raw.trim();
+    if (cleaned.isEmpty()) return;
+
+    this.email = new Email(cleaned);
+    this.emailVerified = false;
+    this.updatedAt = clock.instant();
+  }
+
+  public static UserProfile reconstitute(
       UserId id,
-      String auth0Sub,
-      String email,
-      String displayName,
-      String avatarPublicId,
-      String avatarUrl,
+      Auth0Id auth0Id,
+      Email email,
+      boolean emailVerified,
+      DisplayName displayName,
+      String description,
+      PhoneNumber phoneNumber,
+      ImageUrl avatar,
+      UserRole role,
+      OwnerRequestStatus ownerRequestStatus,
+      SportPreference preferredSport,
+      SkillLevel skillLevel,
+      String city,
+      CountryCode countryCode,
+      boolean active,
+      boolean onboardingCompleted,
       Instant createdAt,
-      Instant updatedAt) {
-    return new UserProfile(
-        id, auth0Sub, email, displayName, avatarPublicId, avatarUrl, createdAt, updatedAt);
+      Instant updatedAt,
+      Instant lastLoginAt) {
+    UserProfile profile = new UserProfile(id, auth0Id, email, emailVerified, createdAt);
+    profile.displayName = displayName;
+    profile.description = description;
+    profile.phoneNumber = phoneNumber;
+    profile.avatar = avatar;
+    profile.role = role;
+    profile.ownerRequestStatus = ownerRequestStatus;
+    profile.preferredSport = preferredSport;
+    profile.skillLevel = skillLevel;
+    profile.city = city;
+    profile.countryCode = countryCode;
+    profile.active = active;
+    profile.onboardingCompleted = onboardingCompleted;
+    profile.updatedAt = updatedAt;
+    profile.lastLoginAt = lastLoginAt;
+    return profile;
+  }
+
+  public void recordLogin(Clock clock) {
+    this.lastLoginAt = clock.instant();
+    this.updatedAt = clock.instant();
+  }
+
+  public void updateProfile(
+      DisplayName displayName,
+      String description,
+      PhoneNumber phoneNumber,
+      String city,
+      CountryCode countryCode,
+      SportPreference preferredSport,
+      SkillLevel skillLevel,
+      Clock clock) {
+    this.displayName = displayName;
+    this.description = description;
+    this.phoneNumber = phoneNumber;
+    this.city = city;
+    this.countryCode = countryCode;
+    this.preferredSport = preferredSport;
+    this.skillLevel = skillLevel;
+    this.updatedAt = clock.instant();
+    checkOnboardingCompleted();
+  }
+
+  public void updateAvatar(ImageUrl newAvatar, Clock clock) {
+    this.avatar = newAvatar;
+    this.updatedAt = clock.instant();
+  }
+
+  public void requestOwnerRole(Clock clock) {
+    if (this.role == UserRole.OWNER || this.role == UserRole.ADMIN)
+      throw new IllegalStateException("You already have owner or admin role");
+    if (this.ownerRequestStatus == OwnerRequestStatus.PENDING)
+      throw new IllegalStateException("You already have a pending request");
+    this.ownerRequestStatus = OwnerRequestStatus.PENDING;
+    this.updatedAt = clock.instant();
+  }
+
+  public void approveOwnerRequest(Clock clock) {
+    if (this.ownerRequestStatus != OwnerRequestStatus.PENDING)
+      throw new IllegalStateException("There is no pending request");
+    this.role = UserRole.OWNER;
+    this.ownerRequestStatus = OwnerRequestStatus.APPROVED;
+    this.updatedAt = clock.instant();
+  }
+
+  public void rejectOwnerRequest(Clock clock) {
+    if (this.ownerRequestStatus != OwnerRequestStatus.PENDING)
+      throw new IllegalStateException("There is no pending request");
+    this.ownerRequestStatus = OwnerRequestStatus.REJECTED;
+    this.updatedAt = clock.instant();
+  }
+
+  public void changeRole(UserRole newRole, Clock clock) {
+    this.role = newRole;
+    this.updatedAt = clock.instant();
+  }
+
+  public void toggleActive(Clock clock) {
+    this.active = !this.active;
+    this.updatedAt = clock.instant();
+  }
+
+  public boolean isOwner() {
+    return this.role == UserRole.OWNER || this.role == UserRole.ADMIN;
+  }
+
+  private void checkOnboardingCompleted() {
+    this.onboardingCompleted =
+        this.displayName != null && this.city != null && !this.city.isBlank();
   }
 
   public UserId getId() {
     return id;
   }
 
-  public String getAuth0Sub() {
-    return auth0Sub;
+  public Auth0Id getAuth0Id() {
+    return auth0Id;
   }
 
-  public String getEmail() {
+  public Email getEmail() {
     return email;
   }
 
-  public String getDisplayName() {
+  public Optional<Email> email() {
+    return Optional.ofNullable(email);
+  }
+
+  public boolean isEmailVerified() {
+    return emailVerified;
+  }
+
+  public DisplayName getDisplayName() {
     return displayName;
   }
 
-  public String getAvatarPublicId() {
-    return avatarPublicId;
+  public String getDescription() {
+    return description;
   }
 
-  public String getAvatarUrl() {
-    return avatarUrl;
+  public PhoneNumber getPhoneNumber() {
+    return phoneNumber;
+  }
+
+  public ImageUrl getAvatar() {
+    return avatar;
+  }
+
+  public UserRole getRole() {
+    return role;
+  }
+
+  public OwnerRequestStatus getOwnerRequestStatus() {
+    return ownerRequestStatus;
+  }
+
+  public SportPreference getPreferredSport() {
+    return preferredSport;
+  }
+
+  public SkillLevel getSkillLevel() {
+    return skillLevel;
+  }
+
+  public String getCity() {
+    return city;
+  }
+
+  public CountryCode getCountryCode() {
+    return countryCode;
+  }
+
+  public boolean isActive() {
+    return active;
+  }
+
+  public boolean isOnboardingCompleted() {
+    return onboardingCompleted;
   }
 
   public Instant getCreatedAt() {
@@ -107,5 +255,9 @@ public class UserProfile {
 
   public Instant getUpdatedAt() {
     return updatedAt;
+  }
+
+  public Instant getLastLoginAt() {
+    return lastLoginAt;
   }
 }
