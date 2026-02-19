@@ -1,43 +1,54 @@
 package com.ccasro.hub.modules.iam.infrastructure.api;
 
-import com.ccasro.hub.modules.iam.infrastructure.api.dto.MeResponse;
 import com.ccasro.hub.modules.iam.infrastructure.api.dto.UpdateAvatarRequest;
-import com.ccasro.hub.modules.iam.usecases.GetMeService;
-import com.ccasro.hub.modules.iam.usecases.UpdateAvatarService;
-import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
+import com.ccasro.hub.modules.iam.infrastructure.api.dto.UpdateMeRequest;
+import com.ccasro.hub.modules.iam.infrastructure.api.dto.UserProfileResponse;
+import com.ccasro.hub.modules.iam.usecases.*;
+import com.ccasro.hub.shared.domain.valueobjects.ImageUrl;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/me")
+@RequestMapping("/api/me")
+@RequiredArgsConstructor
 public class MeController {
 
   private final GetMeService getMe;
-  private final UpdateAvatarService updAvatar;
-  private final CurrentUserProvider currentUser;
-
-  public MeController(
-      GetMeService getMe, UpdateAvatarService updAvatar, CurrentUserProvider currentUser) {
-    this.getMe = getMe;
-    this.updAvatar = updAvatar;
-    this.currentUser = currentUser;
-  }
+  private final UpdateAvatarService updateAvatar;
+  private final UpdateMeService updateMe;
+  private final RequestOwnerRoleService requestOwner;
 
   @GetMapping
-  public MeResponse me() {
-    var u = getMe.get(currentUser.getSub());
-    return new MeResponse(
-        u.getId().toString(),
-        u.getEmail(),
-        u.getDisplayName(),
-        u.getAvatarPublicId(),
-        u.getAvatarUrl());
+  public ResponseEntity<UserProfileResponse> getMe() {
+    return ResponseEntity.ok(UserProfileResponse.from(getMe.execute()));
   }
 
-  @PutMapping("/avatar")
-  @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void updateAvatar(@Valid @RequestBody UpdateAvatarRequest req) {
-    updAvatar.update(currentUser.getSub(), req);
+  @PutMapping
+  public ResponseEntity<UserProfileResponse> updateMe(@Valid @RequestBody UpdateMeRequest request) {
+    UpdateMeCommand command =
+        new UpdateMeCommand(
+            request.displayName(),
+            request.description(),
+            request.phoneNumber(),
+            request.city(),
+            request.countryCode(),
+            request.preferredSport(),
+            request.skillLevel());
+    return ResponseEntity.ok(UserProfileResponse.from(updateMe.execute(command)));
+  }
+
+  @PatchMapping("/avatar")
+  public ResponseEntity<UserProfileResponse> updateAvatar(
+      @Valid @RequestBody UpdateAvatarRequest request) {
+    ImageUrl imageUrl = new ImageUrl(request.url(), request.publicId());
+    return ResponseEntity.ok(UserProfileResponse.from(updateAvatar.execute(imageUrl)));
+  }
+
+  @PostMapping("/request-owner")
+  public ResponseEntity<Void> requestOwner() {
+    requestOwner.execute();
+    return ResponseEntity.accepted().build();
   }
 }
