@@ -1,5 +1,6 @@
 package com.ccasro.hub.infrastructure.web;
 
+import com.ccasro.hub.modules.iam.domain.exception.UserProfileNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.time.Instant;
@@ -98,6 +99,16 @@ public class GlobalExceptionHandler {
                 "Bad Request",
                 ex.getMessage(),
                 request));
+  }
+
+  @ExceptionHandler(UserProfileNotFoundException.class)
+  public ResponseEntity<ProblemDetail> handleUserProfileNotFound(
+      UserProfileNotFoundException ex, HttpServletRequest request) {
+
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(
+            problem(
+                HttpStatus.NOT_FOUND, "/errors/not-found", "Not Found", ex.getMessage(), request));
   }
 
   @ExceptionHandler(NoSuchElementException.class)
