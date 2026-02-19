@@ -1,27 +1,32 @@
 package com.ccasro.hub.modules.iam.usecases;
 
+import com.ccasro.hub.modules.iam.domain.UserProfile;
+import com.ccasro.hub.modules.iam.domain.exception.UserProfileNotFoundException;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
-import com.ccasro.hub.modules.iam.infrastructure.api.dto.UpdateAvatarRequest;
+import com.ccasro.hub.modules.iam.domain.valueobjects.Auth0Id;
+import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
+import com.ccasro.hub.shared.domain.valueobjects.ImageUrl;
+import java.time.Clock;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class UpdateAvatarService {
 
   private final UserProfileRepositoryPort users;
+  private final CurrentUserProvider currentUser;
+  private final Clock clock;
 
-  public UpdateAvatarService(UserProfileRepositoryPort users) {
-    this.users = users;
-  }
+  public UserProfile execute(ImageUrl newAvatar) {
+    Auth0Id auth0Id = new Auth0Id(currentUser.getSub());
 
-  public void update(String auth0Sub, UpdateAvatarRequest req) {
+    UserProfile profile =
+        users.findByAuth0Id(auth0Id).orElseThrow(UserProfileNotFoundException::new);
 
-    var user =
-        users
-            .findByAuth0Sub(auth0Sub)
-            .orElseThrow(() -> new IllegalArgumentException("user not found"));
+    profile.updateAvatar(newAvatar, clock);
 
-    user.updateAvatar(req.publicId(), req.url());
-
-    users.save(user);
+    users.save(profile);
+    return profile;
   }
 }
