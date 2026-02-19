@@ -27,7 +27,7 @@ public abstract class BaseIT {
 
   @BeforeEach
   void baseStubs() {
-    when(auth0UserInfoClient.fetch(anyString()))
+    when(auth0UserInfoClient.getUserInfo(anyString()))
         .thenAnswer(
             inv -> {
               String token = inv.getArgument(0, String.class);
