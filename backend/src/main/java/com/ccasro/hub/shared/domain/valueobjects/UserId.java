@@ -1,4 +1,4 @@
-package com.ccasro.hub.modules.iam.domain.valueobjects;
+package com.ccasro.hub.shared.domain.valueobjects;
 
 import java.util.Objects;
 import java.util.UUID;
