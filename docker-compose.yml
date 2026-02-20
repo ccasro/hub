@@ -1,7 +1,7 @@
 services:
 
   postgres:
-    image: postgres:16-alpine
+    image: postgis/postgis:16-3.4
     container_name: hub-postgres
     restart: unless-stopped
     environment:
