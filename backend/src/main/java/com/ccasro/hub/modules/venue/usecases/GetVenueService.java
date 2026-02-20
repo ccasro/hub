@@ -8,9 +8,11 @@ import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class GetVenueService {
 
   private final VenueRepositoryPort venueRepository;

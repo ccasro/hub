@@ -11,6 +11,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,16 +27,19 @@ public class AdminVenueService {
     }
   }
 
+  @Transactional(readOnly = true)
   public List<Venue> findAll(int page, int size) {
     requireAdmin();
     return venueRepository.findAll(page, size);
   }
 
+  @Transactional(readOnly = true)
   public List<Venue> findPending() {
     requireAdmin();
     return venueRepository.findByStatus(VenueStatus.PENDING_REVIEW);
   }
 
+  @Transactional
   public Venue approve(VenueId id) {
     requireAdmin();
     Venue venue = venueRepository.findById(id).orElseThrow(VenueNotFoundException::new);
@@ -43,6 +47,7 @@ public class AdminVenueService {
     return venueRepository.save(venue);
   }
 
+  @Transactional
   public Venue reject(VenueId id, String reason) {
     requireAdmin();
     Venue venue = venueRepository.findById(id).orElseThrow(VenueNotFoundException::new);
@@ -50,6 +55,7 @@ public class AdminVenueService {
     return venueRepository.save(venue);
   }
 
+  @Transactional
   public Venue adminSuspend(VenueId id, String reason) {
     requireAdmin();
     Venue venue = venueRepository.findById(id).orElseThrow(VenueNotFoundException::new);

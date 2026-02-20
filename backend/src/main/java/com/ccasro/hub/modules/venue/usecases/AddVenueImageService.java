@@ -10,6 +10,7 @@ import com.ccasro.hub.shared.domain.valueobjects.ImageUrl;
 import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +21,7 @@ public class AddVenueImageService {
   private final VenuePolicy venuePolicy;
   private final Clock clock;
 
+  @Transactional
   public Venue execute(VenueId venueId, ImageUrl imageUrl) {
     Venue venue = venueRepository.findById(venueId).orElseThrow(VenueNotFoundException::new);
 

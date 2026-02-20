@@ -33,10 +33,7 @@ public class CloudinaryAdapter implements MediaStoragePort {
     paramsToSign.put("timestamp", timestampSeconds);
     paramsToSign.put("folder", folder);
     paramsToSign.put("public_id", publicId);
-
-    if (overwrite) {
-      paramsToSign.put("overwrite", true);
-    }
+    paramsToSign.put("overwrite", overwrite ? "true" : "false");
 
     String signature = cloudinary.apiSignRequest(paramsToSign, props.apiSecret(), 2);
 

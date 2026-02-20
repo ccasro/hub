@@ -10,6 +10,7 @@ import java.time.Clock;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +21,7 @@ public class RemoveVenueImageService {
   private final VenuePolicy venuePolicy;
   private final Clock clock;
 
+  @Transactional
   public void execute(VenueId venueId, UUID imageId) {
     Venue venue = venueRepository.findById(venueId).orElseThrow(VenueNotFoundException::new);
 

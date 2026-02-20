@@ -36,6 +36,12 @@ public class UserProfileMapper {
   public UserProfileEntity toEntity(UserProfile d) {
     UserProfileEntity e = new UserProfileEntity();
     e.setId(d.getId().value());
+    e.setCreatedAt(d.getCreatedAt());
+    updateEntity(d, e);
+    return e;
+  }
+
+  public void updateEntity(UserProfile d, UserProfileEntity e) {
     e.setAuth0Id(d.getAuth0Id().value());
     e.setEmail(d.getEmail() != null ? d.getEmail().value() : null);
     e.setEmailVerified(d.isEmailVerified());
@@ -53,9 +59,7 @@ public class UserProfileMapper {
     e.setCountryCode(d.getCountryCode() != null ? d.getCountryCode().value() : null);
     e.setActive(d.isActive());
     e.setOnboardingCompleted(d.isOnboardingCompleted());
-    e.setCreatedAt(d.getCreatedAt());
     e.setUpdatedAt(d.getUpdatedAt());
     e.setLastLoginAt(d.getLastLoginAt());
-    return e;
   }
 }

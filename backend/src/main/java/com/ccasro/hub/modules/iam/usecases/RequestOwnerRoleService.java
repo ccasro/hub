@@ -7,6 +7,7 @@ import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +17,7 @@ public class RequestOwnerRoleService {
   private final CurrentUserProvider currentUser;
   private final Clock clock;
 
+  @Transactional
   public void execute() {
     UserProfile profile =
         repository.findById(currentUser.getUserId()).orElseThrow(UserProfileNotFoundException::new);

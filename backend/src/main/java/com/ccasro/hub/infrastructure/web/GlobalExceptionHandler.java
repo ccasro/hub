@@ -1,16 +1,21 @@
 package com.ccasro.hub.infrastructure.web;
 
 import com.ccasro.hub.modules.iam.domain.exception.UserProfileNotFoundException;
+import com.ccasro.hub.modules.resource.domain.exception.ResourceImageNotFoundException;
+import com.ccasro.hub.modules.resource.domain.exception.ResourceNotFoundException;
 import com.ccasro.hub.modules.venue.domain.exception.VenueImageNotFoundException;
 import com.ccasro.hub.modules.venue.domain.exception.VenueNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import java.net.URI;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +23,10 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @Slf4j
 @RestControllerAdvice
@@ -53,6 +60,32 @@ public class GlobalExceptionHandler {
                 request));
   }
 
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ProblemDetail> handleMethodArgumentTypeMismatch(
+      MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+
+    ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+    pd.setType(URI.create("/errors/validation-error"));
+    pd.setTitle("Validation Error");
+    pd.setDetail("Invalid request parameter");
+    pd.setInstance(URI.create(request.getRequestURI()));
+
+    Map<String, Object> errors = new LinkedHashMap<>();
+    errors.put("parameter", ex.getName());
+    errors.put("rejectedValue", ex.getValue());
+    errors.put(
+        "expectedType",
+        ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown");
+
+    if (ex.getRequiredType() == LocalDate.class) {
+      errors.put("message", "Expected format: yyyy-MM-dd (e.g. 2026-02-04)");
+    }
+
+    pd.setProperty("errors", errors);
+
+    return ResponseEntity.badRequest().body(pd);
+  }
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ProblemDetail> handleMethodArgumentNotValid(
       MethodArgumentNotValidException ex, HttpServletRequest request) {
@@ -72,6 +105,54 @@ public class GlobalExceptionHandler {
 
     pd.setProperty("errors", errors);
 
+    return ResponseEntity.badRequest().body(pd);
+  }
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<ProblemDetail> constraint(
+      ConstraintViolationException ex, HttpServletRequest req) {
+    ProblemDetail pd =
+        problem(
+            HttpStatus.BAD_REQUEST,
+            "/errors/validation-error",
+            "Validation Error",
+            "Request parameter validation failed",
+            req);
+
+    Map<String, String> errors = new LinkedHashMap<>();
+    ex.getConstraintViolations()
+        .forEach(v -> errors.put(v.getPropertyPath().toString(), v.getMessage()));
+    pd.setProperty("errors", errors);
+
+    return ResponseEntity.badRequest().body(pd);
+  }
+
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  public ResponseEntity<ProblemDetail> conflict(
+      DataIntegrityViolationException ex, HttpServletRequest req) {
+    ProblemDetail pd =
+        problem(
+            HttpStatus.CONFLICT,
+            "/errors/conflict",
+            "Conflict",
+            "Operation violates a data constraint",
+            req);
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(pd);
+  }
+
+  @ExceptionHandler(MissingServletRequestParameterException.class)
+  public ResponseEntity<ProblemDetail> missingParam(
+      org.springframework.web.bind.MissingServletRequestParameterException ex,
+      HttpServletRequest req) {
+    ProblemDetail pd =
+        problem(
+            HttpStatus.BAD_REQUEST,
+            "/errors/missing-parameter",
+            "Missing Parameter",
+            "Required request parameter is missing",
+            req);
+    pd.setProperty("parameter", ex.getParameterName());
+    pd.setProperty("expectedType", ex.getParameterType());
     return ResponseEntity.badRequest().body(pd);
   }
 
@@ -126,6 +207,26 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(VenueImageNotFoundException.class)
   public ResponseEntity<ProblemDetail> handleVenueImageNotFound(
       VenueImageNotFoundException ex, HttpServletRequest request) {
+
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(
+            problem(
+                HttpStatus.NOT_FOUND, "/errors/not-found", "Not Found", ex.getMessage(), request));
+  }
+
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<ProblemDetail> handleResourceNotFound(
+      ResourceNotFoundException ex, HttpServletRequest request) {
+
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(
+            problem(
+                HttpStatus.NOT_FOUND, "/errors/not-found", "Not Found", ex.getMessage(), request));
+  }
+
+  @ExceptionHandler(ResourceImageNotFoundException.class)
+  public ResponseEntity<ProblemDetail> handleResourceImageNotFound(
+      ResourceImageNotFoundException ex, HttpServletRequest request) {
 
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(

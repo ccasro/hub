@@ -14,6 +14,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,17 +30,20 @@ public class AdminUserService {
     }
   }
 
+  @Transactional(readOnly = true)
   public List<AdminUserProfileResponse> findAll(int page, int size) {
     requireAdmin();
     return repository.findAll(page, size).stream().map(AdminUserProfileResponse::from).toList();
   }
 
+  @Transactional(readOnly = true)
   public UserProfileResponse findById(UserId id) {
     requireAdmin();
     return UserProfileResponse.from(
         repository.findById(id).orElseThrow(UserProfileNotFoundException::new));
   }
 
+  @Transactional(readOnly = true)
   public List<UserProfileResponse> findPendingOwners() {
     requireAdmin();
     return repository.findByOwnerRequestStatus(OwnerRequestStatus.PENDING).stream()
@@ -47,6 +51,7 @@ public class AdminUserService {
         .toList();
   }
 
+  @Transactional
   public void approveOwnerRequest(UserId id) {
     requireAdmin();
     UserProfile profile = repository.findById(id).orElseThrow(UserProfileNotFoundException::new);
@@ -54,6 +59,7 @@ public class AdminUserService {
     repository.save(profile);
   }
 
+  @Transactional
   public void rejectOwnerRequest(UserId id) {
     requireAdmin();
     UserProfile profile = repository.findById(id).orElseThrow(UserProfileNotFoundException::new);
@@ -61,6 +67,7 @@ public class AdminUserService {
     repository.save(profile);
   }
 
+  @Transactional
   public void changeRole(UserId id, UserRole newRole) {
     requireAdmin();
     UserProfile profile = repository.findById(id).orElseThrow(UserProfileNotFoundException::new);
@@ -68,6 +75,7 @@ public class AdminUserService {
     repository.save(profile);
   }
 
+  @Transactional
   public void toggleActive(UserId id) {
     requireAdmin();
     UserProfile profile = repository.findById(id).orElseThrow(UserProfileNotFoundException::new);

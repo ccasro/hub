@@ -11,6 +11,7 @@ import com.ccasro.hub.shared.domain.valueobjects.CountryCode;
 import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +21,7 @@ public class UpdateMeService {
   private final CurrentUserProvider currentUser;
   private final Clock clock;
 
+  @Transactional
   public UserProfile execute(UpdateMeCommand command) {
     Auth0Id auth0Id = new Auth0Id(currentUser.getSub());
     UserProfile profile =

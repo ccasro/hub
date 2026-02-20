@@ -25,7 +25,15 @@ public class UserProfileRepositoryAdapter implements UserProfileRepositoryPort {
 
   @Override
   public UserProfile save(UserProfile user) {
-    UserProfileEntity saved = jpa.save(mapper.toEntity(user));
+    UserProfileEntity saved =
+        jpa.findByAuth0Id(user.getAuth0Id().value())
+            .map(
+                managed -> {
+                  mapper.updateEntity(user, managed);
+                  return jpa.save(managed);
+                })
+            .orElseGet(() -> jpa.save(mapper.toEntity(user)));
+
     return mapper.toDomain(saved);
   }
 

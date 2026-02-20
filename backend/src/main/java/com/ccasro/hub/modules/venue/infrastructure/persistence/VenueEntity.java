@@ -17,7 +17,7 @@ import org.locationtech.jts.geom.Point;
 public class VenueEntity {
 
   @Id
-  @Column(columnDefinition = "uuid")
+  @Column(columnDefinition = "uuid", updatable = false, nullable = false)
   private UUID id;
 
   @Column(name = "owner_id", nullable = false, columnDefinition = "uuid")
