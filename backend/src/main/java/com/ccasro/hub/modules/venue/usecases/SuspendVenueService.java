@@ -9,6 +9,7 @@ import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ public class SuspendVenueService {
   private final VenuePolicy venuePolicy;
   private final Clock clock;
 
+  @Transactional
   public void execute(VenueId venueId) {
     Venue venue = venueRepository.findById(venueId).orElseThrow(VenueNotFoundException::new);
 
