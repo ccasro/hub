@@ -19,6 +19,7 @@ import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 class EnsureLocalUserServiceTest {
@@ -159,9 +160,11 @@ class EnsureLocalUserServiceTest {
     when(auth0Client.getUserInfo("token"))
         .thenReturn(new Auth0UserInfo("auth0|123", "user@test.com"));
 
-    when(users.save(any())).thenThrow(new RuntimeException("duplicate key"));
+      when(users.save(any()))
+              .thenThrow(new DataIntegrityViolationException("duplicate key")) // save(created)
+              .thenReturn(existing);
 
-    var result = uc.ensure(principal, "token");
+      var result = uc.ensure(principal, "token");
 
     assertThat(result).isSameAs(existing);
   }
