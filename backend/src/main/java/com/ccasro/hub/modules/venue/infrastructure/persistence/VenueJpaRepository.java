@@ -3,8 +3,6 @@ package com.ccasro.hub.modules.venue.infrastructure.persistence;
 import com.ccasro.hub.modules.venue.domain.valueobjects.VenueStatus;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,8 +12,6 @@ public interface VenueJpaRepository extends JpaRepository<VenueEntity, UUID> {
   List<VenueEntity> findByStatus(VenueStatus status);
 
   List<VenueEntity> findByOwnerIdAndStatusNot(UUID ownerId, VenueStatus status);
-
-  Page<VenueEntity> findAll(Pageable pageable);
 
   @Query(
       value =
@@ -37,4 +33,6 @@ public interface VenueJpaRepository extends JpaRepository<VenueEntity, UUID> {
       @Param("lat") double lat,
       @Param("lng") double lng,
       @Param("radiusMeters") double radiusMeters);
+
+  boolean existsByIdAndOwnerId(UUID id, UUID ownerId);
 }

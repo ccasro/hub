@@ -22,5 +22,7 @@ public interface VenueRepositoryPort {
 
   List<Venue> findActiveNearby(double lat, double lng, double radiusMeters);
 
+  boolean existsOwnedBy(VenueId venueId, UserId ownerId);
+
   void deleteById(VenueId id);
 }

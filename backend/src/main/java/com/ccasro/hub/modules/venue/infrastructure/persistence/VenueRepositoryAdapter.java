@@ -20,15 +20,14 @@ public class VenueRepositoryAdapter implements VenueRepositoryPort {
 
   @Override
   public Venue save(Venue venue) {
-    VenueEntity saved;
-
-    if (venue.getId() != null && jpa.existsById(venue.getId().value())) {
-      VenueEntity managed = jpa.findById(venue.getId().value()).orElseThrow();
-      mapper.updateEntity(venue, managed);
-      saved = jpa.save(managed);
-    } else {
-      saved = jpa.save(mapper.toEntity(venue));
-    }
+    VenueEntity saved =
+        jpa.findById(venue.getId().value())
+            .map(
+                managed -> {
+                  mapper.updateEntity(venue, managed);
+                  return jpa.save(managed);
+                })
+            .orElseGet(() -> jpa.save(mapper.toEntity(venue)));
     return mapper.toDomain(saved);
   }
 
@@ -67,5 +66,10 @@ public class VenueRepositoryAdapter implements VenueRepositoryPort {
   @Override
   public void deleteById(VenueId id) {
     jpa.deleteById(id.value());
+  }
+
+  @Override
+  public boolean existsOwnedBy(VenueId venueId, UserId ownerId) {
+    return jpa.existsByIdAndOwnerId(venueId.value(), ownerId.value());
   }
 }
