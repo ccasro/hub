@@ -13,7 +13,7 @@ import lombok.Setter;
 public class VenueImageEntity {
 
   @Id
-  @Column(columnDefinition = "uuid")
+  @Column(columnDefinition = "uuid", updatable = false, nullable = false)
   private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY)

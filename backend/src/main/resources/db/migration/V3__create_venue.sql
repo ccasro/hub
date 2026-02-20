@@ -1,5 +1,5 @@
 CREATE TABLE venue (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id            UUID PRIMARY KEY,
     owner_id      UUID NOT NULL REFERENCES user_profile(id) ON DELETE RESTRICT,
     name          VARCHAR(150) NOT NULL,
     description   TEXT,
@@ -18,12 +18,12 @@ CREATE INDEX idx_venue_status ON venue(status);
 CREATE INDEX idx_venue_location ON venue USING GIST(location);
 
 CREATE TABLE venue_image (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id            UUID PRIMARY KEY,
     venue_id      UUID NOT NULL REFERENCES venue(id) ON DELETE CASCADE,
     url           VARCHAR(500) NOT NULL,
     public_id     VARCHAR(200) NOT NULL,
     display_order INT DEFAULT 0,
-    created_at    TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_venue_image_venue_id ON venue_image(venue_id);
