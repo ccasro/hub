@@ -5,6 +5,7 @@ import com.ccasro.hub.modules.iam.infrastructure.api.dto.ChangeRoleRequest;
 import com.ccasro.hub.modules.iam.infrastructure.api.dto.UserProfileResponse;
 import com.ccasro.hub.modules.iam.usecases.AdminUserService;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
+@Tag(name = "Admin - Users", description = "User Admin Management")
 @PreAuthorize("@authz.isAdmin()")
 public class AdminUserController {
 
