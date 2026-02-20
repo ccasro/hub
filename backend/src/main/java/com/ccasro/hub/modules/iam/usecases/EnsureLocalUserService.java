@@ -12,6 +12,7 @@ import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,9 +59,20 @@ public class EnsureLocalUserService implements EnsureLocalUserUseCase {
 
               try {
                 return users.save(created);
-              } catch (RuntimeException e) {
+              } catch (DataIntegrityViolationException e) {
+                UserProfile existing = users.findByAuth0Id(auth0Id).orElseThrow(() -> e);
 
-                return users.findByAuth0Id(auth0Id).orElseThrow(() -> e);
+                existing.recordLogin(clock);
+                existing.updateEmailFromRaw(ui.email(), clock);
+
+                if (!adminEmail.isBlank()
+                    && adminEmail.equalsIgnoreCase(ui.email())
+                    && existing.getRole() != UserRole.ADMIN) {
+                  existing.changeRole(UserRole.ADMIN, clock);
+                  log.info("User promoted to ADMIN: {}", adminEmail);
+                }
+
+                return users.save(existing);
               }
             });
   }
