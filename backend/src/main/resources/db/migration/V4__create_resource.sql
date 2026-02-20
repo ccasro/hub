@@ -19,10 +19,10 @@ CREATE TABLE resource_schedule (
     resource_id     UUID NOT NULL REFERENCES resource(id) ON DELETE CASCADE,
     day_of_week     VARCHAR(10) NOT NULL,
     opening_time    TIME NOT NULL,
-    closing_time    TIME NOT NULL,
+    closing_time    TIME NOT NULL
 );
 
-CREATE UNIQUE INDEX ux_resource_schedule_unique_slot ON resource_schedule(resource_id, day_of_week, start_time, end_time);
+CREATE UNIQUE INDEX ux_resource_schedule_unique_slot ON resource_schedule(resource_id, day_of_week, opening_time, closing_time);
 
 CREATE INDEX idx_schedule_resource_id ON resource_schedule(resource_id);
 
