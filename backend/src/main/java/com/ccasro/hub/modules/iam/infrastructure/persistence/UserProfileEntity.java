@@ -7,17 +7,19 @@ import com.ccasro.hub.shared.domain.security.UserRole;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "user_profile")
-@Data
+@Getter
+@Setter
 public class UserProfileEntity {
 
   protected UserProfileEntity() {}
 
   @Id
-  @Column(columnDefinition = "uuid")
+  @Column(columnDefinition = "uuid", updatable = false, nullable = false)
   private UUID id;
 
   @Column(name = "auth0_id", unique = true, nullable = false, length = 128)
