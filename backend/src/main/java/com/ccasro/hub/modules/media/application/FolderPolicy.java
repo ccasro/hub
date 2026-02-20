@@ -15,17 +15,15 @@ public class FolderPolicy {
     return switch (purpose) {
       case AVATAR -> MediaKey.avatarFolder(require("principalId", ctx.principalId()));
 
-      case COMPANY_LOGO -> "companies/" + require("companyId", ctx.companyId()) + "/logo";
-
-      case VENUE_IMAGE -> "companies/"
-          + require("companyId", ctx.companyId())
+      case VENUE_IMAGE -> "users/"
+          + require("principalId", ctx.principalId())
           + "/venues/"
           + require("venueId", ctx.venueId());
 
-      case COURT_IMAGE -> "companies/"
-          + require("companyId", ctx.companyId())
-          + "/courts/"
-          + require("courtId", ctx.courtId());
+      case RESOURCE_IMAGE -> "users/"
+          + require("principalId", ctx.principalId())
+          + "/resources/"
+          + require("resourceId", ctx.resourceId());
     };
   }
 

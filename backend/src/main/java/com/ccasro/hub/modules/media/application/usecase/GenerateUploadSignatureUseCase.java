@@ -35,14 +35,12 @@ public class GenerateUploadSignatureUseCase {
     String publicId =
         switch (req.purpose()) {
           case AVATAR -> "avatar";
-          case COMPANY_LOGO -> "logo";
-          case VENUE_IMAGE -> UUID.randomUUID().toString();
-          case COURT_IMAGE -> UUID.randomUUID().toString();
+          case VENUE_IMAGE, RESOURCE_IMAGE -> UUID.randomUUID().toString();
         };
 
     boolean overwrite =
         switch (req.purpose()) {
-          case AVATAR, COMPANY_LOGO -> true;
+          case AVATAR -> true;
           default -> false;
         };
 
@@ -69,21 +67,9 @@ public class GenerateUploadSignatureUseCase {
     }
 
     switch (req.purpose()) {
-      case AVATAR -> {
-        /* no ids required */
-      }
-
-      case COMPANY_LOGO -> require(req.companyId(), "companyId is required for COMPANY_LOGO");
-
-      case VENUE_IMAGE -> {
-        require(req.companyId(), "companyId is required for VENUE_IMAGE");
-        require(req.venueId(), "venueId is required for VENUE_IMAGE");
-      }
-
-      case COURT_IMAGE -> {
-        require(req.companyId(), "companyId is required for COURT_IMAGE");
-        require(req.courtId(), "courtId is required for COURT_IMAGE");
-      }
+      case AVATAR -> {}
+      case VENUE_IMAGE -> require(req.venueId(), "venueId is required for VENUE_IMAGE");
+      case RESOURCE_IMAGE -> require(req.resourceId(), "resourceId is required for RESOURCE_IMAGE");
     }
   }
 
