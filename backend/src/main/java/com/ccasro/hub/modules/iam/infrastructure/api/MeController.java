@@ -5,6 +5,7 @@ import com.ccasro.hub.modules.iam.infrastructure.api.dto.UpdateMeRequest;
 import com.ccasro.hub.modules.iam.infrastructure.api.dto.UserProfileResponse;
 import com.ccasro.hub.modules.iam.usecases.*;
 import com.ccasro.hub.shared.domain.valueobjects.ImageUrl;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/me")
 @RequiredArgsConstructor
+@Tag(name = "User profile", description = "User profile management")
 public class MeController {
 
   private final GetMeService getMe;

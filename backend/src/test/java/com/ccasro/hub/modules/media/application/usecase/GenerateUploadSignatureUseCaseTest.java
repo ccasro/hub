@@ -35,7 +35,7 @@ class GenerateUploadSignatureUseCaseTest {
   @Test
   void request_avatar_signsExpectedParams() {
     String sub = "auth0|123";
-    UploadSignatureRequest req = new UploadSignatureRequest(UploadPurpose.AVATAR, null, null, null);
+    UploadSignatureRequest req = new UploadSignatureRequest(UploadPurpose.AVATAR, null, null);
 
     UploadContext ctx = UploadContext.forAvatar(sub);
     when(mapper.toContext(eq(sub), eq(req))).thenReturn(ctx);
@@ -69,19 +69,8 @@ class GenerateUploadSignatureUseCaseTest {
   }
 
   @Test
-  void request_companyLogo_requiresCompanyId() {
-    String sub = "auth0|123";
-    UploadSignatureRequest req =
-        new UploadSignatureRequest(UploadPurpose.COMPANY_LOGO, null, null, null);
-
-    IllegalArgumentException ex =
-        assertThrows(IllegalArgumentException.class, () -> useCase.request(sub, req));
-    assertTrue(ex.getMessage().contains("companyId"));
-  }
-
-  @Test
   void request_blankPrincipal_throws() {
-    UploadSignatureRequest req = new UploadSignatureRequest(UploadPurpose.AVATAR, null, null, null);
+    UploadSignatureRequest req = new UploadSignatureRequest(UploadPurpose.AVATAR, null, null);
     assertThrows(IllegalArgumentException.class, () -> useCase.request(" ", req));
   }
 
@@ -89,6 +78,6 @@ class GenerateUploadSignatureUseCaseTest {
   void request_nullPurpose_throws() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> useCase.request("auth0|123", new UploadSignatureRequest(null, null, null, null)));
+        () -> useCase.request("auth0|123", new UploadSignatureRequest(null, null, null)));
   }
 }

@@ -1,6 +1,8 @@
 package com.ccasro.hub.infrastructure.web;
 
 import com.ccasro.hub.modules.iam.domain.exception.UserProfileNotFoundException;
+import com.ccasro.hub.modules.venue.domain.exception.VenueImageNotFoundException;
+import com.ccasro.hub.modules.venue.domain.exception.VenueNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.time.Instant;
@@ -104,6 +106,26 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(UserProfileNotFoundException.class)
   public ResponseEntity<ProblemDetail> handleUserProfileNotFound(
       UserProfileNotFoundException ex, HttpServletRequest request) {
+
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(
+            problem(
+                HttpStatus.NOT_FOUND, "/errors/not-found", "Not Found", ex.getMessage(), request));
+  }
+
+  @ExceptionHandler(VenueNotFoundException.class)
+  public ResponseEntity<ProblemDetail> handleVenueNotFound(
+      VenueNotFoundException ex, HttpServletRequest request) {
+
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(
+            problem(
+                HttpStatus.NOT_FOUND, "/errors/not-found", "Not Found", ex.getMessage(), request));
+  }
+
+  @ExceptionHandler(VenueImageNotFoundException.class)
+  public ResponseEntity<ProblemDetail> handleVenueImageNotFound(
+      VenueImageNotFoundException ex, HttpServletRequest request) {
 
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(

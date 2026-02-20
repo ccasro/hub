@@ -11,11 +11,9 @@ public class UploadContextMapper {
     return switch (req.purpose()) {
       case AVATAR -> UploadContext.forAvatar(principalId);
 
-      case COMPANY_LOGO -> UploadContext.forCompanyLogo(principalId, req.companyId());
+      case VENUE_IMAGE -> UploadContext.forVenueImage(principalId, req.venueId());
 
-      case VENUE_IMAGE -> UploadContext.forVenueImage(principalId, req.companyId(), req.venueId());
-
-      case COURT_IMAGE -> UploadContext.forCourtImage(principalId, req.companyId(), req.courtId());
+      case RESOURCE_IMAGE -> UploadContext.forResourceImage(principalId, req.resourceId());
     };
   }
 }
