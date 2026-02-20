@@ -160,11 +160,11 @@ class EnsureLocalUserServiceTest {
     when(auth0Client.getUserInfo("token"))
         .thenReturn(new Auth0UserInfo("auth0|123", "user@test.com"));
 
-      when(users.save(any()))
-              .thenThrow(new DataIntegrityViolationException("duplicate key")) // save(created)
-              .thenReturn(existing);
+    when(users.save(any()))
+        .thenThrow(new DataIntegrityViolationException("duplicate key")) // save(created)
+        .thenReturn(existing);
 
-      var result = uc.ensure(principal, "token");
+    var result = uc.ensure(principal, "token");
 
     assertThat(result).isSameAs(existing);
   }
