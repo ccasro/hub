@@ -171,7 +171,7 @@ public class Venue {
     this.updatedAt = clock.instant();
   }
 
-  // ── Comportamiento admin ─────────────────────────────────────
+  // ── admin ─────────────────────────────────────
 
   public void approve(Clock clock) {
     if (this.status != VenueStatus.PENDING_REVIEW)

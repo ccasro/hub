@@ -33,9 +33,15 @@ public class DaySchedule {
   public List<SlotRange> generateSlots(SlotDuration duration) {
     List<SlotRange> slots = new ArrayList<>();
     LocalTime current = openingTime;
-    while (!current.plusMinutes(duration.minutes()).isAfter(closingTime)) {
-      slots.add(new SlotRange(current, current.plusMinutes(duration.minutes())));
-      current = current.plusMinutes(duration.minutes());
+
+    while (true) {
+      LocalTime slotEnd = current.plusMinutes(duration.minutes());
+
+      if (slotEnd.isBefore(current)) break;
+      if (slotEnd.isAfter(closingTime)) break;
+      slots.add(new SlotRange(current, slotEnd));
+      current = slotEnd;
+      if (current.equals(closingTime)) break;
     }
     return slots;
   }
