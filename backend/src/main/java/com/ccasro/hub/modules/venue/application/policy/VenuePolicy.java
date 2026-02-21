@@ -1,10 +1,11 @@
 package com.ccasro.hub.modules.venue.application.policy;
 
-import com.ccasro.hub.modules.resource.application.policy.VenueAccessPolicy;
+import com.ccasro.hub.modules.venue.application.ports.in.VenueAccessPolicy;
 import com.ccasro.hub.modules.venue.domain.Venue;
 import com.ccasro.hub.modules.venue.domain.ports.out.VenueRepositoryPort;
 import com.ccasro.hub.modules.venue.domain.valueobjects.VenueId;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -18,8 +19,8 @@ public class VenuePolicy implements VenueAccessPolicy {
 
   @Override
   @Transactional(readOnly = true)
-  public void assertOwner(VenueId venueId, UserId userId) {
-    if (!venueRepository.existsOwnedBy(venueId, userId)) {
+  public void assertOwner(UUID venueId, UserId userId) {
+    if (!venueRepository.existsOwnedBy(VenueId.of(venueId), userId)) {
       throw new AccessDeniedException("You are not the owner");
     }
   }
