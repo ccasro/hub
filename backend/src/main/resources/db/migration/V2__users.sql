@@ -1,6 +1,6 @@
 CREATE TABLE user_profile (
 
-    id              UUID PRIMARY KEY,
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     auth0_id       VARCHAR(128) UNIQUE NOT NULL,
     email          VARCHAR(255) UNIQUE,
     email_verified BOOLEAN DEFAULT FALSE,

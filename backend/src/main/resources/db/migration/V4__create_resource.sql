@@ -1,5 +1,5 @@
 CREATE TABLE resource (
-    id              UUID PRIMARY KEY,
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     venue_id        UUID NOT NULL REFERENCES venue(id) ON DELETE CASCADE,
     name            VARCHAR(100) NOT NULL,
     description     TEXT,
@@ -15,7 +15,7 @@ CREATE INDEX idx_resource_venue_id ON resource(venue_id);
 CREATE INDEX idx_resource_status ON resource(status);
 
 CREATE TABLE resource_schedule (
-    id              UUID PRIMARY KEY,
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     resource_id     UUID NOT NULL REFERENCES resource(id) ON DELETE CASCADE,
     day_of_week     VARCHAR(10) NOT NULL,
     opening_time    TIME NOT NULL,
@@ -27,7 +27,7 @@ CREATE UNIQUE INDEX ux_resource_schedule_unique_slot ON resource_schedule(resour
 CREATE INDEX idx_schedule_resource_id ON resource_schedule(resource_id);
 
 CREATE TABLE resource_price_rule (
-    id              UUID PRIMARY KEY,
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     resource_id     UUID NOT NULL REFERENCES resource(id) ON DELETE CASCADE,
     day_type        VARCHAR(20) NOT NULL,
     start_time      TIME NOT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE resource_price_rule (
 CREATE INDEX idx_price_rule_resource_id ON resource_price_rule(resource_id);
 
 CREATE TABLE resource_image (
-    id              UUID PRIMARY KEY,
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     resource_id     UUID NOT NULL REFERENCES resource(id) ON DELETE CASCADE,
     url             VARCHAR(500) NOT NULL,
     public_id       VARCHAR(200) NOT NULL,
