@@ -1,11 +1,11 @@
-package com.ccasro.hub.modules.resource.application.policy;
+package com.ccasro.hub.modules.venue.application.ports.in;
 
 import com.ccasro.hub.modules.venue.domain.Venue;
-import com.ccasro.hub.modules.venue.domain.valueobjects.VenueId;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
+import java.util.UUID;
 
 public interface VenueAccessPolicy {
   void assertOwner(Venue venue, UserId userId);
 
-  void assertOwner(VenueId venueId, UserId userId);
+  void assertOwner(UUID venueId, UserId userId);
 }

@@ -11,6 +11,7 @@ import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ public class CreateVenueService {
   private final Clock clock;
 
   @Transactional
+  @PreAuthorize("@authz.isOwner()")
   public Venue execute(CreateVenueCommand cmd) {
 
     if (!currentUserRole.role().canManageVenues()) {

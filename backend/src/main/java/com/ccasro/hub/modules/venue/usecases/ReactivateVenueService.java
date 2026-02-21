@@ -8,6 +8,7 @@ import com.ccasro.hub.modules.venue.domain.valueobjects.VenueId;
 import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import java.time.Clock;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ public class ReactivateVenueService {
   private final Clock clock;
 
   @Transactional
+  @PreAuthorize("@authz.isOwner()")
   public void execute(VenueId venueId) {
     Venue venue = venueRepository.findById(venueId).orElseThrow(VenueNotFoundException::new);
 

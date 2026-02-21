@@ -264,15 +264,13 @@ public class Resource {
   }
 
   public Optional<BigDecimal> getPriceForSlot(DayOfWeek day, LocalTime startTime) {
+    return getPriceRuleForSlot(day, startTime).map(PriceRule::getPrice);
+  }
+
+  public Optional<PriceRule> getPriceRuleForSlot(DayOfWeek day, LocalTime startTime) {
     return priceRules.stream()
         .filter(rule -> rule.appliesTo(day, startTime))
-        .max(
-            Comparator.comparing(
-                rule -> {
-                  boolean isSpecific = rule.getDayType().name().equals(day.name());
-                  return isSpecific ? 1 : 0;
-                }))
-        .map(PriceRule::getPrice);
+        .max(Comparator.comparingInt(rule -> rule.getDayType().name().equals(day.name()) ? 1 : 0));
   }
 
   public boolean isAvailableOn(DayOfWeek day) {

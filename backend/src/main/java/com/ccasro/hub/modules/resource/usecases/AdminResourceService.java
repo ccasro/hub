@@ -8,6 +8,7 @@ import com.ccasro.hub.modules.resource.domain.valueobjects.ResourceStatus;
 import java.time.Clock;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,16 +20,19 @@ public class AdminResourceService {
   private final Clock clock;
 
   @Transactional(readOnly = true)
+  @PreAuthorize("@authz.isAdmin()")
   public List<Resource> findPending() {
     return resourceRepository.findByStatus(ResourceStatus.PENDING_REVIEW);
   }
 
   @Transactional(readOnly = true)
+  @PreAuthorize("@authz.isAdmin()")
   public List<Resource> findAll(int page, int size) {
     return resourceRepository.findAll(page, size);
   }
 
   @Transactional
+  @PreAuthorize("@authz.isAdmin()")
   public Resource approve(ResourceId id) {
     Resource resource = findOrThrow(id);
     resource.approve(clock);
@@ -36,6 +40,7 @@ public class AdminResourceService {
   }
 
   @Transactional
+  @PreAuthorize("@authz.isAdmin()")
   public Resource reject(ResourceId id, String reason) {
     Resource resource = findOrThrow(id);
     resource.reject(reason, clock);
@@ -43,12 +48,14 @@ public class AdminResourceService {
   }
 
   @Transactional
+  @PreAuthorize("@authz.isAdmin()")
   public Resource adminSuspend(ResourceId id, String reason) {
     Resource resource = findOrThrow(id);
     resource.adminSuspend(reason, clock);
     return resourceRepository.save(resource);
   }
 
+  @PreAuthorize("@authz.isAdmin()")
   private Resource findOrThrow(ResourceId id) {
     return resourceRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
   }

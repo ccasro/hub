@@ -1,5 +1,8 @@
 package com.ccasro.hub.infrastructure.web;
 
+import com.ccasro.hub.modules.booking.domain.exception.BookingCancellationNotAllowedException;
+import com.ccasro.hub.modules.booking.domain.exception.BookingNotFoundException;
+import com.ccasro.hub.modules.booking.domain.exception.SlotNotAvailableException;
 import com.ccasro.hub.modules.iam.domain.exception.UserProfileNotFoundException;
 import com.ccasro.hub.modules.resource.domain.exception.ResourceImageNotFoundException;
 import com.ccasro.hub.modules.resource.domain.exception.ResourceNotFoundException;
@@ -234,6 +237,16 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND, "/errors/not-found", "Not Found", ex.getMessage(), request));
   }
 
+  @ExceptionHandler(BookingNotFoundException.class)
+  public ResponseEntity<ProblemDetail> handleBookingNotFound(
+      BookingNotFoundException ex, HttpServletRequest request) {
+
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(
+            problem(
+                HttpStatus.NOT_FOUND, "/errors/not-found", "Not Found", ex.getMessage(), request));
+  }
+
   @ExceptionHandler(NoSuchElementException.class)
   public ResponseEntity<ProblemDetail> handleNoSuchElement(
       NoSuchElementException ex, HttpServletRequest request) {
@@ -244,6 +257,15 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND, "/errors/not-found", "Not Found", ex.getMessage(), request));
   }
 
+  @ExceptionHandler(SlotNotAvailableException.class)
+  public ResponseEntity<ProblemDetail> handleSlotNotAvailable(
+      SlotNotAvailableException ex, HttpServletRequest request) {
+
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(
+            problem(HttpStatus.CONFLICT, "/errors/conflict", "Conflict", ex.getMessage(), request));
+  }
+
   @ExceptionHandler(IllegalStateException.class)
   public ResponseEntity<ProblemDetail> handleIllegalState(
       IllegalStateException ex, HttpServletRequest request) {
@@ -251,6 +273,20 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.CONFLICT)
         .body(
             problem(HttpStatus.CONFLICT, "/errors/conflict", "Conflict", ex.getMessage(), request));
+  }
+
+  @ExceptionHandler(BookingCancellationNotAllowedException.class)
+  public ResponseEntity<ProblemDetail> handleBookingCancellationNotAllowed(
+      BookingCancellationNotAllowedException ex, HttpServletRequest request) {
+
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+        .body(
+            problem(
+                HttpStatus.UNPROCESSABLE_ENTITY,
+                "/errors/unprocessable",
+                "Unprocessable",
+                ex.getMessage(),
+                request));
   }
 
   @ExceptionHandler(Exception.class)

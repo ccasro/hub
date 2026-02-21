@@ -5,10 +5,7 @@ import com.ccasro.hub.modules.resource.domain.Resource;
 import com.ccasro.hub.modules.resource.domain.exception.ResourceNotFoundException;
 import com.ccasro.hub.modules.resource.domain.ports.out.BookedSlotsPort;
 import com.ccasro.hub.modules.resource.domain.ports.out.ResourceRepositoryPort;
-import com.ccasro.hub.modules.resource.domain.valueobjects.DayOfWeek;
-import com.ccasro.hub.modules.resource.domain.valueobjects.ResourceId;
-import com.ccasro.hub.modules.resource.domain.valueobjects.ResourceStatus;
-import com.ccasro.hub.modules.resource.domain.valueobjects.SlotRange;
+import com.ccasro.hub.modules.resource.domain.valueobjects.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -32,7 +29,7 @@ public class GetResourceAvailabilityService {
     if (resource.getStatus() != ResourceStatus.ACTIVE)
       throw new IllegalStateException("Resource not available");
 
-    DayOfWeek day = DayOfWeek.valueOf(date.getDayOfWeek().name().substring(0, 3));
+    DayOfWeek day = DayOfWeek.fromJava(date.getDayOfWeek());
 
     List<SlotRange> allSlots = resource.generateSlotsForDay(day);
     if (allSlots.isEmpty()) return Collections.emptyList();
@@ -44,11 +41,12 @@ public class GetResourceAvailabilityService {
             slot -> {
               boolean isBooked = bookedSlots.stream().anyMatch(booked -> booked.overlapsWith(slot));
 
-              BigDecimal price =
-                  resource.getPriceForSlot(day, slot.startTime()).orElse(BigDecimal.ZERO);
+              var ruleOpt = resource.getPriceRuleForSlot(day, slot.startTime());
+              BigDecimal price = ruleOpt.map(PriceRule::getPrice).orElse(BigDecimal.ZERO);
+              String currency = ruleOpt.map(PriceRule::getCurrency).orElse("EUR");
 
               return new SlotAvailabilityDto(
-                  slot.startTime(), slot.endTime(), !isBooked, price, "EUR");
+                  slot.startTime(), slot.endTime(), !isBooked, price, currency);
             })
         .toList();
   }
