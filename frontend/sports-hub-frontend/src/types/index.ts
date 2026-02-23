@@ -36,6 +36,7 @@ export interface Venue {
     status: "PENDING_REVIEW" | "ACTIVE" | "SUSPENDED" | "REJECTED";
     rejectReason: string | null;
     images: VenueImage[];
+    resourceCount: number;
     createdAt: string;
     updatedAt: string;
 }
@@ -43,6 +44,7 @@ export interface Venue {
 export interface VenueImage {
     id: string;
     url: string;
+    alt?: string | null;
     displayOrder: number;
 }
 
@@ -80,6 +82,7 @@ export interface PriceRule {
 export interface ResourceImage {
     id: string;
     url: string;
+    alt?: string | null;
     displayOrder: number;
 }
 
@@ -106,11 +109,14 @@ export interface Booking {
     cancelledAt: string | null;
     cancelReason: string | null;
     createdAt: string;
+    resourceName: string | null;
+    venueName: string | null;
+    venueCity: string | null;
 }
 
 export interface CreateBookingResponse {
     booking: Booking;
-    clientSecret: string;   // para el fake payment o Stripe
+    clientSecret: string;   // para el fake payment
 }
 
 export interface Payment {

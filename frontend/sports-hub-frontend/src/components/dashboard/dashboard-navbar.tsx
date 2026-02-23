@@ -6,31 +6,31 @@ import {SportsHubLogo} from "@/components/sports-hub-logo";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Badge} from "@/components/ui/badge";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from "@/components/ui/select";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {
-  Bell,
-  CalendarDays,
-  ChevronDown,
-  ImagePlus,
-  LogOut,
-  MapPin,
-  Menu,
-  Search,
-  Settings,
-  User,
-  X,
+    Bell,
+    CalendarDays,
+    ChevronDown,
+    ImagePlus,
+    LogOut,
+    MapPin,
+    Menu,
+    Search,
+    Settings,
+    User,
+    X,
 } from "lucide-react";
-import type {UserProfile} from "@/lib/types";
+import type {UserProfile} from "@/types";
 import {availableCities} from "@/lib/mock-data";
 
 interface DashboardNavbarProps {
