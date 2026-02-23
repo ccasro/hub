@@ -133,4 +133,11 @@ public class VenueController {
     removeVenueImageService.execute(VenueId.of(id), imageId);
     return ResponseEntity.noContent().build();
   }
+
+  @GetMapping("/venues/active")
+  public List<VenueResponse> getActiveVenues() {
+    return getVenueService.findAllActiveWithResourceCount().stream()
+        .map(vc -> VenueResponse.from(vc.venue(), vc.resourceCount()))
+        .toList();
+  }
 }
