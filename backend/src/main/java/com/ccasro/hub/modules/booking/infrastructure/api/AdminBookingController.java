@@ -1,7 +1,7 @@
 package com.ccasro.hub.modules.booking.infrastructure.api;
 
-import com.ccasro.hub.modules.booking.application.dto.BookingResponse;
 import com.ccasro.hub.modules.booking.domain.valueobjects.BookingId;
+import com.ccasro.hub.modules.booking.infrastructure.api.dto.BookingResponse;
 import com.ccasro.hub.modules.booking.infrastructure.api.dto.CancelBookingRequest;
 import com.ccasro.hub.modules.booking.usecases.AdminBookingService;
 import io.swagger.v3.oas.annotations.tags.Tag;

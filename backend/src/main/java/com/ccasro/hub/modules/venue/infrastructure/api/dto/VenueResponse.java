@@ -19,6 +19,7 @@ public record VenueResponse(
     String status,
     String rejectReason,
     List<VenueImageResponse> images,
+    Integer resourceCount,
     Instant createdAt,
     Instant updatedAt) {
   public static VenueResponse from(Venue v) {
@@ -31,11 +32,32 @@ public record VenueResponse(
         v.getAddress() != null ? v.getAddress().city() : null,
         v.getAddress() != null ? v.getAddress().country() : null,
         v.getAddress() != null ? v.getAddress().postalCode() : null,
-        v.getCoordinates() != null ? v.getCoordinates().latitude() : null,
-        v.getCoordinates() != null ? v.getCoordinates().longitude() : null,
+        v.getCoordinates() != null ? v.getCoordinates().latitude() : 0.0,
+        v.getCoordinates() != null ? v.getCoordinates().longitude() : 0.0,
         v.getStatus().name(),
         v.getRejectReason(),
         v.getImages().stream().map(VenueImageResponse::from).toList(),
+        null,
+        v.getCreatedAt(),
+        v.getUpdatedAt());
+  }
+
+  public static VenueResponse from(Venue v, int resourceCount) {
+    return new VenueResponse(
+        v.getId().value(),
+        v.getOwnerId().value(),
+        v.getName().value(),
+        v.getDescription(),
+        v.getAddress() != null ? v.getAddress().street() : null,
+        v.getAddress() != null ? v.getAddress().city() : null,
+        v.getAddress() != null ? v.getAddress().country() : null,
+        v.getAddress() != null ? v.getAddress().postalCode() : null,
+        v.getCoordinates() != null ? v.getCoordinates().latitude() : 0.0,
+        v.getCoordinates() != null ? v.getCoordinates().longitude() : 0.0,
+        v.getStatus().name(),
+        v.getRejectReason(),
+        v.getImages().stream().map(VenueImageResponse::from).toList(),
+        resourceCount,
         v.getCreatedAt(),
         v.getUpdatedAt());
   }

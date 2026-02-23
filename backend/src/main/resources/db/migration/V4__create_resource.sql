@@ -13,6 +13,7 @@ CREATE TABLE resource (
 
 CREATE INDEX idx_resource_venue_id ON resource(venue_id);
 CREATE INDEX idx_resource_status ON resource(status);
+CREATE INDEX IF NOT EXISTS idx_resource_venue_id_status ON resource (venue_id, status);
 
 CREATE TABLE resource_schedule (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
