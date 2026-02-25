@@ -1,6 +1,7 @@
 package com.ccasro.hub.modules.iam.infrastructure.persistence;
 
 import com.ccasro.hub.modules.iam.domain.valueobjects.OwnerRequestStatus;
+import com.ccasro.hub.shared.domain.security.UserRole;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,4 +17,8 @@ interface UserProfileJpaRepository extends JpaRepository<UserProfileEntity, UUID
   Optional<UUID> findIdByAuth0Id(@Param("auth0Id") String auth0Id);
 
   List<UserProfileEntity> findByOwnerRequestStatus(OwnerRequestStatus status);
+
+  long countByRole(UserRole role);
+
+  long countByOwnerRequestStatus(OwnerRequestStatus status);
 }

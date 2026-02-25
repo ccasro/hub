@@ -25,7 +25,9 @@ public class AdminBookingController {
   public ResponseEntity<List<BookingResponse>> listAll(
       @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
     return ResponseEntity.ok(
-        adminBookingService.findAll(page, size).stream().map(BookingResponse::from).toList());
+        adminBookingService.findAll(page, size).stream()
+            .map(view -> BookingResponse.from(view))
+            .toList());
   }
 
   @PatchMapping("/{id}/cancel")

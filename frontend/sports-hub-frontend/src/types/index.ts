@@ -1,7 +1,7 @@
 export interface UserProfile {
     id: string;
     email: string;
-    displayName: string | null;
+    displayName: string;
     description: string | null;
     phoneNumber: string | null;
     avatarUrl: string | null;
@@ -9,10 +9,30 @@ export interface UserProfile {
     ownerRequestStatus: "NONE" | "PENDING" | "APPROVED" | "REJECTED" | null;
     preferredSport: "PADEL" | "TENNIS" | "SQUASH" | "BADMINTON" | null;
     skillLevel: "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | null;
-    city: string | null;
+    city: string;
     countryCode: string | null;
     onboardingCompleted: boolean;
     lastLoginAt: string;
+}
+export interface AdminStats {
+    totalUsers: number
+    totalOwners: number
+    totalPlayers: number
+    totalVenues: number
+    activeVenues: number
+    pendingVenues: number
+    totalResources: number
+    activeResources: number
+    pendingResources: number
+    pendingOwnerRequests: number
+    revenueThisMonth: number
+    totalBookings: number
+}
+
+export interface AdminBooking extends Booking {
+    venueName: string | null
+    venueCity: string | null
+    resourceName: string | null
 }
 
 export interface AdminUserProfile extends UserProfile {
@@ -27,12 +47,12 @@ export interface Venue {
     ownerId: string;
     name: string;
     description: string | null;
-    street: string | null;
-    city: string | null;
-    country: string | null;
+    street: string;
+    city: string;
+    country: string;
     postalCode: string | null;
-    latitude: number | null;
-    longitude: number | null;
+    latitude: number;
+    longitude: number;
     status: "PENDING_REVIEW" | "ACTIVE" | "SUSPENDED" | "REJECTED";
     rejectReason: string | null;
     images: VenueImage[];

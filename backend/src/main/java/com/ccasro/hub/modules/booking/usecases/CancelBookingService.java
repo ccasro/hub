@@ -37,6 +37,8 @@ public class CancelBookingService {
     if (!booking.isOwnedBy(currentUser.getUserId()))
       throw new AccessDeniedException("You are not the owner of this booking");
 
+    booking.cancel(cmd.reason(), clock);
+
     if (booking.isPaid()) {
       paymentRepository
           .findByBookingId(booking.getId())
@@ -47,7 +49,6 @@ public class CancelBookingService {
               });
     }
 
-    booking.cancel(cmd.reason(), clock);
     Booking saved = bookingRepository.save(booking);
 
     try {

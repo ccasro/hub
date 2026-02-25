@@ -8,6 +8,7 @@ import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,6 +41,13 @@ public class BookingRepositoryAdapter implements BookingRepositoryPort {
   @Override
   public List<Booking> findByResourceId(ResourceId resourceId) {
     return jpa.findByResourceId(resourceId.value()).stream().map(mapper::toDomain).toList();
+  }
+
+  @Override
+  public List<Booking> findByResourceIds(Collection<UUID> resourceIds, int page, int size) {
+    return jpa.findByResourceIds(resourceIds, PageRequest.of(page, size)).getContent().stream()
+        .map(mapper::toDomain)
+        .toList();
   }
 
   @Override
