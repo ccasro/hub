@@ -2,6 +2,8 @@ package com.ccasro.hub.modules.media.infrastructure.cloudinary;
 
 import com.ccasro.hub.modules.media.application.ports.MediaStoragePort;
 import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.stereotype.Component;
@@ -46,5 +48,14 @@ public class CloudinaryAdapter implements MediaStoragePort {
         publicId,
         overwrite,
         signature);
+  }
+
+  @Override
+  public void delete(String publicId) {
+    try {
+      cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+    } catch (IOException e) {
+      throw new RuntimeException("Error deleting from Cloudinary: " + publicId, e);
+    }
   }
 }

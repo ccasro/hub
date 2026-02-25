@@ -7,6 +7,7 @@ import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,6 +20,8 @@ public interface BookingRepositoryPort {
   List<Booking> findByPlayerId(UserId playerId);
 
   List<Booking> findByResourceId(ResourceId resourceId);
+
+  List<Booking> findByResourceIds(Collection<UUID> resourceIds, int page, int size);
 
   List<Booking> findByResourceIdAndDate(ResourceId resourceId, LocalDate date);
 

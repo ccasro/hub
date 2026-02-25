@@ -22,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/venues")
 @RequiredArgsConstructor
 @Tag(name = "Venues", description = "Venue management")
 public class VenueController {
@@ -36,8 +35,27 @@ public class VenueController {
   private final RemoveVenueImageService removeVenueImageService;
   private final CurrentUserProvider currentUser;
 
-  @GetMapping("/nearby")
-  @Operation(summary = "Active venues near a location")
+  // ── Public ───────────────────────────────────────────────────
+
+  @GetMapping("/api/venues")
+  @Operation(tags = "Public - Venues", summary = "List active venues")
+  public ResponseEntity<List<VenueResponse>> listActive() {
+    return ResponseEntity.ok(
+        getVenueService.findAllActiveWithResourceCount().stream()
+            .map(vc -> VenueResponse.from(vc.venue(), vc.resourceCount()))
+            .toList());
+  }
+
+  @GetMapping("/api/venues/{id}")
+  @Operation(tags = "Public - Venues", summary = "Venue detail")
+  public ResponseEntity<VenueResponse> getById(@PathVariable UUID id) {
+    Venue venue = getVenueService.findById(VenueId.of(id));
+    if (!venue.isPubliclyVisible()) throw new VenueNotFoundException();
+    return ResponseEntity.ok(VenueResponse.from(venue));
+  }
+
+  @GetMapping("/api/venues/nearby")
+  @Operation(tags = "Public - Venues", summary = "Active venues near a location")
   public ResponseEntity<List<VenueResponse>> nearby(
       @RequestParam double lat,
       @RequestParam double lng,
@@ -48,23 +66,10 @@ public class VenueController {
             .toList());
   }
 
-  @GetMapping
-  @Operation(summary = "List active venues (public)")
-  public ResponseEntity<List<VenueResponse>> listActive() {
-    return ResponseEntity.ok(
-        getVenueService.findAllActive().stream().map(VenueResponse::from).toList());
-  }
+  // ── Owner ────────────────────────────────────────────────────
 
-  @GetMapping("/{id}")
-  @Operation(summary = "Venue detail (public)")
-  public ResponseEntity<VenueResponse> getById(@PathVariable UUID id) {
-    Venue venue = getVenueService.findById(VenueId.of(id));
-    if (!venue.isPubliclyVisible()) throw new VenueNotFoundException();
-    return ResponseEntity.ok(VenueResponse.from(venue));
-  }
-
-  @GetMapping("/my")
-  @Operation(summary = "My venues (owner)")
+  @GetMapping("/api/owner/venues")
+  @Operation(tags = "Owner - Venues", summary = "My venues")
   public ResponseEntity<List<VenueResponse>> myVenues() {
     return ResponseEntity.ok(
         getVenueService.findMyVenues(currentUser.getUserId()).stream()
@@ -72,8 +77,8 @@ public class VenueController {
             .toList());
   }
 
-  @PostMapping
-  @Operation(summary = "Create venue (owner)")
+  @PostMapping("/api/owner/venues")
+  @Operation(tags = "Owner - Venues", summary = "Create venue")
   public ResponseEntity<VenueResponse> create(@Valid @RequestBody CreateVenueRequest request) {
     CreateVenueCommand cmd =
         new CreateVenueCommand(
@@ -85,8 +90,8 @@ public class VenueController {
         .body(VenueResponse.from(createVenueService.execute(cmd)));
   }
 
-  @PutMapping("/{id}")
-  @Operation(summary = "Update venue (owner)")
+  @PutMapping("/api/owner/venues/{id}")
+  @Operation(tags = "Owner - Venues", summary = "Update venue")
   public ResponseEntity<VenueResponse> update(
       @PathVariable UUID id, @Valid @RequestBody CreateVenueRequest request) {
     UpdateVenueCommand cmd =
@@ -103,22 +108,22 @@ public class VenueController {
     return ResponseEntity.ok(VenueResponse.from(updateVenueService.execute(cmd)));
   }
 
-  @PatchMapping("/{id}/suspend")
-  @Operation(summary = "Suspend venue (owner)")
+  @PatchMapping("/api/owner/venues/{id}/suspend")
+  @Operation(tags = "Owner - Venues", summary = "Suspend venue")
   public ResponseEntity<Void> suspend(@PathVariable UUID id) {
     suspendVenueService.execute(VenueId.of(id));
     return ResponseEntity.noContent().build();
   }
 
-  @PatchMapping("/{id}/reactivate")
-  @Operation(summary = "Reactivate venue (owner)")
+  @PatchMapping("/api/owner/venues/{id}/reactivate")
+  @Operation(tags = "Owner - Venues", summary = "Reactivate venue")
   public ResponseEntity<Void> reactivate(@PathVariable UUID id) {
     reactivateVenueService.execute(VenueId.of(id));
     return ResponseEntity.noContent().build();
   }
 
-  @PostMapping("/{id}/images")
-  @Operation(summary = "Add image to the venue (owner)")
+  @PostMapping("/api/owner/venues/{id}/images")
+  @Operation(tags = "Owner - Media", summary = "Add image to venue")
   public ResponseEntity<VenueResponse> addImage(
       @PathVariable UUID id, @Valid @RequestBody AddVenueImageRequest request) {
     return ResponseEntity.ok(
@@ -127,17 +132,10 @@ public class VenueController {
                 VenueId.of(id), new ImageUrl(request.url(), request.publicId()))));
   }
 
-  @DeleteMapping("/{id}/images/{imageId}")
-  @Operation(summary = "Delete image from venue (owner)")
+  @DeleteMapping("/api/owner/venues/{id}/images/{imageId}")
+  @Operation(tags = "Owner - Media", summary = "Delete image from venue")
   public ResponseEntity<Void> removeImage(@PathVariable UUID id, @PathVariable UUID imageId) {
     removeVenueImageService.execute(VenueId.of(id), imageId);
     return ResponseEntity.noContent().build();
-  }
-
-  @GetMapping("/venues/active")
-  public List<VenueResponse> getActiveVenues() {
-    return getVenueService.findAllActiveWithResourceCount().stream()
-        .map(vc -> VenueResponse.from(vc.venue(), vc.resourceCount()))
-        .toList();
   }
 }

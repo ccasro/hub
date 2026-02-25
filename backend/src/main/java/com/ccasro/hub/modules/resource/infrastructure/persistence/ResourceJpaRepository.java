@@ -37,4 +37,8 @@ public interface ResourceJpaRepository extends JpaRepository<ResourceEntity, UUI
   where r.id in :ids
 """)
   List<ResourceLiteProjection> findLiteByIds(@Param("ids") Collection<UUID> ids);
+
+  long countByStatus(ResourceStatus status);
+
+  List<ResourceEntity> findByVenueIdIn(Collection<UUID> venueIds);
 }

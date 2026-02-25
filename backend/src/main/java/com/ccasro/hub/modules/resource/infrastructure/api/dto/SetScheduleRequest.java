@@ -5,4 +5,4 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalTime;
 
 public record SetScheduleRequest(
-    @NotNull DayOfWeek dayOfWeek, @NotNull LocalTime openingTime, @NotNull LocalTime closingTime) {}
+    @NotNull DayOfWeek dayOfWeek, LocalTime openingTime, LocalTime closingTime) {}

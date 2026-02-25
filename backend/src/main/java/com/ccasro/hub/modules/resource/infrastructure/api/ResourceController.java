@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Resources", description = "Venue Resources Management")
+@Slf4j
 public class ResourceController {
 
   private final CreateResourceService createResourceService;
@@ -36,7 +38,11 @@ public class ResourceController {
   private final ReactivateResourceService reactivateResourceService;
   private final AddResourceImageService addResourceImageService;
   private final GetResourceAvailabilityService availabilityService;
+  private final GetOwnerResourcesService getOwnerResourcesService;
+  private final RemoveResourceImageService removeResourceImageService;
   private final ResourceRepositoryPort resourceRepository;
+
+  // ── Public ───────────────────────────────────────────────────
 
   @GetMapping("/api/venues/{venueId}/resources")
   @Operation(tags = "Public - Resources", summary = "List active resources of a venue")
@@ -60,7 +66,15 @@ public class ResourceController {
             .toList());
   }
 
-  @PostMapping("/api/venues/{venueId}/resources")
+  // ── Owner ────────────────────────────────────────────────────
+
+  @GetMapping("/api/owner/resources")
+  @Operation(tags = "Owner - Resources", summary = "Get all resources of my venues")
+  public ResponseEntity<List<ResourceResponse>> getMyResources() {
+    return ResponseEntity.ok(getOwnerResourcesService.execute());
+  }
+
+  @PostMapping("/api/owner/venues/{venueId}/resources")
   @Operation(tags = "Owner - Resources", summary = "Create a new resource in a venue")
   public ResponseEntity<ResourceResponse> create(
       @PathVariable UUID venueId, @Valid @RequestBody CreateResourceRequest request) {
@@ -75,10 +89,17 @@ public class ResourceController {
         .body(ResourceResponse.from(createResourceService.execute(cmd)));
   }
 
-  @PutMapping("/api/resources/{id}/schedules")
+  @PutMapping("/api/owner/resources/{id}/schedules")
   @Operation(tags = "Owner - Resources", summary = "Set schedule for a specific day")
   public ResponseEntity<ResourceResponse> setSchedule(
-      @PathVariable UUID id, @Valid @RequestBody SetScheduleRequest request) {
+      @PathVariable UUID id, @RequestBody SetScheduleRequest request) {
+
+    log.info(
+        "SetSchedule request: day={} opening={} closing={}",
+        request.dayOfWeek(),
+        request.openingTime(),
+        request.closingTime());
+
     SetScheduleCommand cmd =
         new SetScheduleCommand(
             ResourceId.of(id), request.dayOfWeek(),
@@ -86,7 +107,7 @@ public class ResourceController {
     return ResponseEntity.ok(ResourceResponse.from(setScheduleService.execute(cmd)));
   }
 
-  @PostMapping("/api/resources/{id}/price-rules")
+  @PostMapping("/api/owner/resources/{id}/price-rules")
   @Operation(tags = "Owner - Pricing", summary = "Add a price rule to a resource")
   public ResponseEntity<ResourceResponse> addPriceRule(
       @PathVariable UUID id, @Valid @RequestBody AddPriceRuleRequest request) {
@@ -101,33 +122,31 @@ public class ResourceController {
     return ResponseEntity.ok(ResourceResponse.from(addPriceRuleService.execute(cmd)));
   }
 
-  @DeleteMapping("/api/resources/{id}/price-rules/{ruleId}")
+  @DeleteMapping("/api/owner/resources/{id}/price-rules/{ruleId}")
   @Operation(tags = "Owner - Pricing", summary = "Remove a price rule from a resource")
   public ResponseEntity<Void> removePriceRule(@PathVariable UUID id, @PathVariable UUID ruleId) {
-
     Resource resource =
         resourceRepository.findById(ResourceId.of(id)).orElseThrow(ResourceNotFoundException::new);
-
     resource.removePriceRule(ruleId, Clock.systemUTC());
     resourceRepository.save(resource);
     return ResponseEntity.noContent().build();
   }
 
-  @PatchMapping("/api/resources/{id}/suspend")
+  @PatchMapping("/api/owner/resources/{id}/suspend")
   @Operation(tags = "Owner - Resources", summary = "Suspend a resource")
   public ResponseEntity<Void> suspend(@PathVariable UUID id) {
     suspendResourceService.execute(ResourceId.of(id));
     return ResponseEntity.noContent().build();
   }
 
-  @PatchMapping("/api/resources/{id}/reactivate")
+  @PatchMapping("/api/owner/resources/{id}/reactivate")
   @Operation(tags = "Owner - Resources", summary = "Reactivate a resource")
   public ResponseEntity<Void> reactivate(@PathVariable UUID id) {
     reactivateResourceService.execute(ResourceId.of(id));
     return ResponseEntity.noContent().build();
   }
 
-  @PostMapping("/api/resources/{id}/images")
+  @PostMapping("/api/owner/resources/{id}/images")
   @Operation(tags = "Owner - Media", summary = "Add an image to a resource")
   public ResponseEntity<ResourceResponse> addImage(
       @PathVariable UUID id, @Valid @RequestBody AddResourceImageRequest request) {
@@ -135,5 +154,12 @@ public class ResourceController {
         ResourceResponse.from(
             addResourceImageService.execute(
                 ResourceId.of(id), new ImageUrl(request.url(), request.publicId()))));
+  }
+
+  @DeleteMapping("/api/owner/resources/{id}/images/{imageId}")
+  @Operation(tags = "Owner - Media", summary = "Delete image from resource")
+  public ResponseEntity<Void> removeImage(@PathVariable UUID id, @PathVariable UUID imageId) {
+    removeResourceImageService.execute(id, imageId);
+    return ResponseEntity.ok().build();
   }
 }

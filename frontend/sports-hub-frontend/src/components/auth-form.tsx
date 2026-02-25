@@ -97,7 +97,7 @@ export function AuthForm() {
             {/* Trust badges */}
             <div className="mt-8 flex items-center justify-center gap-2 text-xs text-muted-foreground">
                 <ShieldCheck className="h-3.5 w-3.5 text-primary/70"/>
-                <span>Autenticacion segura con Auth0</span>
+                <span>Autenticación segura con Auth0</span>
             </div>
         </div>
     )

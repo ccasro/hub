@@ -1,6 +1,7 @@
 package com.ccasro.hub.modules.booking.infrastructure.api.dto;
 
 import com.ccasro.hub.modules.booking.application.dto.MyBookingView;
+import com.ccasro.hub.modules.booking.application.dto.MyVenueBookingView;
 import com.ccasro.hub.modules.booking.domain.Booking;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -34,6 +35,28 @@ public record BookingResponse(
 
   public static BookingResponse from(MyBookingView dto) {
     return base(dto.booking(), dto.resourceName(), dto.venueName(), dto.venueCity());
+  }
+
+  public static BookingResponse from(MyVenueBookingView dto) {
+    return new BookingResponse(
+        dto.bookingId(),
+        dto.resourceId(),
+        dto.playerId(),
+        dto.bookingDate(),
+        dto.startTime(),
+        dto.endTime(),
+        dto.pricePaid(),
+        dto.currency(),
+        dto.status().name(),
+        dto.paymentStatus().name(),
+        null,
+        null,
+        null,
+        null,
+        null,
+        dto.resourceName(),
+        dto.venueName(),
+        dto.city());
   }
 
   private static BookingResponse base(

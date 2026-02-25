@@ -8,12 +8,14 @@ import com.ccasro.hub.modules.venue.application.ports.in.VenueAccessPolicy;
 import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import java.time.Clock;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SetScheduleService {
 
   private final ResourceRepositoryPort resourceRepository;
@@ -29,7 +31,11 @@ public class SetScheduleService {
 
     venueAccessPolicy.assertOwner(resource.getVenueId().value(), currentUser.getUserId());
 
-    resource.setSchedule(cmd.dayOfWeek(), cmd.openingTime(), cmd.closingTime(), clock);
-    return resourceRepository.save(resource);
+    if (cmd.openingTime() == null || cmd.closingTime() == null) {
+      return resourceRepository.removeSchedule(cmd.resourceId(), cmd.dayOfWeek());
+    } else {
+      return resourceRepository.upsertSchedule(
+          cmd.resourceId(), cmd.dayOfWeek(), cmd.openingTime(), cmd.closingTime());
+    }
   }
 }

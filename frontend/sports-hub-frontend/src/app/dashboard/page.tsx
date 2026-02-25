@@ -8,20 +8,19 @@ export default async function DashboardPage() {
     const session = await auth0.getSession()
     if (!session) redirect("/")
 
-    const [profile, venues, bookings] = await Promise.all([
-        apiFetch<UserProfile>("/api/me"),
-        apiFetch<Venue[]>("/api/venues"),
-        apiFetch<Booking[]>("/api/bookings/my"),
-    ])
+    const profile = await apiFetch<UserProfile>("/api/me")
 
     if (!profile.onboardingCompleted) redirect("/onboarding")
 
     switch (profile.role) {
-        case "ADMIN":
-            redirect("/admin/dashboard")
-        case "OWNER":
-            redirect("/owner/dashboard")
+        case "ADMIN": redirect("/admin/dashboard")
+        case "OWNER": redirect("/owner/dashboard")
     }
+
+    const [venues, bookings] = await Promise.all([
+        apiFetch<Venue[]>("/api/venues"),
+        apiFetch<Booking[]>("/api/bookings/my"),
+    ])
 
     return (
         <DashboardClient

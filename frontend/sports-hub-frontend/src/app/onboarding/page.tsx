@@ -22,7 +22,7 @@ export default async function OnboardingPage() {
     if (profile.onboardingCompleted) redirect("/dashboard");
     
     return (
-        <main className="flex min-h-svh bg-background">
+        <main className="force-dark flex min-h-svh bg-background">
             {/* Left Panel - Motivational */}
             <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden p-10 lg:flex xl:w-[55%]">
                 {/* Background Image */}

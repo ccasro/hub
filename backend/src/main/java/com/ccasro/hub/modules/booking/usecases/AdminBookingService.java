@@ -1,10 +1,12 @@
 package com.ccasro.hub.modules.booking.usecases;
 
+import com.ccasro.hub.modules.booking.application.dto.MyBookingView;
 import com.ccasro.hub.modules.booking.domain.Booking;
 import com.ccasro.hub.modules.booking.domain.exception.BookingNotFoundException;
 import com.ccasro.hub.modules.booking.domain.ports.out.BookingNotificationPort;
 import com.ccasro.hub.modules.booking.domain.ports.out.BookingRepositoryPort;
 import com.ccasro.hub.modules.booking.domain.valueobjects.BookingId;
+import com.ccasro.hub.modules.booking.shared.BookingEnrichmentHelper;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import java.time.Clock;
 import java.util.List;
@@ -20,11 +22,13 @@ public class AdminBookingService {
   private final BookingRepositoryPort bookingRepository;
   private final BookingNotificationPort notificationPort;
   private final UserProfileRepositoryPort userRepository;
+  private final BookingEnrichmentHelper enrichmentHelper;
   private final Clock clock;
 
   @PreAuthorize("@authz.isAdmin()")
-  public List<Booking> findAll(int page, int size) {
-    return bookingRepository.findAll(page, size);
+  public List<MyBookingView> findAll(int page, int size) {
+    var bookings = bookingRepository.findAll(page, size);
+    return enrichmentHelper.enrich(bookings);
   }
 
   @Transactional

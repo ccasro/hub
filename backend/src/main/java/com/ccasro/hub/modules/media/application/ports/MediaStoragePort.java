@@ -5,6 +5,8 @@ public interface MediaStoragePort {
   SignedUploadParams createSignedUploadParams(
       long timestampSeconds, String folder, String publicId, boolean overwrite);
 
+  void delete(String publicId);
+
   record SignedUploadParams(
       String provider,
       String cloudName,
