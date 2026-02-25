@@ -48,4 +48,6 @@ public interface VenueJpaRepository extends JpaRepository<VenueEntity, UUID> {
   where v.id in :ids
 """)
   List<VenueLiteProjection> findLiteByIds(@Param("ids") Collection<UUID> ids);
+
+  long countByStatus(VenueStatus status);
 }

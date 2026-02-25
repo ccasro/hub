@@ -14,6 +14,4 @@ public interface ResourceScheduleJpaRepository extends JpaRepository<ResourceSch
 
   Optional<ResourceScheduleEntity> findByResourceIdAndDayOfWeek(
       UUID resourceId, DayOfWeek dayOfWeek);
-
-  void deleteByResourceIdAndDayOfWeek(UUID resourceId, DayOfWeek dayOfWeek);
 }

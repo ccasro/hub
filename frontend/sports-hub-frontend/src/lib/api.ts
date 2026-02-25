@@ -10,6 +10,7 @@ export async function apiFetch<T>(
 ): Promise<T> {
     const session = await auth0.getSession();
 
+
     const headers = new Headers(options.headers);
 
     if (session?.tokenSet?.accessToken) {
@@ -20,14 +21,52 @@ export async function apiFetch<T>(
         headers.set("Content-Type", "application/json");
     }
 
+    const requestUrl = `${API_URL}${endpoint}`;
+
     const response = await fetch(`${API_URL}${endpoint}`, {
         ...options,
         headers,
     });
 
+    type ErrorBody = {
+        message?: string;
+        error?: string;
+        detail?: string;
+    };
+
+    function isErrorBody(value: unknown): value is ErrorBody {
+        return typeof value === "object" && value !== null;
+    }
+
     if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new ApiError(response.status, error.message ?? "Unknown error");
+        const contentType = response.headers.get("content-type") || "";
+
+        let body: unknown;
+
+        if (contentType.includes("application/json")) {
+            body = await response.json().catch(() => null);
+        } else {
+            body = await response.text().catch(() => null);
+        }
+
+        console.error("apiFetch error:", {
+            requestUrl,
+            status: response.status,
+            contentType,
+            body,
+        });
+
+        let message = "Unknown error";
+
+        if (isErrorBody(body)) {
+            message = body.message ?? body.error ?? body.detail ?? message;
+        } else if (typeof body === "string") {
+            message = body.slice(0, 500);
+        } else if (response.statusText) {
+            message = response.statusText;
+        }
+
+        throw new ApiError(response.status, message);
     }
 
     if (response.status === 204) return null as T;
