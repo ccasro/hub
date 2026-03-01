@@ -16,6 +16,7 @@ import java.time.Clock;
 import java.time.LocalTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +35,7 @@ public class CreateBookingService {
   private final Clock clock;
 
   @Transactional
+  @CacheEvict(value = "slots", key = "#cmd.resourceId().value() + '_' + #cmd.bookingDate()")
   public CreateBookingResult execute(CreateBookingCommand cmd) {
     UserId playerId = currentUser.getUserId();
 

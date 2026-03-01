@@ -12,6 +12,7 @@ import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,7 @@ public class CancelBookingService {
   private final Clock clock;
 
   @Transactional
+  @CacheEvict(value = "slots", allEntries = true)
   public Booking execute(CancelBookingCommand cmd) {
     Booking booking =
         bookingRepository.findById(cmd.bookingId()).orElseThrow(BookingNotFoundException::new);
