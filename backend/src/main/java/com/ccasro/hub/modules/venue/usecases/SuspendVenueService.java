@@ -24,7 +24,9 @@ public class SuspendVenueService {
 
   @Transactional
   @PreAuthorize("@authz.isOwner()")
-  @CacheEvict(value = {"venues", "venue-detail", "venues-with-count"}, allEntries = true)
+  @CacheEvict(
+      value = {"venues", "venue-detail", "venues-with-count"},
+      allEntries = true)
   public void execute(VenueId venueId) {
     Venue venue = venueRepository.findById(venueId).orElseThrow(VenueNotFoundException::new);
 
