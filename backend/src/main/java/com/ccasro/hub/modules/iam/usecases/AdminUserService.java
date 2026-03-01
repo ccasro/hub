@@ -4,8 +4,6 @@ import com.ccasro.hub.modules.iam.domain.UserProfile;
 import com.ccasro.hub.modules.iam.domain.exception.UserProfileNotFoundException;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import com.ccasro.hub.modules.iam.domain.valueobjects.OwnerRequestStatus;
-import com.ccasro.hub.modules.iam.infrastructure.api.dto.AdminUserProfileResponse;
-import com.ccasro.hub.modules.iam.infrastructure.api.dto.UserProfileResponse;
 import com.ccasro.hub.shared.application.ports.CurrentUserContextProvider;
 import com.ccasro.hub.shared.domain.security.UserRole;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
@@ -33,24 +31,21 @@ public class AdminUserService {
   }
 
   @Transactional(readOnly = true)
-  public List<AdminUserProfileResponse> findAll(int page, int size) {
+  public List<UserProfile> findAll(int page, int size) {
     requireAdmin();
-    return repository.findAll(page, size).stream().map(AdminUserProfileResponse::from).toList();
+    return repository.findAll(page, size);
   }
 
   @Transactional(readOnly = true)
-  public UserProfileResponse findById(UserId id) {
+  public UserProfile findById(UserId id) {
     requireAdmin();
-    return UserProfileResponse.from(
-        repository.findById(id).orElseThrow(UserProfileNotFoundException::new));
+    return repository.findById(id).orElseThrow(UserProfileNotFoundException::new);
   }
 
   @Transactional(readOnly = true)
-  public List<UserProfileResponse> findPendingOwners() {
+  public List<UserProfile> findPendingOwners() {
     requireAdmin();
-    return repository.findByOwnerRequestStatus(OwnerRequestStatus.PENDING).stream()
-        .map(UserProfileResponse::from)
-        .toList();
+    return repository.findByOwnerRequestStatus(OwnerRequestStatus.PENDING);
   }
 
   @Transactional

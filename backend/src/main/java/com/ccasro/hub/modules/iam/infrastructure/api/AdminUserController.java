@@ -25,17 +25,19 @@ public class AdminUserController {
   @GetMapping
   public ResponseEntity<List<AdminUserProfileResponse>> listAll(
       @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
-    return ResponseEntity.ok(adminUserService.findAll(page, size));
+    return ResponseEntity.ok(
+        adminUserService.findAll(page, size).stream().map(AdminUserProfileResponse::from).toList());
   }
 
   @GetMapping("/pending-owners")
   public ResponseEntity<List<UserProfileResponse>> pendingOwners() {
-    return ResponseEntity.ok(adminUserService.findPendingOwners());
+    return ResponseEntity.ok(
+        adminUserService.findPendingOwners().stream().map(UserProfileResponse::from).toList());
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<UserProfileResponse> getById(@PathVariable UUID id) {
-    return ResponseEntity.ok(adminUserService.findById(new UserId(id)));
+    return ResponseEntity.ok(UserProfileResponse.from(adminUserService.findById(new UserId(id))));
   }
 
   @PatchMapping("/{id}/approve-owner")

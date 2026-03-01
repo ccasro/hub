@@ -3,6 +3,7 @@ package com.ccasro.hub.modules.venue.infrastructure.api;
 import com.ccasro.hub.modules.venue.domain.valueobjects.VenueId;
 import com.ccasro.hub.modules.venue.infrastructure.api.dto.RejectVenueRequest;
 import com.ccasro.hub.modules.venue.infrastructure.api.dto.VenueResponse;
+import com.ccasro.hub.modules.venue.infrastructure.api.dto.VenueResponseMapper;
 import com.ccasro.hub.modules.venue.usecases.AdminVenueService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,21 +28,19 @@ public class AdminVenueController {
   @Operation(summary = "List venues")
   public ResponseEntity<List<VenueResponse>> listAll(
       @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
-    return ResponseEntity.ok(
-        adminVenueService.findAll(page, size).stream().map(VenueResponse::from).toList());
+    return ResponseEntity.ok(VenueResponseMapper.fromList(adminVenueService.findAll(page, size)));
   }
 
   @GetMapping("/pending")
   @Operation(summary = "Pending review venues")
   public ResponseEntity<List<VenueResponse>> pending() {
-    return ResponseEntity.ok(
-        adminVenueService.findPending().stream().map(VenueResponse::from).toList());
+    return ResponseEntity.ok(VenueResponseMapper.fromList(adminVenueService.findPending()));
   }
 
   @PatchMapping("/{id}/approve")
   @Operation(summary = "Approve venue")
   public ResponseEntity<VenueResponse> approve(@PathVariable UUID id) {
-    return ResponseEntity.ok(VenueResponse.from(adminVenueService.approve(VenueId.of(id))));
+    return ResponseEntity.ok(VenueResponseMapper.from(adminVenueService.approve(VenueId.of(id))));
   }
 
   @PatchMapping("/{id}/reject")
@@ -49,7 +48,7 @@ public class AdminVenueController {
   public ResponseEntity<VenueResponse> reject(
       @PathVariable UUID id, @Valid @RequestBody RejectVenueRequest request) {
     return ResponseEntity.ok(
-        VenueResponse.from(adminVenueService.reject(VenueId.of(id), request.reason())));
+        VenueResponseMapper.from(adminVenueService.reject(VenueId.of(id), request.reason())));
   }
 
   @PatchMapping("/{id}/suspend")
@@ -57,6 +56,6 @@ public class AdminVenueController {
   public ResponseEntity<VenueResponse> suspend(
       @PathVariable UUID id, @Valid @RequestBody RejectVenueRequest request) {
     return ResponseEntity.ok(
-        VenueResponse.from(adminVenueService.adminSuspend(VenueId.of(id), request.reason())));
+        VenueResponseMapper.from(adminVenueService.adminSuspend(VenueId.of(id), request.reason())));
   }
 }

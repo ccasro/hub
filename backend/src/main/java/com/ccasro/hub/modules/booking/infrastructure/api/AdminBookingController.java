@@ -2,6 +2,7 @@ package com.ccasro.hub.modules.booking.infrastructure.api;
 
 import com.ccasro.hub.modules.booking.domain.valueobjects.BookingId;
 import com.ccasro.hub.modules.booking.infrastructure.api.dto.BookingResponse;
+import com.ccasro.hub.modules.booking.infrastructure.api.dto.BookingResponseMapper;
 import com.ccasro.hub.modules.booking.infrastructure.api.dto.CancelBookingRequest;
 import com.ccasro.hub.modules.booking.usecases.AdminBookingService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,15 +26,13 @@ public class AdminBookingController {
   public ResponseEntity<List<BookingResponse>> listAll(
       @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
     return ResponseEntity.ok(
-        adminBookingService.findAll(page, size).stream()
-            .map(view -> BookingResponse.from(view))
-            .toList());
+        BookingResponseMapper.fromMyBookings(adminBookingService.findAll(page, size)));
   }
 
   @PatchMapping("/{id}/cancel")
   public ResponseEntity<BookingResponse> cancel(
       @PathVariable UUID id, @RequestBody CancelBookingRequest request) {
     return ResponseEntity.ok(
-        BookingResponse.from(adminBookingService.cancel(BookingId.of(id), request.reason())));
+        BookingResponseMapper.from(adminBookingService.cancel(BookingId.of(id), request.reason())));
   }
 }

@@ -2,7 +2,6 @@ package com.ccasro.hub.modules.booking.usecases;
 
 import com.ccasro.hub.modules.booking.application.dto.MyBookingView;
 import com.ccasro.hub.modules.booking.domain.ports.out.BookingRepositoryPort;
-import com.ccasro.hub.modules.booking.shared.BookingEnrichmentHelper;
 import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -14,12 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class GetMyBookingsService {
 
   private final BookingRepositoryPort bookingRepository;
-  private final BookingEnrichmentHelper enrichmentHelper;
+  private final BookingEnrichmentService enrichmentService;
   private final CurrentUserProvider currentUser;
 
   @Transactional(readOnly = true)
   public List<MyBookingView> execute() {
     var bookings = bookingRepository.findByPlayerId(currentUser.getUserId());
-    return enrichmentHelper.enrich(bookings);
+    return enrichmentService.enrich(bookings);
   }
 }

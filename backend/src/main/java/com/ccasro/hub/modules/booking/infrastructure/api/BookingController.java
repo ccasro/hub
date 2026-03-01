@@ -1,15 +1,13 @@
 package com.ccasro.hub.modules.booking.infrastructure.api;
 
-import com.ccasro.hub.modules.booking.application.dto.CancelBookingCommand;
-import com.ccasro.hub.modules.booking.application.dto.CreateBookingCommand;
 import com.ccasro.hub.modules.booking.application.dto.CreateBookingResult;
-import com.ccasro.hub.modules.booking.domain.valueobjects.BookingId;
+import com.ccasro.hub.modules.booking.infrastructure.api.dto.BookingCommandMapper;
 import com.ccasro.hub.modules.booking.infrastructure.api.dto.BookingResponse;
+import com.ccasro.hub.modules.booking.infrastructure.api.dto.BookingResponseMapper;
 import com.ccasro.hub.modules.booking.infrastructure.api.dto.CancelBookingRequest;
 import com.ccasro.hub.modules.booking.infrastructure.api.dto.CreateBookingRequest;
 import com.ccasro.hub.modules.booking.infrastructure.api.dto.CreateBookingResponse;
 import com.ccasro.hub.modules.booking.usecases.*;
-import com.ccasro.hub.modules.resource.domain.valueobjects.ResourceId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -36,10 +34,7 @@ public class BookingController {
   @GetMapping("/api/bookings/my")
   @Operation(tags = "Player - Bookings", summary = "My bookings")
   public ResponseEntity<List<BookingResponse>> myBookings() {
-    return ResponseEntity.ok(
-        getMyBookingsService.execute().stream()
-            .map(view -> BookingResponse.from(view)) // ← lambda en vez de method reference
-            .toList());
+    return ResponseEntity.ok(BookingResponseMapper.fromMyBookings(getMyBookingsService.execute()));
   }
 
   @PostMapping("/api/bookings")
@@ -47,13 +42,11 @@ public class BookingController {
   public ResponseEntity<CreateBookingResponse> create(
       @Valid @RequestBody CreateBookingRequest request) {
     CreateBookingResult result =
-        createBookingService.execute(
-            new CreateBookingCommand(
-                ResourceId.of(request.resourceId()), request.bookingDate(), request.startTime()));
+        createBookingService.execute(BookingCommandMapper.toCreateCommand(request));
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             new CreateBookingResponse(
-                BookingResponse.from(result.booking()), result.clientSecret()));
+                BookingResponseMapper.from(result.booking()), result.clientSecret()));
   }
 
   @PatchMapping("/api/bookings/{id}/cancel")
@@ -61,9 +54,8 @@ public class BookingController {
   public ResponseEntity<BookingResponse> cancel(
       @PathVariable UUID id, @RequestBody CancelBookingRequest request) {
     return ResponseEntity.ok(
-        BookingResponse.from(
-            cancelBookingService.execute(
-                new CancelBookingCommand(BookingId.of(id), request.reason()))));
+        BookingResponseMapper.from(
+            cancelBookingService.execute(BookingCommandMapper.toCancelCommand(id, request))));
   }
 
   // ── Owner ────────────────────────────────────────────────────
@@ -73,7 +65,7 @@ public class BookingController {
   public ResponseEntity<List<BookingResponse>> myVenueBookings(
       @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
     return ResponseEntity.ok(
-        getOwnerBookingsService.execute(page, size).stream().map(BookingResponse::from).toList());
+        BookingResponseMapper.fromVenueBookings(getOwnerBookingsService.execute(page, size)));
   }
 
   @GetMapping("/api/owner/venues/{venueId}/bookings")
@@ -83,8 +75,7 @@ public class BookingController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size) {
     return ResponseEntity.ok(
-        getVenueBookingsService.execute(venueId, page, size).stream()
-            .map(BookingResponse::from)
-            .toList());
+        BookingResponseMapper.fromVenueBookings(
+            getVenueBookingsService.execute(venueId, page, size)));
   }
 }
