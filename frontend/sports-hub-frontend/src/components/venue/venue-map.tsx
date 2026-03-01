@@ -62,13 +62,14 @@ export function VenueMap({ latitude, longitude, venueName }: VenueMapProps) {
           `<div style="font-weight:600;font-size:14px;">${venueName}</div>`
       );
 
-      marker.openPopup();
-
       mapInstanceRef.current = map;
       markerRef.current = marker;
       setLoaded(true);
 
-      setTimeout(() => map.invalidateSize(), 150);
+      setTimeout(() => {
+        map.invalidateSize();
+        marker.openPopup();
+      }, 150);
     };
 
     loadLeaflet();
@@ -83,7 +84,6 @@ export function VenueMap({ latitude, longitude, venueName }: VenueMapProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Si cambian coords / nombre, actualiza sin recrear mapa
   useEffect(() => {
     if (!mapInstanceRef.current || !markerRef.current) return;
 
@@ -99,17 +99,17 @@ export function VenueMap({ latitude, longitude, venueName }: VenueMapProps) {
   }, [latitude, longitude, venueName]);
 
   return (
-      <div className="relative overflow-hidden rounded-xl border border-border/40">
+      <div className="relative rounded-xl border border-border/40">
         <div
             ref={mapRef}
-            className="h-72 w-full bg-secondary/20 lg:h-80"
+            className="h-72 w-full bg-secondary/20 lg:h-80 rounded-xl overflow-hidden"
             style={{ zIndex: 0 }}
         />
         {!loaded && (
             <div className="absolute inset-0 flex items-center justify-center bg-secondary/30">
-          <span className="animate-pulse text-sm text-muted-foreground">
-            Cargando mapa...
-          </span>
+              <span className="animate-pulse text-sm text-muted-foreground">
+                Cargando mapa...
+              </span>
             </div>
         )}
       </div>
