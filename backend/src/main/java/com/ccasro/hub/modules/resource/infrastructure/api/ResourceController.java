@@ -3,9 +3,6 @@ package com.ccasro.hub.modules.resource.infrastructure.api;
 import com.ccasro.hub.modules.resource.application.dto.AddPriceRuleCommand;
 import com.ccasro.hub.modules.resource.application.dto.CreateResourceCommand;
 import com.ccasro.hub.modules.resource.application.dto.SetScheduleCommand;
-import com.ccasro.hub.modules.resource.domain.Resource;
-import com.ccasro.hub.modules.resource.domain.exception.ResourceNotFoundException;
-import com.ccasro.hub.modules.resource.domain.ports.out.ResourceRepositoryPort;
 import com.ccasro.hub.modules.resource.domain.valueobjects.ResourceId;
 import com.ccasro.hub.modules.resource.infrastructure.api.dto.*;
 import com.ccasro.hub.modules.resource.usecases.*;
@@ -14,7 +11,6 @@ import com.ccasro.hub.shared.domain.valueobjects.ImageUrl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -34,13 +30,14 @@ public class ResourceController {
   private final CreateResourceService createResourceService;
   private final SetScheduleService setScheduleService;
   private final AddPriceRuleService addPriceRuleService;
+  private final RemovePriceRuleService removePriceRuleService;
   private final SuspendResourceService suspendResourceService;
   private final ReactivateResourceService reactivateResourceService;
   private final AddResourceImageService addResourceImageService;
   private final GetResourceAvailabilityService availabilityService;
   private final GetOwnerResourcesService getOwnerResourcesService;
+  private final ListActiveResourcesByVenueService listActiveResourcesByVenueService;
   private final RemoveResourceImageService removeResourceImageService;
-  private final ResourceRepositoryPort resourceRepository;
 
   // ── Public ───────────────────────────────────────────────────
 
@@ -48,7 +45,7 @@ public class ResourceController {
   @Operation(tags = "Public - Resources", summary = "List active resources of a venue")
   public ResponseEntity<List<ResourceResponse>> listByVenue(@PathVariable UUID venueId) {
     return ResponseEntity.ok(
-        resourceRepository.findActiveByVenueId(VenueId.of(venueId)).stream()
+        listActiveResourcesByVenueService.execute(VenueId.of(venueId)).stream()
             .map(ResourceResponse::from)
             .toList());
   }
@@ -71,7 +68,8 @@ public class ResourceController {
   @GetMapping("/api/owner/resources")
   @Operation(tags = "Owner - Resources", summary = "Get all resources of my venues")
   public ResponseEntity<List<ResourceResponse>> getMyResources() {
-    return ResponseEntity.ok(getOwnerResourcesService.execute());
+    return ResponseEntity.ok(
+        getOwnerResourcesService.execute().stream().map(ResourceResponse::from).toList());
   }
 
   @PostMapping("/api/owner/venues/{venueId}/resources")
@@ -125,10 +123,7 @@ public class ResourceController {
   @DeleteMapping("/api/owner/resources/{id}/price-rules/{ruleId}")
   @Operation(tags = "Owner - Pricing", summary = "Remove a price rule from a resource")
   public ResponseEntity<Void> removePriceRule(@PathVariable UUID id, @PathVariable UUID ruleId) {
-    Resource resource =
-        resourceRepository.findById(ResourceId.of(id)).orElseThrow(ResourceNotFoundException::new);
-    resource.removePriceRule(ruleId, Clock.systemUTC());
-    resourceRepository.save(resource);
+    removePriceRuleService.execute(ResourceId.of(id), ruleId);
     return ResponseEntity.noContent().build();
   }
 

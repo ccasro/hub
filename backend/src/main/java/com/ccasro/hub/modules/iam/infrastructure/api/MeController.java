@@ -1,10 +1,10 @@
 package com.ccasro.hub.modules.iam.infrastructure.api;
 
+import com.ccasro.hub.modules.iam.infrastructure.api.dto.MeCommandMapper;
 import com.ccasro.hub.modules.iam.infrastructure.api.dto.UpdateAvatarRequest;
 import com.ccasro.hub.modules.iam.infrastructure.api.dto.UpdateMeRequest;
 import com.ccasro.hub.modules.iam.infrastructure.api.dto.UserProfileResponse;
 import com.ccasro.hub.modules.iam.usecases.*;
-import com.ccasro.hub.shared.domain.valueobjects.ImageUrl;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,23 +29,15 @@ public class MeController {
 
   @PutMapping
   public ResponseEntity<UserProfileResponse> updateMe(@Valid @RequestBody UpdateMeRequest request) {
-    UpdateMeCommand command =
-        new UpdateMeCommand(
-            request.displayName(),
-            request.description(),
-            request.phoneNumber(),
-            request.city(),
-            request.countryCode(),
-            request.preferredSport(),
-            request.skillLevel());
+    UpdateMeCommand command = MeCommandMapper.toUpdateMeCommand(request);
     return ResponseEntity.ok(UserProfileResponse.from(updateMe.execute(command)));
   }
 
   @PatchMapping("/avatar")
   public ResponseEntity<UserProfileResponse> updateAvatar(
       @Valid @RequestBody UpdateAvatarRequest request) {
-    ImageUrl imageUrl = new ImageUrl(request.url(), request.publicId());
-    return ResponseEntity.ok(UserProfileResponse.from(updateAvatar.execute(imageUrl)));
+    return ResponseEntity.ok(
+        UserProfileResponse.from(updateAvatar.execute(MeCommandMapper.toImageUrl(request))));
   }
 
   @PostMapping("/request-owner")

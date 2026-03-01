@@ -3,7 +3,6 @@ package com.ccasro.hub.modules.venue.infrastructure.api;
 import com.ccasro.hub.modules.venue.application.dto.CreateVenueCommand;
 import com.ccasro.hub.modules.venue.application.dto.UpdateVenueCommand;
 import com.ccasro.hub.modules.venue.domain.Venue;
-import com.ccasro.hub.modules.venue.domain.exception.VenueNotFoundException;
 import com.ccasro.hub.modules.venue.domain.valueobjects.VenueId;
 import com.ccasro.hub.modules.venue.infrastructure.api.dto.AddVenueImageRequest;
 import com.ccasro.hub.modules.venue.infrastructure.api.dto.CreateVenueRequest;
@@ -49,8 +48,7 @@ public class VenueController {
   @GetMapping("/api/venues/{id}")
   @Operation(tags = "Public - Venues", summary = "Venue detail")
   public ResponseEntity<VenueResponse> getById(@PathVariable UUID id) {
-    Venue venue = getVenueService.findById(VenueId.of(id));
-    if (!venue.isPubliclyVisible()) throw new VenueNotFoundException();
+    Venue venue = getVenueService.findPublicById(VenueId.of(id));
     return ResponseEntity.ok(VenueResponse.from(venue));
   }
 

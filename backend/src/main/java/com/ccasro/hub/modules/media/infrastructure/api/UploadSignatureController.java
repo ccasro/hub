@@ -25,12 +25,6 @@ public class UploadSignatureController {
 
   @PostMapping("/signature")
   public UploadSignatureResponse signature(@Valid @RequestBody UploadSignatureRequest req) {
-    String principalId = sanitizeSub(currentUser.getSub());
-    return useCase.request(principalId, req);
-  }
-
-  static String sanitizeSub(String raw) {
-    if (raw == null || raw.isBlank()) throw new IllegalArgumentException("sub is required");
-    return raw.replace('|', '_').replace(':', '_');
+    return useCase.request(currentUser.getSub(), req);
   }
 }

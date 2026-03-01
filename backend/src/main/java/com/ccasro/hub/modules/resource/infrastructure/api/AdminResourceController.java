@@ -2,6 +2,7 @@ package com.ccasro.hub.modules.resource.infrastructure.api;
 
 import com.ccasro.hub.modules.resource.domain.valueobjects.ResourceId;
 import com.ccasro.hub.modules.resource.infrastructure.api.dto.ResourceResponse;
+import com.ccasro.hub.modules.resource.infrastructure.api.dto.ResourceResponseMapper;
 import com.ccasro.hub.modules.resource.usecases.AdminResourceService;
 import com.ccasro.hub.modules.venue.infrastructure.api.dto.RejectVenueRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,21 +29,20 @@ public class AdminResourceController {
   public ResponseEntity<List<ResourceResponse>> listAll(
       @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
     return ResponseEntity.ok(
-        adminResourceService.findAll(page, size).stream().map(ResourceResponse::from).toList());
+        ResourceResponseMapper.fromList(adminResourceService.findAll(page, size)));
   }
 
   @GetMapping("/pending")
   @Operation(summary = "List pending resources")
   public ResponseEntity<List<ResourceResponse>> pending() {
-    return ResponseEntity.ok(
-        adminResourceService.findPending().stream().map(ResourceResponse::from).toList());
+    return ResponseEntity.ok(ResourceResponseMapper.fromList(adminResourceService.findPending()));
   }
 
   @PatchMapping("/{id}/approve")
   @Operation(summary = "Approve resource")
   public ResponseEntity<ResourceResponse> approve(@PathVariable UUID id) {
     return ResponseEntity.ok(
-        ResourceResponse.from(adminResourceService.approve(ResourceId.of(id))));
+        ResourceResponseMapper.from(adminResourceService.approve(ResourceId.of(id))));
   }
 
   @PatchMapping("/{id}/reject")
@@ -50,7 +50,8 @@ public class AdminResourceController {
   public ResponseEntity<ResourceResponse> reject(
       @PathVariable UUID id, @Valid @RequestBody RejectVenueRequest request) {
     return ResponseEntity.ok(
-        ResourceResponse.from(adminResourceService.reject(ResourceId.of(id), request.reason())));
+        ResourceResponseMapper.from(
+            adminResourceService.reject(ResourceId.of(id), request.reason())));
   }
 
   @PatchMapping("/{id}/suspend")
@@ -58,7 +59,7 @@ public class AdminResourceController {
   public ResponseEntity<ResourceResponse> suspend(
       @PathVariable UUID id, @Valid @RequestBody RejectVenueRequest request) {
     return ResponseEntity.ok(
-        ResourceResponse.from(
+        ResourceResponseMapper.from(
             adminResourceService.adminSuspend(ResourceId.of(id), request.reason())));
   }
 }
