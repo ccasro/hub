@@ -13,8 +13,8 @@ class UploadSignatureControllerIT extends BaseIT {
   @Test
   void postSignature_avatar_returnsSignedParams() throws Exception {
     mvc.perform(
-            post("/media/uploads/signature")
-                .header("Authorization", bearer(userToken()))
+            post("/api/uploads/signature")
+                .header("Authorization", bearer(PLAYER_TOKEN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"purpose\":\"AVATAR\"}"))
         .andExpect(status().isOk())
@@ -24,7 +24,7 @@ class UploadSignatureControllerIT extends BaseIT {
   @Test
   void postSignature_withoutToken_isUnauthorized() throws Exception {
     mvc.perform(
-            post("/media/uploads/signature")
+            post("/api/uploads/signature")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{ \"purpose\": \"AVATAR\" }"))
         .andExpect(status().isUnauthorized());
@@ -33,8 +33,8 @@ class UploadSignatureControllerIT extends BaseIT {
   @Test
   void postSignature_missingPurpose_isBadRequest() throws Exception {
     mvc.perform(
-            post("/media/uploads/signature")
-                .header("Authorization", bearer(userToken()))
+            post("/api/uploads/signature")
+                .header("Authorization", bearer(PLAYER_TOKEN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
         .andExpect(status().isBadRequest());

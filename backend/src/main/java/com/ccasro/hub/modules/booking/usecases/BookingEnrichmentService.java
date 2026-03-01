@@ -1,4 +1,4 @@
-package com.ccasro.hub.modules.booking.shared;
+package com.ccasro.hub.modules.booking.usecases;
 
 import com.ccasro.hub.modules.booking.application.dto.MyBookingView;
 import com.ccasro.hub.modules.booking.application.port.out.ResourceReadPort;
@@ -7,11 +7,11 @@ import com.ccasro.hub.modules.booking.domain.Booking;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 @RequiredArgsConstructor
-public class BookingEnrichmentHelper {
+public class BookingEnrichmentService {
 
   private final ResourceReadPort resourceReadPort;
   private final VenueReadPort venueReadPort;

@@ -7,4 +7,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface MyVenueBookingsReadPort {
   Page<MyVenueBookingView> findMyVenueBookings(UUID ownerId, Pageable pageable);
+
+  Page<MyVenueBookingView> findByVenueId(UUID venueId, Pageable pageable);
 }

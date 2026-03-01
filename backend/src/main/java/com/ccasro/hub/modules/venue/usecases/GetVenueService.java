@@ -24,6 +24,12 @@ public class GetVenueService {
     return venueRepository.findById(id).orElseThrow(VenueNotFoundException::new);
   }
 
+  public Venue findPublicById(VenueId id) {
+    Venue venue = findById(id);
+    if (!venue.isPubliclyVisible()) throw new VenueNotFoundException();
+    return venue;
+  }
+
   public List<Venue> findAllActive() {
     return venueRepository.findAllActive();
   }
