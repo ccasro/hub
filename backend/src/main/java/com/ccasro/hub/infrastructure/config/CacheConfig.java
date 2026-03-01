@@ -26,11 +26,9 @@ public class CacheConfig {
         "venue-detail",
         Caffeine.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).maximumSize(500).build());
 
-      manager.registerCustomCache("venues-with-count",
-              Caffeine.newBuilder()
-                      .expireAfterWrite(10, TimeUnit.MINUTES)
-                      .maximumSize(200)
-                      .build());
+    manager.registerCustomCache(
+        "venues-with-count",
+        Caffeine.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).maximumSize(200).build());
 
     manager.registerCustomCache(
         "slots",
