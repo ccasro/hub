@@ -11,6 +11,7 @@ import com.ccasro.hub.modules.venue.domain.valueobjects.VenueName;
 import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import java.time.Clock;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class UpdateVenueService {
 
   @Transactional
   @PreAuthorize("@authz.isOwner()")
+  @CacheEvict(value = {"venues", "venue-detail", "venues-with-count"}, allEntries = true)
   public Venue execute(UpdateVenueCommand cmd) {
     Venue venue = venueRepository.findById(cmd.venueId()).orElseThrow(VenueNotFoundException::new);
 

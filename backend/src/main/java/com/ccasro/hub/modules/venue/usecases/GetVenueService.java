@@ -9,6 +9,7 @@ import com.ccasro.hub.modules.venue.domain.valueobjects.VenueId;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,16 +25,19 @@ public class GetVenueService {
     return venueRepository.findById(id).orElseThrow(VenueNotFoundException::new);
   }
 
+  @Cacheable(value = "venue-detail", key = "#id.value()")
   public Venue findPublicById(VenueId id) {
     Venue venue = findById(id);
     if (!venue.isPubliclyVisible()) throw new VenueNotFoundException();
     return venue;
   }
 
+  @Cacheable("venues")
   public List<Venue> findAllActive() {
     return venueRepository.findAllActive();
   }
 
+  @Cacheable("venues-with-count")
   public List<VenueWithCount> findAllActiveWithResourceCount() {
     var venues = venueRepository.findAllActive();
     var ids = venues.stream().map(v -> v.getId().value()).toList();
