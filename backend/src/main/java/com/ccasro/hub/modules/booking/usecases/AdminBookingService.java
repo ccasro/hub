@@ -6,7 +6,6 @@ import com.ccasro.hub.modules.booking.domain.exception.BookingNotFoundException;
 import com.ccasro.hub.modules.booking.domain.ports.out.BookingNotificationPort;
 import com.ccasro.hub.modules.booking.domain.ports.out.BookingRepositoryPort;
 import com.ccasro.hub.modules.booking.domain.valueobjects.BookingId;
-import com.ccasro.hub.modules.booking.shared.BookingEnrichmentHelper;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import java.time.Clock;
 import java.util.List;

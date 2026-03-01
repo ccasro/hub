@@ -2,7 +2,6 @@ package com.ccasro.hub.modules.booking.usecases;
 
 import com.ccasro.hub.modules.booking.application.dto.MyBookingView;
 import com.ccasro.hub.modules.booking.domain.ports.out.BookingRepositoryPort;
-import com.ccasro.hub.modules.booking.shared.BookingEnrichmentHelper;
 import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
