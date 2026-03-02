@@ -4,6 +4,7 @@ import com.ccasro.hub.modules.booking.domain.exception.BookingCancellationNotAll
 import com.ccasro.hub.modules.booking.domain.exception.BookingNotFoundException;
 import com.ccasro.hub.modules.booking.domain.exception.SlotNotAvailableException;
 import com.ccasro.hub.modules.iam.domain.exception.UserProfileNotFoundException;
+import com.ccasro.hub.modules.matching.domain.exception.*;
 import com.ccasro.hub.modules.resource.domain.exception.ResourceImageNotFoundException;
 import com.ccasro.hub.modules.resource.domain.exception.ResourceNotFoundException;
 import com.ccasro.hub.modules.venue.domain.exception.VenueImageNotFoundException;
@@ -25,7 +26,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -290,17 +290,34 @@ public class GlobalExceptionHandler {
                 request));
   }
 
-  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-  public ResponseEntity<ProblemDetail> handleMethodNotSupported(
-      HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
-
-    return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+  @ExceptionHandler(MatchNotFoundException.class)
+  public ResponseEntity<ProblemDetail> handleMatchNotFound(
+      MatchNotFoundException ex, HttpServletRequest request) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(
             problem(
-                HttpStatus.METHOD_NOT_ALLOWED,
-                "/errors/method-not-allowed",
-                "Method Not Allowed",
-                "Method not allowed for this endpoint",
+                HttpStatus.NOT_FOUND,
+                "/errors/not-found",
+                "Match Not Found",
+                ex.getMessage(),
+                request));
+  }
+
+  @ExceptionHandler({
+    MatchFullException.class,
+    TeamFullException.class,
+    PlayerAlreadyJoinedException.class,
+    MatchNotOpenException.class
+  })
+  public ResponseEntity<ProblemDetail> handleMatchConflict(
+      RuntimeException ex, HttpServletRequest request) {
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+        .body(
+            problem(
+                HttpStatus.UNPROCESSABLE_ENTITY,
+                "/errors/unprocessable",
+                "Match Error",
+                ex.getMessage(),
                 request));
   }
 

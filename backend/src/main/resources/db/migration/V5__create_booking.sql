@@ -28,8 +28,9 @@ ALTER TABLE booking
       '[)'
     ) WITH &&
   )
-  WHERE (status IN ('PENDING_PAYMENT', 'CONFIRMED'));
+  WHERE (status IN ('PENDING_PAYMENT', 'CONFIRMED', 'PENDING_MATCH'));
 
 CREATE INDEX idx_booking_resource_date ON booking (resource_id, booking_date);
 CREATE INDEX idx_booking_player_date   ON booking (player_id, booking_date);
 CREATE INDEX idx_booking_pending_expires ON booking (expires_at) WHERE status = 'PENDING_PAYMENT';
+CREATE INDEX idx_booking_pending_match_expires ON booking (expires_at) WHERE status = 'PENDING_MATCH';

@@ -65,6 +65,11 @@ public class Payment {
     this.updatedAt = clock.instant();
   }
 
+  public void markAsRefunded(Clock clock) {
+    this.status = PaymentStatus.REFUNDED;
+    this.updatedAt = clock.instant();
+  }
+
   public void markAsFailed() {
     this.status = PaymentStatus.FAILED;
   }

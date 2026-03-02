@@ -8,7 +8,7 @@ import {UpcomingBookings} from "@/components/dashboard/upcoming-bookings"
 import {Button} from "@/components/ui/button"
 import {Badge} from "@/components/ui/badge"
 import {Booking, UserProfile, Venue} from "@/types"
-import {ArrowRight, CalendarCheck, MapPin, Sparkles, Trophy, Users, Zap} from "lucide-react"
+import {CalendarCheck, MapPin, Sparkles, Swords, Trophy, Users, Zap} from "lucide-react"
 
 interface Props {
     user: UserProfile
@@ -151,12 +151,14 @@ export function DashboardClient({ user, venues, bookings }: Props) {
                                     </h3>
                                 </div>
                                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                                    Encuentra companeros de juego de tu nivel en tu zona. Matching inteligente proximamente.
+                                    Encuentra oponentes de tu nivel cerca de ti. Matching inteligente por zona, horario y nivel.
                                 </p>
-                                <Button variant="ghost" size="sm" className="mt-3 gap-1.5 px-0 text-xs text-primary hover:bg-transparent" disabled>
-                                    Proximamente
-                                    <ArrowRight className="h-3 w-3" />
-                                </Button>
+                                <Link href="/match/search">
+                                    <Button size="sm" className="mt-3 gap-1.5 bg-primary text-xs font-medium">
+                                        <Swords className="h-3.5 w-3.5" />
+                                        Buscar partido
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
                     </aside>

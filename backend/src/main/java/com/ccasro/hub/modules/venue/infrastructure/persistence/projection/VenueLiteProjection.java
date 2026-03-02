@@ -8,4 +8,8 @@ public interface VenueLiteProjection {
   String getName();
 
   String getCity();
+
+  Double getLatitude();
+
+  Double getLongitude();
 }

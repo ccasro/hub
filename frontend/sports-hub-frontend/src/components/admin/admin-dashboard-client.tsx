@@ -718,13 +718,14 @@ function VenueDetail({ venue }: { venue: Venue }) {
     );
 }
 
-function BookingStatusBadge({ status }: { status: "PENDING_PAYMENT" | "CONFIRMED" | "CANCELLED" }) {
+function BookingStatusBadge({ status }: { status: "PENDING_PAYMENT" | "CONFIRMED" | "CANCELLED" | "PENDING_MATCH" }) {
     const config = {
         CONFIRMED: { className: "bg-emerald-500/10 text-emerald-400", label: "Confirmada" },
         PENDING_PAYMENT: { className: "bg-amber-500/10 text-amber-400", label: "Pendiente pago" },
         CANCELLED: { className: "bg-red-500/10 text-red-400", label: "Cancelada" },
+        PENDING_MATCH: { className: "bg-yellow-500/10 text-yellow-400", label: "Pendiente partido" },
     };
-    const c = config[status];
+    const c = config[status] ?? { className: "bg-gray-500/10 text-gray-400", label: status };
     return <Badge className={`border-0 text-[10px] font-medium ${c.className}`}>{c.label}</Badge>;
 }
 
@@ -735,6 +736,6 @@ function PaymentStatusBadge({ status }: { status: "PENDING" | "PAID" | "FAILED" 
         FAILED: { className: "bg-red-500/10 text-red-400", label: "Fallido" },
         REFUNDED: { className: "bg-blue-500/10 text-blue-400", label: "Reembolsado" },
     };
-    const c = config[status];
+    const c = config[status] ?? { className: "bg-gray-500/10 text-gray-400", label: status };
     return <Badge className={`border-0 text-[10px] font-medium ${c.className}`}>{c.label}</Badge>;
 }
