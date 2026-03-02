@@ -4,6 +4,7 @@ import com.ccasro.hub.modules.booking.domain.exception.BookingCancellationNotAll
 import com.ccasro.hub.modules.booking.domain.exception.BookingNotFoundException;
 import com.ccasro.hub.modules.booking.domain.exception.SlotNotAvailableException;
 import com.ccasro.hub.modules.iam.domain.exception.UserProfileNotFoundException;
+import com.ccasro.hub.modules.matching.domain.exception.*;
 import com.ccasro.hub.modules.resource.domain.exception.ResourceImageNotFoundException;
 import com.ccasro.hub.modules.resource.domain.exception.ResourceNotFoundException;
 import com.ccasro.hub.modules.venue.domain.exception.VenueImageNotFoundException;
@@ -285,6 +286,37 @@ public class GlobalExceptionHandler {
                 HttpStatus.UNPROCESSABLE_ENTITY,
                 "/errors/unprocessable",
                 "Unprocessable",
+                ex.getMessage(),
+                request));
+  }
+
+  @ExceptionHandler(MatchNotFoundException.class)
+  public ResponseEntity<ProblemDetail> handleMatchNotFound(
+      MatchNotFoundException ex, HttpServletRequest request) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(
+            problem(
+                HttpStatus.NOT_FOUND,
+                "/errors/not-found",
+                "Match Not Found",
+                ex.getMessage(),
+                request));
+  }
+
+  @ExceptionHandler({
+    MatchFullException.class,
+    TeamFullException.class,
+    PlayerAlreadyJoinedException.class,
+    MatchNotOpenException.class
+  })
+  public ResponseEntity<ProblemDetail> handleMatchConflict(
+      RuntimeException ex, HttpServletRequest request) {
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+        .body(
+            problem(
+                HttpStatus.UNPROCESSABLE_ENTITY,
+                "/errors/unprocessable",
+                "Match Error",
                 ex.getMessage(),
                 request));
   }

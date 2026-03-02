@@ -1,8 +1,8 @@
 import "server-only";
 import {auth0} from "@/lib/auth0";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-if (!API_URL) throw new Error("NEXT_PUBLIC_API_URL is not set");
+const API_URL = process.env.API_URL;
+if (!API_URL) throw new Error("API_URL is not set");
 
 export async function apiFetch<T>(
     endpoint: string,
@@ -12,6 +12,11 @@ export async function apiFetch<T>(
 
 
     const headers = new Headers(options.headers);
+
+    if (!session?.tokenSet?.accessToken) {
+        throw new ApiError(401, "Missing access token - please re-login");
+    }
+    headers.set("Authorization", `Bearer ${session.tokenSet.accessToken}`);
 
     if (session?.tokenSet?.accessToken) {
         headers.set("Authorization", `Bearer ${session.tokenSet.accessToken}`);

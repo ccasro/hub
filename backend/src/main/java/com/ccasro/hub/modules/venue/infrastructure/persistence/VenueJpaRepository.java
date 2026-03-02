@@ -2,8 +2,8 @@ package com.ccasro.hub.modules.venue.infrastructure.persistence;
 
 import com.ccasro.hub.modules.venue.domain.valueobjects.VenueStatus;
 import com.ccasro.hub.modules.venue.infrastructure.persistence.projection.VenueLiteProjection;
-import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -42,12 +42,19 @@ public interface VenueJpaRepository extends JpaRepository<VenueEntity, UUID> {
   boolean existsByIdAndOwnerId(UUID id, UUID ownerId);
 
   @Query(
-      """
-  select v.id as id, v.name as name, v.city as city
-  from VenueEntity v
-  where v.id in :ids
-""")
-  List<VenueLiteProjection> findLiteByIds(@Param("ids") Collection<UUID> ids);
+      value =
+          """
+    SELECT
+        v.id                        AS id,
+        v.name                      AS name,
+        v.city                      AS city,
+        ST_Y(v.location::geometry)  AS latitude,
+        ST_X(v.location::geometry)  AS longitude
+    FROM venue v
+    WHERE v.id IN :ids
+    """,
+      nativeQuery = true)
+  List<VenueLiteProjection> findLiteByIds(@Param("ids") Set<UUID> ids);
 
   long countByStatus(VenueStatus status);
 }

@@ -1,11 +1,15 @@
 package com.ccasro.hub.modules.booking.application.port.out;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public interface ResourceReadPort {
-  Map<UUID, ResourceLite> findLiteByIds(Set<UUID> ids);
+  Map<UUID, ResourceLite> findLiteByIds(Collection<UUID> ids);
 
-  record ResourceLite(UUID id, String name, UUID venueId) {}
+  List<ResourceLite> findActiveByVenueIds(Collection<UUID> venueIds);
+
+  record ResourceLite(UUID id, String name, UUID venueId, String type) {
+    public ResourceLite(UUID id, String name, UUID venueId) {
+      this(id, name, venueId, null);
+    }
+  }
 }

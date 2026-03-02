@@ -8,4 +8,6 @@ public interface ResourceLiteProjection {
   String getName();
 
   UUID getVenueId();
+
+  String getType();
 }

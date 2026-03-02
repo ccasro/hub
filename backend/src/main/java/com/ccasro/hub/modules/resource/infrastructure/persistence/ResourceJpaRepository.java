@@ -32,11 +32,23 @@ public interface ResourceJpaRepository extends JpaRepository<ResourceEntity, UUI
 
   @Query(
       """
-  select r.id as id, r.name as name, r.venueId as venueId
-  from ResourceEntity r
-  where r.id in :ids
-""")
+    SELECT r.id AS id, r.name AS name, r.venueId AS venueId,
+           CAST(r.type AS string) AS type
+    FROM ResourceEntity r
+    WHERE r.id IN :ids
+    """)
   List<ResourceLiteProjection> findLiteByIds(@Param("ids") Collection<UUID> ids);
+
+  @Query(
+      """
+    SELECT r.id AS id, r.name AS name, r.venueId AS venueId,
+           CAST(r.type AS string) AS type
+    FROM ResourceEntity r
+    WHERE r.status = :status
+    AND r.venueId IN :venueIds
+    """)
+  List<ResourceLiteProjection> findActiveByVenueIds(
+      @Param("venueIds") Collection<UUID> venueIds, @Param("status") ResourceStatus status);
 
   long countByStatus(ResourceStatus status);
 

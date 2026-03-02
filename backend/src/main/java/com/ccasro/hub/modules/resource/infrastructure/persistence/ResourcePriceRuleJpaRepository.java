@@ -35,8 +35,28 @@ public interface ResourcePriceRuleJpaRepository
             WHEN 'WEEKEND' THEN 2
         END ASC
         """)
-  List<ResourcePriceRuleEntity> findApplicableRules(
+  List<ResourcePriceRuleEntity> findApplicableRulesByResourceId(
       @Param("resourceId") UUID resourceId,
       @Param("time") LocalTime time,
       @Param("dayTypes") List<DayType> dayTypes);
+
+  @Query(
+      """
+    SELECT p FROM ResourcePriceRuleEntity p
+    WHERE p.resource.id = :resourceId
+    AND p.dayType IN :dayTypes
+    ORDER BY CASE p.dayType
+        WHEN 'MON' THEN 1
+        WHEN 'TUE' THEN 1
+        WHEN 'WED' THEN 1
+        WHEN 'THU' THEN 1
+        WHEN 'FRI' THEN 1
+        WHEN 'SAT' THEN 1
+        WHEN 'SUN' THEN 1
+        WHEN 'WEEKDAY' THEN 2
+        WHEN 'WEEKEND' THEN 2
+    END ASC
+    """)
+  List<ResourcePriceRuleEntity> findApplicableRules(
+      @Param("resourceId") UUID resourceId, @Param("dayTypes") List<DayType> dayTypes);
 }

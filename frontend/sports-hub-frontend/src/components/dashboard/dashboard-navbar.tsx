@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import {useState} from "react";
-import Link from "next/link";
-import {SportsHubLogo} from "@/components/sports-hub-logo";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {Badge} from "@/components/ui/badge";
+import {useState} from "react"
+import Link from "next/link"
+import {SportsHubLogo} from "@/components/sports-hub-logo"
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
+import {Badge} from "@/components/ui/badge"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,10 +13,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from "@/components/ui/select";
-import {Input} from "@/components/ui/input";
-import {Button} from "@/components/ui/button";
+} from "@/components/ui/dropdown-menu"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
+import {Input} from "@/components/ui/input"
+import {Button} from "@/components/ui/button"
 import {
   Bell,
   CalendarDays,
@@ -28,21 +28,22 @@ import {
   Menu,
   Search,
   Settings,
+  Swords,
   User,
   X,
-} from "lucide-react";
-import {ThemeToggle} from "@/components/theme-toggle";
-import type {UserProfile} from "@/types";
-import {availableCities} from "@/lib/mock-data";
+  Zap,
+} from "lucide-react"
+import {ThemeToggle} from "@/components/theme-toggle"
+import type {UserProfile} from "@/types"
 
 interface DashboardNavbarProps {
-  user: UserProfile;
-  selectedCity: string;
-  onCityChange: (city: string) => void;
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-  upcomingBookingsCount?: number;
-  cities?: string[];
+  user: UserProfile
+  selectedCity: string
+  onCityChange: (city: string) => void
+  searchQuery: string
+  onSearchChange: (query: string) => void
+  upcomingBookingsCount?: number
+  cities?: string[]
 }
 
 export function DashboardNavbar({
@@ -52,31 +53,23 @@ export function DashboardNavbar({
                                   searchQuery,
                                   onSearchChange,
                                   upcomingBookingsCount = 0,
-                                  cities,
+                                  cities = [],
                                 }: DashboardNavbarProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const initials = user.displayName
-      ? user.displayName
-          .split(" ")
-          .map((n) => n[0])
-          .join("")
-          .toUpperCase()
-          .slice(0, 2)
-      : "U";
+      ? user.displayName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+      : "U"
 
   const skillLabel =
-      user.skillLevel === "BEGINNER"
-          ? "Principiante"
-          : user.skillLevel === "INTERMEDIATE"
-              ? "Intermedio"
-              : user.skillLevel === "ADVANCED"
-                  ? "Avanzado"
-                  : null;
+      user.skillLevel === "BEGINNER"   ? "Principiante" :
+          user.skillLevel === "INTERMEDIATE" ? "Intermedio"  :
+              user.skillLevel === "ADVANCED"   ? "Avanzado"     : null
 
   return (
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 lg:px-6">
+
           {/* Logo */}
           <Link href="/dashboard" className="shrink-0">
             <SportsHubLogo />
@@ -91,10 +84,8 @@ export function DashboardNavbar({
                   <SelectValue placeholder="Ciudad" />
                 </SelectTrigger>
                 <SelectContent className="border-border bg-card text-card-foreground">
-                  {(cities ?? availableCities).map((city) => (
-                      <SelectItem key={city} value={city}>
-                        {city}
-                      </SelectItem>
+                  {cities.map((city) => (
+                      <SelectItem key={city} value={city}>{city}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -111,15 +102,11 @@ export function DashboardNavbar({
             </div>
           </div>
 
-          {/* Right side: Bookings quick link + Notifications + Profile */}
+          {/* Right side */}
           <div className="flex items-center gap-1.5">
-            {/* Upcoming bookings shortcut - desktop */}
+            {/* Mis Reservas — desktop */}
             <Link href="/dashboard/bookings" className="hidden md:block">
-              <Button
-                  variant="ghost"
-                  size="sm"
-                  className="relative gap-2 text-muted-foreground hover:text-foreground"
-              >
+              <Button variant="ghost" size="sm" className="relative gap-2 text-muted-foreground hover:text-foreground">
                 <CalendarDays className="h-4 w-4" />
                 <span className="text-sm">Mis Reservas</span>
                 {upcomingBookingsCount > 0 && (
@@ -127,6 +114,14 @@ export function DashboardNavbar({
                       {upcomingBookingsCount}
                     </Badge>
                 )}
+              </Button>
+            </Link>
+
+            {/* Buscar Partido — desktop */}
+            <Link href="/match/search" className="hidden md:block">
+              <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
+                <Swords className="h-4 w-4" />
+                <span className="text-sm">Buscar Partido</span>
               </Button>
             </Link>
 
@@ -141,7 +136,6 @@ export function DashboardNavbar({
               <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-primary" />
             </Button>
 
-            {/* Theme toggle */}
             <ThemeToggle />
 
             {/* Mobile menu toggle */}
@@ -152,11 +146,7 @@ export function DashboardNavbar({
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label="Abrir menu"
             >
-              {mobileMenuOpen ? (
-                  <X className="h-5 w-5" />
-              ) : (
-                  <Menu className="h-5 w-5" />
-              )}
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
 
             {/* Profile Dropdown */}
@@ -167,20 +157,17 @@ export function DashboardNavbar({
                     aria-label="Menu de perfil"
                 >
                   <div className="hidden flex-col items-end sm:flex">
-                  <span className="text-sm font-medium leading-tight text-foreground">
-                    {user.displayName ?? "Usuario"}
-                  </span>
+                                    <span className="text-sm font-medium leading-tight text-foreground">
+                                        {user.displayName ?? "Usuario"}
+                                    </span>
                     {skillLabel && (
                         <span className="text-[10px] leading-tight text-muted-foreground">
-                      {skillLabel}
-                    </span>
+                                            {skillLabel}
+                                        </span>
                     )}
                   </div>
                   <Avatar className="h-8 w-8 border border-border/50">
-                    <AvatarImage
-                        src={user.avatarUrl ?? undefined}
-                        alt={user.displayName ?? "Avatar"}
-                    />
+                    <AvatarImage src={user.avatarUrl ?? undefined} alt={user.displayName ?? "Avatar"} />
                     <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
                       {initials}
                     </AvatarFallback>
@@ -188,41 +175,30 @@ export function DashboardNavbar({
                   <ChevronDown className="hidden h-3 w-3 text-muted-foreground sm:block" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                  align="end"
-                  className="w-64 border-border bg-card text-card-foreground"
-              >
+
+              <DropdownMenuContent align="end" className="w-64 border-border bg-card text-card-foreground">
+
                 {/* Profile header */}
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10 border border-border/50">
-                      <AvatarImage
-                          src={user.avatarUrl ?? undefined}
-                          alt={user.displayName ?? "Avatar"}
-                      />
+                      <AvatarImage src={user.avatarUrl ?? undefined} alt={user.displayName ?? "Avatar"} />
                       <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col gap-0.5">
-                      <p className="text-sm font-semibold text-foreground">
-                        {user.displayName}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {user.email}
-                      </p>
+                      <p className="text-sm font-semibold text-foreground">{user.displayName}</p>
+                      <p className="text-xs text-muted-foreground">{user.email}</p>
                       <div className="flex items-center gap-1.5">
-                        <Badge
-                            variant="secondary"
-                            className="h-[18px] border-0 bg-primary/10 px-1.5 text-[10px] font-medium text-primary"
-                        >
+                        <Badge variant="secondary" className="h-[18px] border-0 bg-primary/10 px-1.5 text-[10px] font-medium text-primary">
                           {user.role === "PLAYER" ? "Jugador" : user.role === "OWNER" ? "Propietario" : "Admin"}
                         </Badge>
                         {user.city && (
                             <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                          <MapPin className="h-2.5 w-2.5" />
+                                                    <MapPin className="h-2.5 w-2.5" />
                               {user.city}
-                        </span>
+                                                </span>
                         )}
                       </div>
                     </div>
@@ -233,10 +209,7 @@ export function DashboardNavbar({
                 {/* Navigation */}
                 <DropdownMenuGroup>
                   <DropdownMenuItem asChild>
-                    <Link
-                        href="/dashboard/bookings"
-                        className="cursor-pointer gap-2 text-foreground focus:bg-secondary/50 focus:text-foreground"
-                    >
+                    <Link href="/dashboard/bookings" className="cursor-pointer gap-2 text-foreground focus:bg-secondary/50 focus:text-foreground">
                       <CalendarDays className="h-4 w-4 text-muted-foreground" />
                       Mis Reservas
                       {upcomingBookingsCount > 0 && (
@@ -246,50 +219,68 @@ export function DashboardNavbar({
                       )}
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/match/search" className="cursor-pointer gap-2 text-foreground focus:bg-secondary/50 focus:text-foreground">
+                      <Swords className="h-4 w-4 text-muted-foreground" />
+                      Buscar Partido
+                    </Link>
+                  </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator className="bg-border/50" />
 
                 {/* Profile actions */}
                 <DropdownMenuGroup>
                   <DropdownMenuItem asChild>
-                    <Link
-                        href="/dashboard/profile"
-                        className="cursor-pointer gap-2 text-foreground focus:bg-secondary/50 focus:text-foreground"
-                    >
+                    <Link href="/dashboard/profile" className="cursor-pointer gap-2 text-foreground focus:bg-secondary/50 focus:text-foreground">
                       <User className="h-4 w-4 text-muted-foreground" />
                       Editar Perfil
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link
-                        href="/dashboard/profile/avatar"
-                        className="cursor-pointer gap-2 text-foreground focus:bg-secondary/50 focus:text-foreground"
-                    >
+                    <Link href="/dashboard/profile/avatar" className="cursor-pointer gap-2 text-foreground focus:bg-secondary/50 focus:text-foreground">
                       <ImagePlus className="h-4 w-4 text-muted-foreground" />
                       Cambiar Avatar
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link
-                        href="/dashboard/settings"
-                        className="cursor-pointer gap-2 text-foreground focus:bg-secondary/50 focus:text-foreground"
-                    >
+                    <Link href="/dashboard/settings" className="cursor-pointer gap-2 text-foreground focus:bg-secondary/50 focus:text-foreground">
                       <Settings className="h-4 w-4 text-muted-foreground" />
                       Configuracion
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
 
-                {/* Owner request - only show for PLAYER role */}
+                {/* Matching notifications — todos los roles excepto ADMIN */}
+                {user.role !== "ADMIN" && (
+                    <>
+                      <DropdownMenuSeparator className="bg-border/50" />
+                      <DropdownMenuGroup>
+                        <DropdownMenuItem asChild>
+                          <Link href="/dashboard/settings?tab=matching" className="cursor-pointer gap-2 text-foreground focus:bg-secondary/50 focus:text-foreground">
+                            <Zap className="h-4 w-4 text-muted-foreground" />
+                            Propuestas de partido
+                            {user.matchNotificationsEnabled ? (
+                                <Badge className="ml-auto h-5 border-0 bg-emerald-500/10 px-1.5 text-[10px] font-medium text-emerald-400">
+                                  Activo
+                                </Badge>
+                            ) : (
+                                <Badge className="ml-auto h-5 border-0 bg-secondary px-1.5 text-[10px] font-medium text-muted-foreground">
+                                  Inactivo
+                                </Badge>
+                            )}
+                          </Link>
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
+                    </>
+                )}
+
+                {/* Owner request — solo PLAYER */}
                 {user.role === "PLAYER" && (
                     <>
                       <DropdownMenuSeparator className="bg-border/50" />
                       <DropdownMenuGroup>
                         <DropdownMenuItem asChild>
-                          <Link
-                              href="/dashboard/settings"
-                              className="cursor-pointer gap-2 text-primary focus:bg-primary/10 focus:text-primary"
-                          >
+                          <Link href="/dashboard/settings" className="cursor-pointer gap-2 text-primary focus:bg-primary/10 focus:text-primary">
                             <Crown className="h-4 w-4" />
                             Ser propietario
                             {user.ownerRequestStatus === "PENDING" && (
@@ -303,16 +294,13 @@ export function DashboardNavbar({
                     </>
                 )}
 
-                {/* Owner panel - only show for OWNER role */}
+                {/* Owner panel — solo OWNER */}
                 {user.role === "OWNER" && (
                     <>
                       <DropdownMenuSeparator className="bg-border/50" />
                       <DropdownMenuGroup>
                         <DropdownMenuItem asChild>
-                          <Link
-                              href="/owner/dashboard"
-                              className="cursor-pointer gap-2 text-primary focus:bg-primary/10 focus:text-primary"
-                          >
+                          <Link href="/owner/dashboard" className="cursor-pointer gap-2 text-primary focus:bg-primary/10 focus:text-primary">
                             <Crown className="h-4 w-4" />
                             Panel de Owner
                           </Link>
@@ -322,13 +310,8 @@ export function DashboardNavbar({
                 )}
 
                 <DropdownMenuSeparator className="bg-border/50" />
-
-                {/* Logout */}
                 <DropdownMenuItem asChild>
-                  <a
-                      href="/auth/logout"
-                      className="cursor-pointer gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
-                  >
+                  <a href="/auth/logout" className="cursor-pointer gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive">
                     <LogOut className="h-4 w-4" />
                     Cerrar sesion
                   </a>
@@ -338,25 +321,32 @@ export function DashboardNavbar({
           </div>
         </div>
 
-        {/* Mobile Filters */}
+        {/* Mobile menu */}
         {mobileMenuOpen && (
             <div className="flex flex-col gap-3 border-t border-border/50 bg-background/95 px-4 py-3 backdrop-blur-xl md:hidden">
-              {/* Mobile bookings link */}
               <Link
                   href="/dashboard/bookings"
                   className="flex items-center justify-between rounded-lg border border-border/50 bg-secondary/30 px-3 py-2.5"
+                  onClick={() => setMobileMenuOpen(false)}
               >
                 <div className="flex items-center gap-2">
                   <CalendarDays className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium text-foreground">
-                Mis Reservas
-              </span>
+                  <span className="text-sm font-medium text-foreground">Mis Reservas</span>
                 </div>
                 {upcomingBookingsCount > 0 && (
                     <Badge className="h-5 min-w-5 justify-center rounded-full border-0 bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
                       {upcomingBookingsCount}
                     </Badge>
                 )}
+              </Link>
+
+              <Link
+                  href="/match/search"
+                  className="flex items-center gap-2 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2.5"
+                  onClick={() => setMobileMenuOpen(false)}
+              >
+                <Swords className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Buscar Partido</span>
               </Link>
 
               <div className="flex items-center gap-2 rounded-lg border border-border/50 bg-secondary/30 px-3">
@@ -366,25 +356,24 @@ export function DashboardNavbar({
                     <SelectValue placeholder="Ciudad" />
                   </SelectTrigger>
                   <SelectContent className="border-border bg-card text-card-foreground">
-                    {(cities ?? availableCities).map((city) => (
-                        <SelectItem key={city} value={city}>
-                          {city}
-                        </SelectItem>
+                    {cities.map((city) => (
+                        <SelectItem key={city} value={city}>{city}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                     value={searchQuery}
                     onChange={(e) => onSearchChange(e.target.value)}
                     placeholder="Buscar venues..."
-                    className="h-9 border-border/50 bg-secondary/30 pl-9 text-sm text-foreground placeholder:text-muted-foreground focus-visible:border-primary/50 focus-visible:ring-primary/20"
+                    className="h-9 border-border/50 bg-secondary/30 pl-9 text-sm text-foreground placeholder:text-muted-foreground"
                 />
               </div>
             </div>
         )}
       </header>
-  );
+  )
 }

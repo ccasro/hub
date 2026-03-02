@@ -38,8 +38,9 @@ function StatusBadge({ status }: { status: Booking["status"] }) {
         CONFIRMED:       { className: "bg-green-500/10 text-green-400",      icon: CheckCircle2,   label: "Confirmada" },
         CANCELLED:       { className: "bg-destructive/10 text-destructive",   icon: XCircle,        label: "Cancelada" },
         PENDING_PAYMENT: { className: "bg-amber-500/10 text-amber-400",       icon: AlertTriangle,  label: "Pendiente pago" },
+        PENDING_MATCH:   { className: "bg-yellow-500/10 text-yellow-400", icon: Clock, label: "Pendiente partido"},
     }
-    const c = config[status]
+    const c = config[status] ?? { className: "bg-gray-500/10 text-gray-400", label: status, icon: Clock };
     const Icon = c.icon
     return (
         <Badge className={`border-0 gap-1 ${c.className}`}>

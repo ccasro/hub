@@ -29,6 +29,10 @@ CREATE TABLE user_profile (
     active BOOLEAN DEFAULT TRUE,
     onboarding_completed BOOLEAN DEFAULT FALSE,
 
+    match_notifications_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    match_search_radius_km      INTEGER NOT NULL DEFAULT 10,
+    city_id                     BIGINT REFERENCES city(id),
+
     created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     last_login_at TIMESTAMPTZ

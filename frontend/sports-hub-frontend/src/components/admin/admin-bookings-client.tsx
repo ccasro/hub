@@ -22,8 +22,9 @@ function BookingStatusBadge({ status }: { status: Booking["status"] }) {
         CONFIRMED:       { className: "bg-emerald-500/10 text-emerald-400", label: "Confirmada",    icon: CheckCircle2 },
         PENDING_PAYMENT: { className: "bg-amber-500/10 text-amber-400",    label: "Pendiente pago", icon: Clock },
         CANCELLED:       { className: "bg-red-500/10 text-red-400",        label: "Cancelada",      icon: XCircle },
+        PENDING_MATCH:   { className: "bg-yellow-500/10 text-yellow-400",  label: "Pendiente partido", icon: Clock },
     }
-    const c = config[status]
+    const c = config[status] ?? { className: "bg-gray-500/10 text-gray-400", label: status, icon: Clock };
     return (
         <Badge className={`gap-1 border-0 text-[10px] font-medium ${c.className}`}>
             <c.icon className="h-2.5 w-2.5" />
@@ -39,7 +40,7 @@ function PaymentBadge({ status }: { status: Booking["paymentStatus"] }) {
         FAILED:   { className: "bg-red-500/10 text-red-400",        label: "Fallido" },
         REFUNDED: { className: "bg-blue-500/10 text-blue-400",      label: "Reembolsado" },
     }
-    const c = config[status]
+    const c = config[status] ?? { className: "bg-gray-500/10 text-gray-400", label: status };
     return <Badge className={`border-0 text-[10px] font-medium ${c.className}`}>{c.label}</Badge>
 }
 

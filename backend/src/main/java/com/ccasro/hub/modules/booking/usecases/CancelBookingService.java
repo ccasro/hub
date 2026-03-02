@@ -8,6 +8,7 @@ import com.ccasro.hub.modules.booking.domain.ports.out.BookingRepositoryPort;
 import com.ccasro.hub.modules.booking.domain.ports.out.PaymentPort;
 import com.ccasro.hub.modules.booking.domain.ports.out.PaymentRepositoryPort;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
+import com.ccasro.hub.modules.matching.domain.ports.out.MatchRequestRepositoryPort;
 import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import java.time.Clock;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class CancelBookingService {
   private final PaymentRepositoryPort paymentRepository;
   private final PaymentPort paymentPort;
   private final BookingNotificationPort notificationPort;
+  private final MatchRequestRepositoryPort matchRequestRepository;
   private final UserProfileRepositoryPort userRepository;
   private final CurrentUserProvider currentUser;
   private final Clock clock;
@@ -38,6 +40,21 @@ public class CancelBookingService {
       throw new AccessDeniedException("You are not the owner of this booking");
 
     booking.cancel(cmd.reason(), clock);
+
+    if (booking.isMatchBooking()) {
+      matchRequestRepository
+          .findActiveByResourceAndSlot(
+              booking.getResourceId(), booking.getBookingDate(), booking.getSlot().startTime())
+          .ifPresent(
+              match -> {
+                match.removePlayer(currentUser.getUserId());
+                matchRequestRepository.save(match);
+                log.info(
+                    "Player {} removed from match {} after booking cancellation",
+                    currentUser.getUserId().value(),
+                    match.getId().value());
+              });
+    }
 
     if (booking.isPaid()) {
       paymentRepository
