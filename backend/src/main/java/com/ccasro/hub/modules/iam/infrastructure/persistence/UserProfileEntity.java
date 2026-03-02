@@ -62,11 +62,20 @@ public class UserProfileEntity {
   @Column(name = "skill_level", length = 20)
   private SkillLevel skillLevel;
 
+  @Column(name = "city_id")
+  private Long cityId;
+
   @Column(length = 100)
   private String city;
 
   @Column(name = "country_code", length = 3)
   private String countryCode;
+
+  @Column(name = "match_notifications_enabled", nullable = false)
+  private boolean matchNotificationsEnabled = false;
+
+  @Column(name = "match_search_radius_km", nullable = false)
+  private int matchSearchRadiusKm = 10;
 
   @Column(nullable = false)
   private boolean active;

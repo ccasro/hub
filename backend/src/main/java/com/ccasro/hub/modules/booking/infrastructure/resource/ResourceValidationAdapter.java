@@ -65,9 +65,7 @@ public class ResourceValidationAdapter implements ResourceValidationPort {
     applicableDayTypes.add(day.isWeekend() ? DayType.WEEKEND : DayType.WEEKDAY);
 
     Optional<ResourcePriceRuleEntity> applicableRule =
-        priceRuleJpaRepository
-            .findApplicableRules(resourceId.value(), startTime, applicableDayTypes)
-            .stream()
+        priceRuleJpaRepository.findApplicableRules(resourceId.value(), applicableDayTypes).stream()
             .findFirst();
 
     BigDecimal price =

@@ -12,6 +12,7 @@ export interface UserProfile {
     city: string;
     countryCode: string | null;
     onboardingCompleted: boolean;
+    matchNotificationsEnabled: boolean;
     lastLoginAt: string;
 }
 export interface AdminStats {
@@ -218,6 +219,48 @@ export interface RejectRequest {
 export interface FakePaymentRequest {
     amount: number;
     currency: string;
+}
+
+export interface MatchSlotResult {
+    resourceId: string
+    resourceName: string
+    resourceType: string
+    venueId: string
+    venueName: string
+    venueCity: string
+    venueLatitude: number
+    venueLongitude: number
+    distanceKm: number
+    startTime: string
+    endTime: string
+    price: number
+    currency: string
+    eligiblePlayersNearby: number
+}
+
+export type MatchFormat = "ONE_VS_ONE" | "TWO_VS_TWO"
+export type MatchSkillLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "ANY"
+
+export interface MatchPlayer {
+    playerId: string
+    team: "TEAM_1" | "TEAM_2"
+    role: "ORGANIZER" | "GUEST"
+    joinedAt: string
+}
+
+export interface MatchRequestResponse {
+    id: string
+    resourceId: string
+    bookingDate: string
+    startTime: string
+    endTime: string
+    format: MatchFormat
+    skillLevel: MatchSkillLevel
+    status: "OPEN" | "FULL" | "EXPIRED" | "CANCELLED"
+    invitationToken: string
+    availableSlots: number
+    expiresAt: string
+    players?: MatchPlayer[]
 }
 
 export interface Page<T> {

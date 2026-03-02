@@ -105,6 +105,51 @@ public class Booking {
     return b;
   }
 
+  public static Booking createForMatch(
+      ResourceId resourceId,
+      UserId organizerId,
+      LocalDate bookingDate,
+      SlotRange slot,
+      BigDecimal price,
+      String currency,
+      Duration ttl,
+      Clock clock) {
+
+    Instant now = clock.instant();
+    Booking b =
+        new Booking(
+            BookingId.generate(),
+            resourceId,
+            organizerId,
+            bookingDate,
+            slot,
+            price,
+            currency,
+            now,
+            now.plus(ttl));
+    b.status = BookingStatus.PENDING_MATCH;
+    b.paymentStatus = PaymentStatus.PENDING;
+    return b;
+  }
+
+  public void confirmMatch(Clock clock) {
+    if (this.status != BookingStatus.PENDING_MATCH)
+      throw new IllegalStateException("Booking is not in PENDING_MATCH status");
+    this.status = BookingStatus.CONFIRMED;
+    this.paymentStatus = PaymentStatus.PAID;
+    this.expiresAt = null;
+    this.updatedAt = clock.instant();
+  }
+
+  public void cancelMatch(Clock clock) {
+    if (this.status != BookingStatus.PENDING_MATCH)
+      throw new IllegalStateException("Booking is not in PENDING_MATCH status");
+    this.status = BookingStatus.CANCELLED;
+    this.cancelReason = "Match cancelled or expired";
+    this.cancelledAt = clock.instant();
+    this.updatedAt = clock.instant();
+  }
+
   public void confirmPayment(Clock clock) {
     if (this.paymentStatus == PaymentStatus.PAID)
       throw new IllegalStateException("Payment is already confirmed");
@@ -158,6 +203,10 @@ public class Booking {
     this.cancelledAt = clock.instant();
     this.cancelReason = reason;
     this.updatedAt = clock.instant();
+  }
+
+  public boolean isMatchBooking() {
+    return status == BookingStatus.PENDING_MATCH || status == BookingStatus.CONFIRMED;
   }
 
   public boolean isOwnedBy(UserId userId) {
