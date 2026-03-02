@@ -580,94 +580,94 @@ VALUES
     ('10000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-000000000002','Retiro Padel Park','Outdoor courts near Retiro','Av. Menéndez Pelayo 10','Madrid','ES','28009',
      ST_SetSRID(ST_MakePoint(-3.6834, 40.4155), 4326)::geography,'ACTIVE',NULL, now()-interval '45 days', now()-interval '2 days'),
 
-    ('10000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000003','BCN Padel Hub','Premium padel experience','Carrer de Mallorca 401','Barcelona','ES','08013',
+    ('10000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000002','BCN Padel Hub','Premium padel experience','Carrer de Mallorca 401','Barcelona','ES','08013',
      ST_SetSRID(ST_MakePoint(2.1744, 41.4036), 4326)::geography,'ACTIVE',NULL, now()-interval '40 days', now()-interval '3 days'),
 
-    ('10000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000003','Sants Sports Club','Multi-sport club','Carrer de Sants 55','Barcelona','ES','08014',
+    ('10000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000002','Sants Sports Club','Multi-sport club','Carrer de Sants 55','Barcelona','ES','08014',
      ST_SetSRID(ST_MakePoint(2.1360, 41.3763), 4326)::geography,'ACTIVE',NULL, now()-interval '35 days', now()-interval '4 days'),
 
     ('10000000-0000-0000-0000-000000000005','00000000-0000-0000-0000-000000000002','Chamartín Courts','3 courts, good lighting','C/ Príncipe de Vergara 250','Madrid','ES','28016',
      ST_SetSRID(ST_MakePoint(-3.6795, 40.4540), 4326)::geography,'ACTIVE',NULL, now()-interval '30 days', now()-interval '1 day'),
 
-    ('10000000-0000-0000-0000-000000000006','00000000-0000-0000-0000-000000000003','Gràcia Padel','Neighborhood club','C/ Gran de Gràcia 15','Barcelona','ES','08012',
+    ('10000000-0000-0000-0000-000000000006','00000000-0000-0000-0000-000000000002','Gràcia Padel','Neighborhood club','C/ Gran de Gràcia 15','Barcelona','ES','08012',
      ST_SetSRID(ST_MakePoint(2.1565, 41.4011), 4326)::geography,'SUSPENDED','Noise complaints', now()-interval '25 days', now()-interval '5 days'),
 
     ('10000000-0000-0000-0000-000000000007','00000000-0000-0000-0000-000000000002','Madrid Norte Arena','Competitive courts','Paseo de la Castellana 200','Madrid','ES','28046',
      ST_SetSRID(ST_MakePoint(-3.6890, 40.4607), 4326)::geography,'ACTIVE',NULL, now()-interval '20 days', now()-interval '2 days'),
 
-    ('10000000-0000-0000-0000-000000000008','00000000-0000-0000-0000-000000000003','Poble Nou Padel','Close to the beach','C/ Pallars 100','Barcelona','ES','08018',
+    ('10000000-0000-0000-0000-000000000008','00000000-0000-0000-0000-000000000002','Poble Nou Padel','Close to the beach','C/ Pallars 100','Barcelona','ES','08018',
      ST_SetSRID(ST_MakePoint(2.2040, 41.3995), 4326)::geography,'ACTIVE',NULL, now()-interval '18 days', now()-interval '1 day'),
 
     ('10000000-0000-0000-0000-000000000009','00000000-0000-0000-0000-000000000002','Valencia Smash','New venue pending review','C/ Xàtiva 20','Valencia','ES','46002',
      ST_SetSRID(ST_MakePoint(-0.3773, 39.4692), 4326)::geography,'PENDING_REVIEW',NULL, now()-interval '10 days', now()-interval '1 day'),
 
-    ('10000000-0000-0000-0000-000000000010','00000000-0000-0000-0000-000000000003','Valencia Green Courts','Awaiting approval','Av. del Cid 5','Valencia','ES','46018',
+    ('10000000-0000-0000-0000-000000000010','00000000-0000-0000-0000-000000000002','Valencia Green Courts','Awaiting approval','Av. del Cid 5','Valencia','ES','46018',
      ST_SetSRID(ST_MakePoint(-0.3990, 39.4750), 4326)::geography,'PENDING_REVIEW',NULL, now()-interval '8 days', now()-interval '1 day'),
     -- BARCELONA (5)
-    ('10000000-0000-0000-0000-000000000011','00000000-0000-0000-0000-000000000003','Diagonal Padel Club','Modern indoor courts','Av. Diagonal 500','Barcelona','ES','08006',
+    ('10000000-0000-0000-0000-000000000011','00000000-0000-0000-0000-000000000002','Diagonal Padel Club','Modern indoor courts','Av. Diagonal 500','Barcelona','ES','08006',
      ST_SetSRID(ST_MakePoint(2.1500,41.3920),4326)::geography,'ACTIVE',NULL,now()-interval '20 days',now()-interval '1 day'),
 
-    ('10000000-0000-0000-0000-000000000012','00000000-0000-0000-0000-000000000003','Eixample Courts','Central location','C/ Aragó 200','Barcelona','ES','08011',
+    ('10000000-0000-0000-0000-000000000012','00000000-0000-0000-0000-000000000002','Eixample Courts','Central location','C/ Aragó 200','Barcelona','ES','08011',
      ST_SetSRID(ST_MakePoint(2.1600,41.3890),4326)::geography,'ACTIVE',NULL,now()-interval '18 days',now()-interval '1 day'),
 
-    ('10000000-0000-0000-0000-000000000013','00000000-0000-0000-0000-000000000003','Clot Padel Arena','Friendly club','C/ Clot 99','Barcelona','ES','08018',
+    ('10000000-0000-0000-0000-000000000013','00000000-0000-0000-0000-000000000002','Clot Padel Arena','Friendly club','C/ Clot 99','Barcelona','ES','08018',
      ST_SetSRID(ST_MakePoint(2.1900,41.4090),4326)::geography,'ACTIVE',NULL,now()-interval '17 days',now()-interval '1 day'),
 
-    ('10000000-0000-0000-0000-000000000014','00000000-0000-0000-0000-000000000003','Les Corts Indoor','Indoor premium','Travessera de les Corts 120','Barcelona','ES','08028',
+    ('10000000-0000-0000-0000-000000000014','00000000-0000-0000-0000-000000000002','Les Corts Indoor','Indoor premium','Travessera de les Corts 120','Barcelona','ES','08028',
      ST_SetSRID(ST_MakePoint(2.1300,41.3850),4326)::geography,'ACTIVE',NULL,now()-interval '16 days',now()-interval '1 day'),
 
-    ('10000000-0000-0000-0000-000000000015','00000000-0000-0000-0000-000000000003','Sant Andreu Padel','Community courts','C/ Gran de Sant Andreu 250','Barcelona','ES','08030',
+    ('10000000-0000-0000-0000-000000000015','00000000-0000-0000-0000-000000000002','Sant Andreu Padel','Community courts','C/ Gran de Sant Andreu 250','Barcelona','ES','08030',
      ST_SetSRID(ST_MakePoint(2.1905,41.4350),4326)::geography,'ACTIVE',NULL,now()-interval '15 days',now()-interval '1 day'),
 
 -- BADALONA (3)
-    ('10000000-0000-0000-0000-000000000016','00000000-0000-0000-0000-000000000003','Badalona Smash Club','Near marina','C/ del Mar 45','Badalona','ES','08911',
+    ('10000000-0000-0000-0000-000000000016','00000000-0000-0000-0000-000000000002','Badalona Smash Club','Near marina','C/ del Mar 45','Badalona','ES','08911',
      ST_SetSRID(ST_MakePoint(2.2470,41.4505),4326)::geography,'ACTIVE',NULL,now()-interval '14 days',now()-interval '1 day'),
 
-    ('10000000-0000-0000-0000-000000000017','00000000-0000-0000-0000-000000000003','Montigalà Courts','Spacious club','Av. Puigfred 20','Badalona','ES','08917',
+    ('10000000-0000-0000-0000-000000000017','00000000-0000-0000-0000-000000000002','Montigalà Courts','Spacious club','Av. Puigfred 20','Badalona','ES','08917',
      ST_SetSRID(ST_MakePoint(2.2400,41.4600),4326)::geography,'ACTIVE',NULL,now()-interval '13 days',now()-interval '1 day'),
 
-    ('10000000-0000-0000-0000-000000000018','00000000-0000-0000-0000-000000000003','Badalona Indoor','All weather courts','C/ Independència 12','Badalona','ES','08915',
+    ('10000000-0000-0000-0000-000000000018','00000000-0000-0000-0000-000000000002','Badalona Indoor','All weather courts','C/ Independència 12','Badalona','ES','08915',
      ST_SetSRID(ST_MakePoint(2.2300,41.4480),4326)::geography,'ACTIVE',NULL,now()-interval '12 days',now()-interval '1 day'),
 
 -- TERRASSA (3)
-    ('10000000-0000-0000-0000-000000000019','00000000-0000-0000-0000-000000000003','Terrassa Pro Padel','Competitive focus','C/ Colom 300','Terrassa','ES','08222',
+    ('10000000-0000-0000-0000-000000000019','00000000-0000-0000-0000-000000000002','Terrassa Pro Padel','Competitive focus','C/ Colom 300','Terrassa','ES','08222',
      ST_SetSRID(ST_MakePoint(2.0080,41.5630),4326)::geography,'ACTIVE',NULL,now()-interval '11 days',now()-interval '1 day'),
 
-    ('10000000-0000-0000-0000-000000000020','00000000-0000-0000-0000-000000000003','Vallès Padel Center','Family club','Av. Abat Marcet 100','Terrassa','ES','08225',
+    ('10000000-0000-0000-0000-000000000020','00000000-0000-0000-0000-000000000002','Vallès Padel Center','Family club','Av. Abat Marcet 100','Terrassa','ES','08225',
      ST_SetSRID(ST_MakePoint(2.0100,41.5700),4326)::geography,'ACTIVE',NULL,now()-interval '10 days',now()-interval '1 day'),
 
-    ('10000000-0000-0000-0000-000000000021','00000000-0000-0000-0000-000000000003','Terrassa Indoor Arena','Modern courts','C/ Nord 55','Terrassa','ES','08221',
+    ('10000000-0000-0000-0000-000000000021','00000000-0000-0000-0000-000000000002','Terrassa Indoor Arena','Modern courts','C/ Nord 55','Terrassa','ES','08221',
      ST_SetSRID(ST_MakePoint(2.0030,41.5600),4326)::geography,'ACTIVE',NULL,now()-interval '9 days',now()-interval '1 day'),
 
 -- SABADELL (3)
-    ('10000000-0000-0000-0000-000000000022','00000000-0000-0000-0000-000000000003','Sabadell Padel Hub','Central courts','C/ Gràcia 40','Sabadell','ES','08201',
+    ('10000000-0000-0000-0000-000000000022','00000000-0000-0000-0000-000000000002','Sabadell Padel Hub','Central courts','C/ Gràcia 40','Sabadell','ES','08201',
      ST_SetSRID(ST_MakePoint(2.1070,41.5480),4326)::geography,'ACTIVE',NULL,now()-interval '8 days',now()-interval '1 day'),
 
-    ('10000000-0000-0000-0000-000000000023','00000000-0000-0000-0000-000000000003','Can Rull Courts','Outdoor courts','Av. Matadepera 10','Sabadell','ES','08207',
+    ('10000000-0000-0000-0000-000000000023','00000000-0000-0000-0000-000000000002','Can Rull Courts','Outdoor courts','Av. Matadepera 10','Sabadell','ES','08207',
      ST_SetSRID(ST_MakePoint(2.0900,41.5500),4326)::geography,'ACTIVE',NULL,now()-interval '7 days',now()-interval '1 day'),
 
-    ('10000000-0000-0000-0000-000000000024','00000000-0000-0000-0000-000000000003','Sabadell Indoor','Premium lights','C/ Sol i Padrís 88','Sabadell','ES','08203',
+    ('10000000-0000-0000-0000-000000000024','00000000-0000-0000-0000-000000000002','Sabadell Indoor','Premium lights','C/ Sol i Padrís 88','Sabadell','ES','08203',
      ST_SetSRID(ST_MakePoint(2.1050,41.5400),4326)::geography,'ACTIVE',NULL,now()-interval '6 days',now()-interval '1 day'),
 
 -- GIRONA (2)
-    ('10000000-0000-0000-0000-000000000025','00000000-0000-0000-0000-000000000003','Girona Elite Padel','High level club','C/ Barcelona 120','Girona','ES','17002',
+    ('10000000-0000-0000-0000-000000000025','00000000-0000-0000-0000-000000000002','Girona Elite Padel','High level club','C/ Barcelona 120','Girona','ES','17002',
      ST_SetSRID(ST_MakePoint(2.8200,41.9790),4326)::geography,'ACTIVE',NULL,now()-interval '5 days',now()-interval '1 day'),
 
-    ('10000000-0000-0000-0000-000000000026','00000000-0000-0000-0000-000000000003','Costa Brava Courts','Training center','Av. França 50','Girona','ES','17007',
+    ('10000000-0000-0000-0000-000000000026','00000000-0000-0000-0000-000000000002','Costa Brava Courts','Training center','Av. França 50','Girona','ES','17007',
      ST_SetSRID(ST_MakePoint(2.8300,41.9900),4326)::geography,'ACTIVE',NULL,now()-interval '4 days',now()-interval '1 day'),
 
 -- TARRAGONA (2)
-    ('10000000-0000-0000-0000-000000000027','00000000-0000-0000-0000-000000000003','Tarragona Padel Club','Near port','C/ Reial 15','Tarragona','ES','43004',
+    ('10000000-0000-0000-0000-000000000027','00000000-0000-0000-0000-000000000002','Tarragona Padel Club','Near port','C/ Reial 15','Tarragona','ES','43004',
      ST_SetSRID(ST_MakePoint(1.2440,41.1180),4326)::geography,'ACTIVE',NULL,now()-interval '3 days',now()-interval '1 day'),
 
-    ('10000000-0000-0000-0000-000000000028','00000000-0000-0000-0000-000000000003','Mediterrani Courts','Outdoor complex','Av. Catalunya 200','Tarragona','ES','43002',
+    ('10000000-0000-0000-0000-000000000028','00000000-0000-0000-0000-000000000002','Mediterrani Courts','Outdoor complex','Av. Catalunya 200','Tarragona','ES','43002',
      ST_SetSRID(ST_MakePoint(1.2500,41.1200),4326)::geography,'ACTIVE',NULL,now()-interval '3 days',now()-interval '1 day'),
 
 -- LLEIDA (2)
-    ('10000000-0000-0000-0000-000000000029','00000000-0000-0000-0000-000000000003','Lleida Indoor Padel','All season courts','C/ Prat de la Riba 10','Lleida','ES','25004',
+    ('10000000-0000-0000-0000-000000000029','00000000-0000-0000-0000-000000000002','Lleida Indoor Padel','All season courts','C/ Prat de la Riba 10','Lleida','ES','25004',
      ST_SetSRID(ST_MakePoint(0.6200,41.6170),4326)::geography,'ACTIVE',NULL,now()-interval '2 days',now()-interval '1 day'),
 
-    ('10000000-0000-0000-0000-000000000030','00000000-0000-0000-0000-000000000003','Segrià Padel Center','Training courts','Av. Alcalde Rovira Roure 100','Lleida','ES','25006',
+    ('10000000-0000-0000-0000-000000000030','00000000-0000-0000-0000-000000000002','Segrià Padel Center','Training courts','Av. Alcalde Rovira Roure 100','Lleida','ES','25006',
      ST_SetSRID(ST_MakePoint(0.6300,41.6200),4326)::geography,'ACTIVE',NULL,now()-interval '2 days',now()-interval '1 day')
 
     ON CONFLICT (id) DO NOTHING;
@@ -869,6 +869,112 @@ VALUES
     ('50000000-0000-0000-0000-000000000010','30000000-0000-0000-0000-000000000010','pi_dev_0010',18.00,'EUR','PENDING',   now()-interval '15 minutes', now()-interval '15 minutes')
     ON CONFLICT (id) DO NOTHING;
 
+INSERT INTO venue_image (
+    id,
+    venue_id,
+    url,
+    public_id,
+    display_order,
+    created_at
+) VALUES
+      ('8b100539-d0e9-4ea5-be7e-d15a645bbb6f','10000000-0000-0000-0000-000000000001','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772468881/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000001/72f65f82-28f5-480c-ba66-3ed5b7d06cc5.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000001/72f65f82-28f5-480c-ba66-3ed5b7d06cc5',0,'2026-03-02 16:28:01.561935+00'),
+      ('b07429a4-d1a5-4606-9acf-c398f9949c05','10000000-0000-0000-0000-000000000002','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772468928/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000002/7aa73666-33f1-4dad-933c-6d7aa313de30.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000002/7aa73666-33f1-4dad-933c-6d7aa313de30',0,'2026-03-02 16:28:49.539585+00'),
+      ('0aae5192-c480-49a0-83ac-cb094f6f8e4b','10000000-0000-0000-0000-000000000003','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772468948/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000003/7d2ff74b-ff66-43a7-9e73-934a3386a844.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000003/7d2ff74b-ff66-43a7-9e73-934a3386a844',0,'2026-03-02 16:29:07.844972+00'),
+      ('34f37958-94cc-4788-816c-7ff36e693e19','10000000-0000-0000-0000-000000000004','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772468969/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000004/7cb2a50e-5bd3-4ba1-ac36-e7dfa9781147.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000004/7cb2a50e-5bd3-4ba1-ac36-e7dfa9781147',0,'2026-03-02 16:29:28.819906+00'),
+      ('194a65c5-207e-4ce0-97ff-7d0dd58809ec','10000000-0000-0000-0000-000000000005','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772468989/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000005/c2b50d51-8ae1-43cd-9fe1-efc37df321b2.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000005/c2b50d51-8ae1-43cd-9fe1-efc37df321b2',0,'2026-03-02 16:29:50.248431+00'),
+      ('ec7e54d8-3138-47bf-b969-def06bc3d7e7','10000000-0000-0000-0000-000000000006','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469001/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000006/e67aadfa-b0c7-400b-88ef-a665ff3ee6a7.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000006/e67aadfa-b0c7-400b-88ef-a665ff3ee6a7',0,'2026-03-02 16:30:02.94263+00'),
+
+      ('5ec49868-c9d2-4981-bdda-e62dba20e67a','10000000-0000-0000-0000-000000000007','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469050/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000007/ef7899c8-f0bf-4af9-9808-ddd686826dfd.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000007/ef7899c8-f0bf-4af9-9808-ddd686826dfd',0,'2026-03-02 16:30:51.772383+00'),
+      ('409f21f8-08cc-41a1-8a77-ddae69bf7a49','10000000-0000-0000-0000-000000000008','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469083/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000008/cc5a1262-b42f-4be6-b997-5bbde2054fee.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000008/cc5a1262-b42f-4be6-b997-5bbde2054fee',0,'2026-03-02 16:31:23.98595+00'),
+      ('0529b166-4f4a-47f6-a279-5f4e6aed3a49','10000000-0000-0000-0000-000000000011','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469030/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000011/0dfbd7fe-dcc2-4b85-808a-2301b854521a.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000011/0dfbd7fe-dcc2-4b85-808a-2301b854521a',0,'2026-03-02 16:30:29.947519+00'),
+
+      ('f2fca8ce-a0d6-42f0-9cb1-bb82dbd88d54','10000000-0000-0000-0000-000000000012','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469102/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000012/93ad495a-070b-4611-b272-668fd0801530.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000012/93ad495a-070b-4611-b272-668fd0801530',0,'2026-03-02 16:31:41.708736+00'),
+      ('f4c057ad-7fff-487f-bb84-2e037ab7bbc8','10000000-0000-0000-0000-000000000013','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469115/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000013/1772e508-5177-485b-b885-34301c135289.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000013/1772e508-5177-485b-b885-34301c135289',0,'2026-03-02 16:31:55.767444+00'),
+      ('78cfa30c-03f8-4f08-a02d-f34b0330ccff','10000000-0000-0000-0000-000000000014','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469127/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000014/859305ea-94b7-4d20-af1f-c740a17caa64.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000014/859305ea-94b7-4d20-af1f-c740a17caa64',0,'2026-03-02 16:32:08.468228+00'),
+
+      ('d42f9b45-e613-404e-b90b-f87664425e90','10000000-0000-0000-0000-000000000015','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469147/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000015/3e438f40-b7e3-4ac3-b4dd-7b87289fbaa1.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000015/3e438f40-b7e3-4ac3-b4dd-7b87289fbaa1',0,'2026-03-02 16:32:27.74556+00'),
+      ('2cfd0ba9-d87a-44af-9e56-70a4adf2e9c0','10000000-0000-0000-0000-000000000016','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469306/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000016/70d936d6-4ec5-42b7-ae7b-a7df18437725.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000016/70d936d6-4ec5-42b7-ae7b-a7df18437725',0,'2026-03-02 16:35:07.302079+00'),
+
+      ('747ced7e-d18d-454e-80be-fb4d2fc44703','10000000-0000-0000-0000-000000000017','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469320/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000017/34ca7d85-af00-41b4-83ae-5db989820866.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000017/34ca7d85-af00-41b4-83ae-5db989820866',0,'2026-03-02 16:35:20.569603+00'),
+      ('dcb8e982-64a7-480e-b3a1-4c5ae080a055','10000000-0000-0000-0000-000000000018','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469351/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000018/7c899d0a-2ec2-4e6a-8477-2a7f03e675c6.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000018/7c899d0a-2ec2-4e6a-8477-2a7f03e675c6',0,'2026-03-02 16:35:50.923108+00'),
+
+      ('172c7a94-c57a-45d7-b66d-9cb12c2dafad','10000000-0000-0000-0000-000000000019','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469366/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000019/d7b2ec99-667d-42aa-92d1-409be2b224aa.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000019/d7b2ec99-667d-42aa-92d1-409be2b224aa',0,'2026-03-02 16:36:05.734587+00'),
+      ('24cc6be7-b5fd-4539-85c3-674ae43f8304','10000000-0000-0000-0000-000000000020','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469376/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000020/49c038bd-8564-4610-a50f-71d89223a12b.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000020/49c038bd-8564-4610-a50f-71d89223a12b',0,'2026-03-02 16:36:17.215687+00'),
+
+      ('584b4806-2f7b-41ee-9fe8-3c8fbd57a858','10000000-0000-0000-0000-000000000021','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469396/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000021/97a25f3d-8521-4949-9708-c74b0e60e390.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000021/97a25f3d-8521-4949-9708-c74b0e60e390',0,'2026-03-02 16:36:35.502289+00'),
+      ('e321ccdf-33c6-4049-a93d-c1515b798e51','10000000-0000-0000-0000-000000000022','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469416/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000022/728d5df1-80d2-4e7f-8c5e-6ec64c075e14.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000022/728d5df1-80d2-4e7f-8c5e-6ec64c075e14',0,'2026-03-02 16:36:56.106562+00'),
+
+      ('0d222bd0-7732-4d17-a479-92d6722062af','10000000-0000-0000-0000-000000000023','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469429/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000023/1205cf24-e8d5-4061-ac9d-774ccde0cc83.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000023/1205cf24-e8d5-4061-ac9d-774ccde0cc83',0,'2026-03-02 16:37:08.841594+00'),
+      ('58193865-fd66-41ec-8866-ac59201e7037','10000000-0000-0000-0000-000000000024','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469442/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000024/31731fe0-8655-4a59-b3a2-449814a54bd1.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000024/31731fe0-8655-4a59-b3a2-449814a54bd1',0,'2026-03-02 16:37:22.802276+00'),
+
+      ('41541cab-6487-4e49-8082-a539efd61a41','10000000-0000-0000-0000-000000000025','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469457/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000025/d139466f-9ffb-4b86-9008-de73283757da.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000025/d139466f-9ffb-4b86-9008-de73283757da',0,'2026-03-02 16:37:37.339292+00'),
+      ('e571463c-efcf-4b33-8d26-b90436ab6bf0','10000000-0000-0000-0000-000000000026','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469663/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000026/e421913d-15b2-4c1a-95a9-6fbfd092b3c9.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000026/e421913d-15b2-4c1a-95a9-6fbfd092b3c9',0,'2026-03-02 16:41:03.668051+00'),
+
+      ('7812f4ef-6599-4449-be16-aa43c6cb9496','10000000-0000-0000-0000-000000000027','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469688/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000027/5386df00-8b36-4a9c-a9c0-38d56ab61178.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000027/5386df00-8b36-4a9c-a9c0-38d56ab61178',0,'2026-03-02 16:41:27.574266+00'),
+      ('ffcbe4f1-e6fc-472c-a35c-6e66e48bda05','10000000-0000-0000-0000-000000000028','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469675/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000028/2f9af56d-66c4-4f78-ad76-3cacd1eb0168.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000028/2f9af56d-66c4-4f78-ad76-3cacd1eb0168',0,'2026-03-02 16:41:17.382221+00'),
+
+      ('920769cb-d738-4e64-b593-4305b7433667','10000000-0000-0000-0000-000000000029','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469715/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000029/d29c3b90-c2da-4eda-ac38-e456301c23f0.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000029/d29c3b90-c2da-4eda-ac38-e456301c23f0',0,'2026-03-02 16:41:55.279407+00'),
+      ('cea661f5-8aed-421a-85f2-f1e8b8853184','10000000-0000-0000-0000-000000000030','https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469702/users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000030/ab19896d-e82e-4b64-b612-94be32bbf955.png','users/google-oauth2_117245030007219025441/venues/10000000-0000-0000-0000-000000000030/ab19896d-e82e-4b64-b612-94be32bbf955',0,'2026-03-02 16:41:42.899841+00')
+        ON CONFLICT (id) DO NOTHING;
+
+
+INSERT INTO resource_image (
+    id,
+    resource_id,
+    url,
+    public_id,
+    display_order,
+    created_at
+) VALUES
+      (
+          '819b47ce-e8b2-49c3-851d-ffec839b8661',
+          '20000000-0000-0000-0000-000000000004',
+          'https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469850/users/google-oauth2_117245030007219025441/resources/20000000-0000-0000-0000-000000000004/a8a00ea5-48c1-494a-94e2-70a3cf2f7fcf.png',
+          'users/google-oauth2_117245030007219025441/resources/20000000-0000-0000-0000-000000000004/a8a00ea5-48c1-494a-94e2-70a3cf2f7fcf',
+          0,
+          '2026-03-02 16:44:10.141807+00'
+      ),
+      (
+          'c15e9593-dccb-47a2-b91d-b27c4e46efe1',
+          '20000000-0000-0000-0000-000000000005',
+          'https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469871/users/google-oauth2_117245030007219025441/resources/20000000-0000-0000-0000-000000000005/60bdddc4-a31c-4ebd-a898-75b6abed7e5e.png',
+          'users/google-oauth2_117245030007219025441/resources/20000000-0000-0000-0000-000000000005/60bdddc4-a31c-4ebd-a898-75b6abed7e5e',
+          0,
+          '2026-03-02 16:44:31.563282+00'
+      ),
+      (
+          '87a10f61-bf47-4dae-8d79-25f05fd2f028',
+          '20000000-0000-0000-0000-000000000027',
+          'https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469917/users/google-oauth2_117245030007219025441/resources/20000000-0000-0000-0000-000000000027/39952a13-2809-4c73-b575-7d64e5e734b3.png',
+          'users/google-oauth2_117245030007219025441/resources/20000000-0000-0000-0000-000000000027/39952a13-2809-4c73-b575-7d64e5e734b3',
+          0,
+          '2026-03-02 16:45:18.624866+00'
+      ),
+      (
+          '944b22c3-0701-4d9c-8d43-10faa91b85e3',
+          '20000000-0000-0000-0000-000000000028',
+          'https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469907/users/google-oauth2_117245030007219025441/resources/20000000-0000-0000-0000-000000000028/a8663ba6-33b9-49e6-89a6-0c6533c124ff.png',
+          'users/google-oauth2_117245030007219025441/resources/20000000-0000-0000-0000-000000000028/a8663ba6-33b9-49e6-89a6-0c6533c124ff',
+          0,
+          '2026-03-02 16:45:07.139096+00'
+      ),
+      (
+          '9b534f30-26f2-454a-bd4c-d09374463c31',
+          '20000000-0000-0000-0000-000000000029',
+          'https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469898/users/google-oauth2_117245030007219025441/resources/20000000-0000-0000-0000-000000000029/0c595d1c-b7a6-4025-b5f7-3f9f300feb3d.png',
+          'users/google-oauth2_117245030007219025441/resources/20000000-0000-0000-0000-000000000029/0c595d1c-b7a6-4025-b5f7-3f9f300feb3d',
+          0,
+          '2026-03-02 16:44:58.83774+00'
+      ),
+      (
+          '0e227164-3812-412a-88bd-8b5e8f0966d0',
+          '20000000-0000-0000-0000-000000000030',
+          'https://res.cloudinary.com/dvclcs8wp/image/upload/v1772469893/users/google-oauth2_117245030007219025441/resources/20000000-0000-0000-0000-000000000030/3bfa33f1-77ea-4d86-8ccb-acb92ab9a71a.png',
+          'users/google-oauth2_117245030007219025441/resources/20000000-0000-0000-0000-000000000030/3bfa33f1-77ea-4d86-8ccb-acb92ab9a71a',
+          0,
+          '2026-03-02 16:44:53.429308+00'
+      ) ON CONFLICT (id) DO NOTHING;
+
 -- =========================
 -- 11) MATCH_REQUEST (10)
 -- invitation_token: UUID UNIQUE NOT NULL
@@ -943,21 +1049,21 @@ INSERT INTO match_player (
     team, role, joined_at
 )
 VALUES
-    ('70000000-0000-0000-0000-000000000001','40000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000005','A','ORGANIZER', now()-interval '1 hour'),
-    ('70000000-0000-0000-0000-000000000002','40000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000006','A','PLAYER',    now()-interval '55 minutes'),
+    ('70000000-0000-0000-0000-000000000001','40000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000005','TEAM_1','ORGANIZER', now()-interval '1 hour'),
+    ('70000000-0000-0000-0000-000000000002','40000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000006','TEAM_2','GUEST',    now()-interval '55 minutes'),
 
-    ('70000000-0000-0000-0000-000000000003','40000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-000000000006','A','ORGANIZER', now()-interval '2 hours'),
+    ('70000000-0000-0000-0000-000000000003','40000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-000000000006','TEAM_1','ORGANIZER', now()-interval '2 hours'),
 
-    ('70000000-0000-0000-0000-000000000004','40000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000007','A','ORGANIZER', now()-interval '3 hours'),
+    ('70000000-0000-0000-0000-000000000004','40000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000007','TEAM_1','ORGANIZER', now()-interval '3 hours'),
 
-    ('70000000-0000-0000-0000-000000000005','40000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000008','A','ORGANIZER', now()-interval '30 minutes'),
-    ('70000000-0000-0000-0000-000000000006','40000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000010','B','PLAYER',    now()-interval '25 minutes'),
+    ('70000000-0000-0000-0000-000000000005','40000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000008','TEAM_1','ORGANIZER', now()-interval '30 minutes'),
+    ('70000000-0000-0000-0000-000000000006','40000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000010','TEAM_2','GUEST',    now()-interval '25 minutes'),
 
-    ('70000000-0000-0000-0000-000000000007','40000000-0000-0000-0000-000000000005','00000000-0000-0000-0000-000000000010','A','ORGANIZER', now()-interval '4 hours'),
+    ('70000000-0000-0000-0000-000000000007','40000000-0000-0000-0000-000000000005','00000000-0000-0000-0000-000000000010','TEAM_1','ORGANIZER', now()-interval '4 hours'),
 
-    ('70000000-0000-0000-0000-000000000008','40000000-0000-0000-0000-000000000008','00000000-0000-0000-0000-000000000008','A','ORGANIZER', now()-interval '6 hours'),
+    ('70000000-0000-0000-0000-000000000008','40000000-0000-0000-0000-000000000008','00000000-0000-0000-0000-000000000008','TEAM_1','ORGANIZER', now()-interval '6 hours'),
 
-    ('70000000-0000-0000-0000-000000000009','40000000-0000-0000-0000-000000000009','00000000-0000-0000-0000-000000000007','A','ORGANIZER', now()-interval '8 hours'),
+    ('70000000-0000-0000-0000-000000000009','40000000-0000-0000-0000-000000000009','00000000-0000-0000-0000-000000000007','TEAM_1','ORGANIZER', now()-interval '8 hours'),
 
-    ('70000000-0000-0000-0000-000000000010','40000000-0000-0000-0000-000000000010','00000000-0000-0000-0000-000000000006','A','ORGANIZER', now()-interval '15 minutes')
+    ('70000000-0000-0000-0000-000000000010','40000000-0000-0000-0000-000000000010','00000000-0000-0000-0000-000000000006','TEAM_1','ORGANIZER', now()-interval '15 minutes')
     ON CONFLICT (id) DO NOTHING;

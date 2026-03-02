@@ -22,7 +22,6 @@ import {
   CalendarDays,
   ChevronDown,
   Crown,
-  ImagePlus,
   LogOut,
   MapPin,
   Menu,
@@ -234,12 +233,6 @@ export function DashboardNavbar({
                     <Link href="/dashboard/profile" className="cursor-pointer gap-2 text-foreground focus:bg-secondary/50 focus:text-foreground">
                       <User className="h-4 w-4 text-muted-foreground" />
                       Editar Perfil
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/profile/avatar" className="cursor-pointer gap-2 text-foreground focus:bg-secondary/50 focus:text-foreground">
-                      <ImagePlus className="h-4 w-4 text-muted-foreground" />
-                      Cambiar Avatar
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>

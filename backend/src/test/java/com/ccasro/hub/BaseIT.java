@@ -1,8 +1,5 @@
 package com.ccasro.hub;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-
 import com.ccasro.hub.modules.iam.domain.UserProfile;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import com.ccasro.hub.modules.iam.domain.valueobjects.Auth0Id;
@@ -15,7 +12,6 @@ import com.ccasro.hub.modules.security.config.TestSecurityConfig;
 import com.ccasro.hub.shared.domain.security.UserRole;
 import com.ccasro.hub.shared.domain.valueobjects.CountryCode;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
-import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,10 +22,15 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import({TestSecurityConfig.class, TestcontainersConfiguration.class})
+@Import({TestSecurityConfig.class, TestcontainersConfiguration.class, TestMailConfig.class})
 @Transactional
 public abstract class BaseIT {
 
