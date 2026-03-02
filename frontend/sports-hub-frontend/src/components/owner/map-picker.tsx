@@ -10,15 +10,37 @@ interface MapPickerProps {
   latitude: number;
   longitude: number;
   onLocationChange: (lat: number, lng: number) => void;
+  onAddressChange?: (street: string, city: string, country: string, postalCode: string) => void;
 }
 
 type LeafletContainer = HTMLDivElement & { _leaflet_id?: number };
 
-export function MapPicker({ latitude, longitude, onLocationChange }: MapPickerProps) {
+export function MapPicker({ latitude, longitude, onLocationChange, onAddressChange }: MapPickerProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<Leaflet.Map | null>(null);
   const markerRef = useRef<Leaflet.Marker | null>(null);
+  const isInternalUpdate = useRef(false);
   const [loaded, setLoaded] = useState(false);
+
+  const reverseGeocode = async (lat: number, lng: number) => {
+    try {
+      const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+          { headers: { "Accept-Language": "es" } }
+      );
+      const data = await res.json();
+      const addr = data.address ?? {};
+
+      const street = [addr.road, addr.house_number].filter(Boolean).join(", ") || "";
+      const city = addr.city ?? addr.town ?? addr.village ?? addr.municipality ?? "";
+      const country = addr.country ?? "";
+      const postalCode = addr.postcode ?? "";
+
+      onAddressChange?.(street, city, country, postalCode);
+    } catch {
+      // silencioso
+    }
+  };
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -28,7 +50,6 @@ export function MapPicker({ latitude, longitude, onLocationChange }: MapPickerPr
     const loadLeaflet = async () => {
       const L = (await import("leaflet")) as unknown as typeof Leaflet;
 
-      // Load CSS
       if (!document.querySelector('link[href*="leaflet.css"]')) {
         const link = document.createElement("link");
         link.rel = "stylesheet";
@@ -68,20 +89,24 @@ export function MapPicker({ latitude, longitude, onLocationChange }: MapPickerPr
         const pos = marker.getLatLng();
         const clampedLat = Math.max(-90, Math.min(90, pos.lat));
         const clampedLng = Math.max(-180, Math.min(180, pos.lng));
+        isInternalUpdate.current = true;
         onLocationChange(
             parseFloat(clampedLat.toFixed(6)),
             parseFloat(clampedLng.toFixed(6))
         );
+        reverseGeocode(clampedLat, clampedLng);
       });
 
       map.on("click", (e: Leaflet.LeafletMouseEvent) => {
         const clampedLat = Math.max(-90, Math.min(90, e.latlng.lat));
         const clampedLng = Math.max(-180, Math.min(180, e.latlng.lng));
         marker.setLatLng([clampedLat, clampedLng]);
+        isInternalUpdate.current = true;
         onLocationChange(
             parseFloat(clampedLat.toFixed(6)),
             parseFloat(clampedLng.toFixed(6))
         );
+        reverseGeocode(clampedLat, clampedLng);
       });
 
       mapInstanceRef.current = map;
@@ -97,13 +122,16 @@ export function MapPicker({ latitude, longitude, onLocationChange }: MapPickerPr
       mapInstanceRef.current?.remove();
       mapInstanceRef.current = null;
       markerRef.current = null;
-
       if (container._leaflet_id) delete container._leaflet_id;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    if (isInternalUpdate.current) {
+      isInternalUpdate.current = false;
+      return;
+    }
     if (markerRef.current && mapInstanceRef.current) {
       markerRef.current.setLatLng([latitude, longitude]);
       mapInstanceRef.current.setView([latitude, longitude], mapInstanceRef.current.getZoom());
@@ -131,8 +159,12 @@ export function MapPicker({ latitude, longitude, onLocationChange }: MapPickerPr
           <span className="text-sm font-medium text-foreground">Ubicacion en el mapa</span>
         </div>
 
-        <div className="relative overflow-hidden rounded-lg border border-border/50">
-          <div ref={mapRef} className="h-64 w-full bg-secondary/30" style={{ zIndex: 0 }} />
+        <div className="relative rounded-lg border border-border/50">
+          <div
+              ref={mapRef}
+              className="h-64 w-full rounded-lg overflow-hidden bg-secondary/30"
+              style={{ zIndex: 0 }}
+          />
           {!loaded && (
               <div className="absolute inset-0 flex items-center justify-center bg-secondary/30">
                 <span className="text-sm text-muted-foreground">Cargando mapa...</span>
@@ -141,7 +173,7 @@ export function MapPicker({ latitude, longitude, onLocationChange }: MapPickerPr
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Haz clic en el mapa o arrastra el marcador para ubicar el venue.
+          Haz clic en el mapa o arrastra el marcador para ubicar el venue. La dirección se rellenará automáticamente.
         </p>
 
         <div className="grid grid-cols-2 gap-3">

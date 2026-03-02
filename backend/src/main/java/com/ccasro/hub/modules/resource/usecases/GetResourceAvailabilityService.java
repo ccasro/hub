@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ public class GetResourceAvailabilityService {
   private final ResourceRepositoryPort resourceRepository;
   private final BookedSlotsPort bookedSlotsPort;
 
+  @Cacheable(value = "slots", key = "#resourceId.value() + '_' + #date")
   @Transactional(readOnly = true)
   public List<SlotAvailabilityDto> execute(ResourceId resourceId, LocalDate date) {
     Resource resource =

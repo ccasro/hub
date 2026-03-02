@@ -179,8 +179,6 @@ public class Booking {
   public void cancel(String reason, Clock clock) {
     if (this.status == BookingStatus.CANCELLED)
       throw new IllegalStateException("Booking is already cancelled");
-    if (this.status == BookingStatus.PENDING_PAYMENT)
-      throw new IllegalStateException("Cannot cancel an unpaid booking");
 
     LocalDateTime slotStart = LocalDateTime.of(bookingDate, slot.startTime());
     LocalDateTime now = LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC);

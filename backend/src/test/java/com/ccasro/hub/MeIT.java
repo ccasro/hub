@@ -15,14 +15,14 @@ public class MeIT extends BaseIT {
 
   @Test
   void me_without_token_returns_401() throws Exception {
-    mvc.perform(get("api/me")).andExpect(status().isUnauthorized());
+    mvc.perform(get("/api/me")).andExpect(status().isUnauthorized());
   }
 
   @Test
   void me_with_valid_jwt_returns_200_and_provisions_user() throws Exception {
     assertThat(users.findByAuth0Id(new Auth0Id("auth0|user"))).isEmpty();
 
-    mvc.perform(get("api/me").header("Authorization", bearer(userToken())))
+    mvc.perform(get("/api/me").header("Authorization", bearer(PLAYER_TOKEN)))
         .andExpect(status().isOk());
 
     assertThat(users.findByAuth0Id(new Auth0Id("auth0|user"))).isPresent();

@@ -12,6 +12,7 @@ import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import java.time.Clock;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,9 @@ public class RemoveVenueImageService {
 
   @Transactional
   @PreAuthorize("@authz.isOwner()")
+  @CacheEvict(
+      value = {"venues", "venue-detail", "venues-with-count"},
+      allEntries = true)
   public void execute(VenueId venueId, UUID imageId) {
     Venue venue = venueRepository.findById(venueId).orElseThrow(VenueNotFoundException::new);
 

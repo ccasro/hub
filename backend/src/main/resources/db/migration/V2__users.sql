@@ -18,7 +18,7 @@ CREATE TABLE user_profile (
     owner_request_status  VARCHAR(20)  DEFAULT NULL,
 
     preferred_sport VARCHAR(50)
-        CHECK (preferred_sport IN ('PADEL', 'TENNIS', 'SQUASH')),
+        CHECK (preferred_sport IN ('PADEL', 'TENNIS', 'SQUASH', 'BADMINTON')),
 
     skill_level VARCHAR(20)
         CHECK (skill_level IN ('BEGINNER', 'INTERMEDIATE', 'ADVANCED')),

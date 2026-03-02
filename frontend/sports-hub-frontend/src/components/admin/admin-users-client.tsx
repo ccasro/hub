@@ -131,18 +131,24 @@ export function AdminUsersClient({ users: initialUsers }: Props) {
         setActionError(null)
 
         const { id } = confirmDialog.user
-        const endpoints: Record<Action, string> = {
-            suspend:  `/api/proxy/api/admin/users/${id}/suspend`,
-            activate: `/api/proxy/api/admin/users/${id}/activate`,
-            promote:  `/api/proxy/api/admin/users/${id}/approve-owner`,
-            demote:   `/api/proxy/api/admin/users/${id}/revoke-owner`,
+
+        const requestConfig: Record<Action, { url: string; body?: object }> = {
+            suspend:  { url: `/api/proxy/api/admin/users/${id}/toggle-active` },
+            activate: { url: `/api/proxy/api/admin/users/${id}/toggle-active` },
+            promote:  { url: `/api/proxy/api/admin/users/${id}/role`, body: { role: "OWNER" } },
+            demote:   { url: `/api/proxy/api/admin/users/${id}/role`, body: { role: "PLAYER" } },
         }
 
         try {
-            const res = await fetch(endpoints[confirmDialog.action], { method: "PATCH" })
+            const { url, body } = requestConfig[confirmDialog.action]
+            const res = await fetch(url, {
+                method: "PATCH",
+                headers: body ? { "Content-Type": "application/json" } : undefined,
+                body: body ? JSON.stringify(body) : undefined,
+            })
             if (!res.ok) {
-                const body = await res.json().catch(() => null)
-                throw new Error(body?.detail || `Error ${res.status}`)
+                const data = await res.json().catch(() => null)
+                throw new Error(data?.detail || `Error ${res.status}`)
             }
 
             setUsers((prev) =>
@@ -157,7 +163,6 @@ export function AdminUsersClient({ users: initialUsers }: Props) {
                     }
                 })
             )
-            // Sync detail dialog
             setDetailUser((prev) => {
                 if (prev?.id !== id) return prev
                 switch (confirmDialog.action) {

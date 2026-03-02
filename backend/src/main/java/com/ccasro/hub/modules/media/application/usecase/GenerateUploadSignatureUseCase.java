@@ -24,9 +24,11 @@ public class GenerateUploadSignatureUseCase {
 
   public UploadSignatureResponse request(String principalId, UploadSignatureRequest req) {
 
-    validate(principalId, req);
+    String sanitizedPrincipalId = sanitizePrincipalId(principalId);
 
-    UploadContext ctx = mapper.toContext(principalId, req);
+    validate(sanitizedPrincipalId, req);
+
+    UploadContext ctx = mapper.toContext(sanitizedPrincipalId, req);
 
     String folder = folderPolicy.resolveFolder(req.purpose(), ctx);
 
@@ -75,5 +77,12 @@ public class GenerateUploadSignatureUseCase {
 
   private void require(String v, String msg) {
     if (v == null || v.isBlank()) throw new IllegalArgumentException(msg);
+  }
+
+  private String sanitizePrincipalId(String raw) {
+    if (raw == null || raw.isBlank()) {
+      throw new IllegalArgumentException("principalId is required");
+    }
+    return raw.replace('|', '_').replace(':', '_');
   }
 }

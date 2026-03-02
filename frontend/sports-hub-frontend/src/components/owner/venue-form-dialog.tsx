@@ -85,7 +85,6 @@ export function VenueFormDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    // Simulate API call
     setTimeout(() => {
       onSubmit(form);
       setSaving(false);
@@ -214,6 +213,15 @@ export function VenueFormDialog({
               longitude={form.longitude}
               onLocationChange={(lat, lng) => {
                 setForm((prev) => ({ ...prev, latitude: lat, longitude: lng }));
+              }}
+              onAddressChange={(street, city, country, postalCode) => {
+                setForm((prev) => ({
+                  ...prev,
+                  street:     street     || prev.street,
+                  city:       city       || prev.city,
+                  country:    country    || prev.country,
+                  postalCode: postalCode || prev.postalCode,
+                }));
               }}
             />
           </form>

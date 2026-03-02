@@ -9,6 +9,7 @@ import com.ccasro.hub.shared.application.ports.CurrentUserContextProvider;
 import java.time.Clock;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,9 @@ public class AdminVenueService {
   }
 
   @Transactional
+  @CacheEvict(
+      value = {"venues", "venue-detail", "venues-with-count"},
+      allEntries = true)
   public Venue approve(VenueId id) {
     requireAdmin();
     Venue venue = venueRepository.findById(id).orElseThrow(VenueNotFoundException::new);
@@ -50,6 +54,9 @@ public class AdminVenueService {
   }
 
   @Transactional
+  @CacheEvict(
+      value = {"venues", "venue-detail", "venues-with-count"},
+      allEntries = true)
   public Venue reject(VenueId id, String reason) {
     requireAdmin();
     Venue venue = venueRepository.findById(id).orElseThrow(VenueNotFoundException::new);
@@ -58,6 +65,9 @@ public class AdminVenueService {
   }
 
   @Transactional
+  @CacheEvict(
+      value = {"venues", "venue-detail", "venues-with-count"},
+      allEntries = true)
   public Venue adminSuspend(VenueId id, String reason) {
     requireAdmin();
     Venue venue = venueRepository.findById(id).orElseThrow(VenueNotFoundException::new);

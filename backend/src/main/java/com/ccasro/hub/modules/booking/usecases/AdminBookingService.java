@@ -9,7 +9,6 @@ import com.ccasro.hub.modules.booking.domain.ports.out.BookingRepositoryPort;
 import com.ccasro.hub.modules.booking.domain.ports.out.PaymentPort;
 import com.ccasro.hub.modules.booking.domain.ports.out.PaymentRepositoryPort;
 import com.ccasro.hub.modules.booking.domain.valueobjects.BookingId;
-import com.ccasro.hub.modules.booking.shared.BookingEnrichmentHelper;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import java.time.Clock;
 import java.util.List;
@@ -29,13 +28,13 @@ public class AdminBookingService {
   private final PaymentPort paymentPort;
   private final BookingNotificationPort notificationPort;
   private final UserProfileRepositoryPort userRepository;
-  private final BookingEnrichmentHelper enrichmentHelper;
+  private final BookingEnrichmentService enrichmentService;
   private final Clock clock;
 
   @PreAuthorize("@authz.isAdmin()")
   public List<MyBookingView> findAll(int page, int size) {
     var bookings = bookingRepository.findAll(page, size);
-    return enrichmentHelper.enrich(bookings);
+    return enrichmentService.enrich(bookings);
   }
 
   @Transactional
