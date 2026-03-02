@@ -241,7 +241,7 @@ public class BookingIT extends BaseIT {
   }
 
   private LocalDate nextWeekday() {
-    LocalDate d = LocalDate.now().plusDays(1);
+    LocalDate d = LocalDate.now().plusDays(3);
     while (d.getDayOfWeek().getValue() > 5) d = d.plusDays(1);
     return d;
   }

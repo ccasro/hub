@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import({TestSecurityConfig.class, TestcontainersConfiguration.class})
+@Import({TestSecurityConfig.class, TestcontainersConfiguration.class, TestMailConfig.class})
 @Transactional
 public abstract class BaseIT {
 

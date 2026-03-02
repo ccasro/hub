@@ -8,9 +8,10 @@ import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Slider} from "@/components/ui/slider"
-import {ChevronDown, ChevronUp, Loader2, MapPin, Search, Users} from "lucide-react"
+import {ArrowLeft, ChevronDown, ChevronUp, Loader2, MapPin, Search, Users} from "lucide-react"
 import type {MatchFormat, MatchSkillLevel, MatchSlotResult, UserProfile} from "@/types"
 import {MatchSlotCard} from "@/components/match/match-slot-card"
+import {useRouter} from "next/navigation";
 
 interface CityDto {
     id: number
@@ -84,6 +85,7 @@ export function MatchSearchClient({ user }: Props) {
     const [error, setError]                 = useState<string | null>(null)
     const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null)
     const [filtersOpen, setFiltersOpen]     = useState(true)
+    const router = useRouter();
 
     useEffect(() => {
         fetch("/api/proxy/api/cities?countryCode=ESP")
@@ -180,10 +182,20 @@ export function MatchSearchClient({ user }: Props) {
 
                 {/* Header */}
                 <div className="border-b border-border/50 p-4">
-                    <h1 className="font-[var(--font-space-grotesk)] text-xl font-bold tracking-tight text-foreground">
-                        Buscar Partido
-                    </h1>
-                    <p className="text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 mb-1">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => router.back()}
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                        </Button>
+                        <h1 className="font-[var(--font-space-grotesk)] text-xl font-bold tracking-tight text-foreground">
+                            Buscar Partido
+                        </h1>
+                    </div>
+                    <p className="text-xs text-muted-foreground pl-10">
                         Encuentra pistas y oponentes cerca de ti
                     </p>
                 </div>
