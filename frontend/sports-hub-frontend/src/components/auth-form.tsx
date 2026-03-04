@@ -62,7 +62,7 @@ export function AuthForm() {
                     </Button>
                 </a>
 
-                <a href="/api/auth/login?connection=apple" className="block">
+                <a href="/auth/login?connection=apple" className="block">
                     <Button
                         variant="outline"
                         className="relative h-12 w-full border-border/60 bg-secondary/30 text-foreground hover:border-primary/40 hover:bg-secondary/50"

@@ -61,7 +61,6 @@ public class SearchMatchSlotsService {
               slot ->
                   !slot.startTime().isBefore(query.startTimeFrom())
                       && !slot.startTime().isAfter(query.startTimeTo()))
-          // Si el usuario pidió duración concreta, filtramos por ella
           .filter(
               slot ->
                   query.slotDurationMinutes() <= 0

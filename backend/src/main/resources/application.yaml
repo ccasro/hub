@@ -6,37 +6,40 @@ spring:
     name: backend
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=${DB_SSL_MODE:disable}&prepareThreshold=0
     username: ${DB_USER}
     password: ${DB_PASSWORD}
+    hikari:
+      auto-commit: false
 
   jpa:
     hibernate:
       ddl-auto: validate
+    properties:
+      hibernate:
+        connection:
+          provider_disables_autocommit: true
 
   flyway:
     enabled: true
     locations: classpath:db/migration
 
-
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-
+  task:
+    execution:
+      pool:
+        core-size: 2
+        max-size: 5
+        queue-capacity: 100
 
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: ${AUTH0_ISSUER}
+
+brevo:
+  api:
+    key: ${BREVO_API_KEY:dummy-key-for-local}
 
 springdoc:
   api-docs:
@@ -69,3 +72,5 @@ management:
 app:
   mail:
     from: ${APP_MAIL_FROM:noreply@padelhub.com}
+  frontend:
+    url: ${APP_FRONTEND_URL:http://localhost:3000}

@@ -5,8 +5,8 @@ import com.ccasro.hub.modules.booking.domain.exception.SlotNotAvailableException
 import com.ccasro.hub.modules.booking.domain.ports.out.BookingRepositoryPort;
 import com.ccasro.hub.modules.matching.application.dto.CreateMatchRequestCommand;
 import com.ccasro.hub.modules.matching.domain.MatchRequest;
+import com.ccasro.hub.modules.matching.domain.events.MatchInvitationsEvent;
 import com.ccasro.hub.modules.matching.domain.ports.out.EligiblePlayerPort;
-import com.ccasro.hub.modules.matching.domain.ports.out.MatchNotificationPort;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchRequestRepositoryPort;
 import com.ccasro.hub.modules.resource.domain.ports.out.SlotAvailabilityPort;
 import com.ccasro.hub.modules.resource.domain.valueobjects.SlotRange;
@@ -17,6 +17,7 @@ import java.time.LocalTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,7 @@ public class CreateMatchRequestService {
   private final BookingRepositoryPort bookingRepository;
   private final SlotAvailabilityPort slotAvailabilityPort;
   private final EligiblePlayerPort eligiblePlayerPort;
-  private final MatchNotificationPort notificationPort;
+  private final ApplicationEventPublisher eventPublisher;
   private final Clock clock;
 
   private static final Duration MATCH_TTL = Duration.ofHours(48);
@@ -94,14 +95,14 @@ public class CreateMatchRequestService {
               .toList();
 
       if (!emails.isEmpty()) {
-        notificationPort.sendMatchInvitations(matchRequest, emails);
+        eventPublisher.publishEvent(new MatchInvitationsEvent(matchRequest, emails));
         log.info(
-            "Sent match invitations to {} players for match {}",
+            "Queued match invitations for {} players for match {}",
             emails.size(),
             matchRequest.getId().value());
       }
     } catch (Exception e) {
-      log.warn("Failed to send match invitations: {}", e.getMessage());
+      log.warn("Failed to queue match invitations: {}", e.getMessage());
     }
 
     return matchRequest;

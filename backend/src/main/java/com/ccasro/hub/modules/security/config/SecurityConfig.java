@@ -2,6 +2,7 @@ package com.ccasro.hub.modules.security.config;
 
 import com.ccasro.hub.modules.iam.infrastructure.security.EnsureLocalUserFilter;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -21,6 +22,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+  @Value("${app.frontend.url}")
+  private String frontendUrl;
+
   @Bean
   public SecurityFilterChain filterChain(
       HttpSecurity http,
@@ -28,28 +32,26 @@ public class SecurityConfig {
       Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthenticationConverter)
       throws Exception {
 
-    http
-        // Stateless API
-        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        // CORS (React/Next.js dev)
+    http.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .cors(cors -> {})
-        // CSRF off for stateless APIs using Authorization: Bearer
         .csrf(AbstractHttpConfigurer::disable)
+        .headers(
+            headers ->
+                headers
+                    .contentSecurityPolicy(
+                        csp -> csp.policyDirectives("default-src 'self'; frame-ancestors 'none'"))
+                    .httpStrictTransportSecurity(
+                        hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000)))
         .authorizeHttpRequests(
             auth ->
-                auth
-                    // Public endpoints
-                    .requestMatchers("/actuator/health")
+                auth.requestMatchers("/actuator/health")
                     .permitAll()
-                    // Swagger / OpenAPI (springdoc defaults)
                     .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
                     .permitAll()
-                    // Everything else requires a valid JWT
                     .anyRequest()
                     .authenticated())
         .oauth2ResourceServer(
             oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
-        // Ensure local user exists after JWT is authenticated
         .addFilterAfter(ensureFilter, BearerTokenAuthenticationFilter.class);
 
     return http.build();
@@ -64,9 +66,8 @@ public class SecurityConfig {
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             "http://localhost:5173",
-            "http://127.0.0.1:5173"
-            // Add production frontend origin(s), e.g. "https://app.yourdomain.com"
-            ));
+            "http://127.0.0.1:5173",
+            frontendUrl));
 
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
     config.setAllowedHeaders(List.of("Authorization", "Content-Type"));

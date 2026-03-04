@@ -2,10 +2,10 @@ package com.ccasro.hub.modules.matching.infrastructure.notification;
 
 import com.ccasro.hub.modules.booking.application.port.out.ResourceReadPort;
 import com.ccasro.hub.modules.booking.application.port.out.VenueReadPort;
+import com.ccasro.hub.modules.booking.infrastructure.email.BrevoEmailSender;
 import com.ccasro.hub.modules.matching.domain.MatchRequest;
 import com.ccasro.hub.modules.matching.domain.PlayerTeam;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchNotificationPort;
-import jakarta.mail.internet.MimeMessage;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -15,8 +15,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -26,13 +24,10 @@ import org.thymeleaf.context.Context;
 @Slf4j
 public class MatchNotificationAdapter implements MatchNotificationPort {
 
-  private final JavaMailSender mailSender;
   private final TemplateEngine templateEngine;
   private final ResourceReadPort resourceReadPort;
   private final VenueReadPort venueReadPort;
-
-  @Value("${app.mail.from:noreply@sportshub.com}")
-  private String from;
+  private final BrevoEmailSender brevoEmailSender;
 
   @Value("${app.frontend.url:http://localhost:3000}")
   private String frontendUrl;
@@ -84,8 +79,8 @@ public class MatchNotificationAdapter implements MatchNotificationPort {
         ctx.setVariable("joinUrl", joinUrl);
         ctx.setVariable("expiresAt", expiresAt);
 
-        sendHtmlEmail(
-            email, "⚔️ Te invitan a un partido — SportsHub", "email/match-invitation", ctx);
+        String html = templateEngine.process("email/match-invitation", ctx);
+        brevoEmailSender.send(email, "⚔️ Te invitan a un partido — SportsHub", html);
       } catch (Exception e) {
         log.error("Failed to send match invitation to {}: {}", email, e.getMessage());
       }
@@ -129,7 +124,8 @@ public class MatchNotificationAdapter implements MatchNotificationPort {
         ctx.setVariable("team2Players", team2);
         ctx.setVariable("dashboardUrl", matchUrl);
 
-        sendHtmlEmail(email, "🎉 ¡Partido completo! — SportsHub", "email/match-full", ctx);
+        String html = templateEngine.process("email/match-full", ctx);
+        brevoEmailSender.send(email, "🎉 ¡Partido completo! — SportsHub", html);
       } catch (Exception e) {
         log.error("Failed to send match full email to {}: {}", email, e.getMessage());
       }
@@ -157,14 +153,13 @@ public class MatchNotificationAdapter implements MatchNotificationPort {
                 .format(TIME_FMT));
         ctx.setVariable("searchUrl", frontendUrl + "/match/search");
 
-        sendHtmlEmail(email, "❌ Partido cancelado — SportsHub", "email/match-cancelled", ctx);
+        String html = templateEngine.process("email/match-cancelled", ctx);
+        brevoEmailSender.send(email, "❌ Partido cancelado — SportsHub", html);
       } catch (Exception e) {
         log.error("Failed to send match cancelled email to {}: {}", email, e.getMessage());
       }
     }
   }
-
-  // ── Helpers ───────────────────────────────────────────────────
 
   private record EnrichedNames(String resourceName, String venueName) {}
 
@@ -186,18 +181,5 @@ public class MatchNotificationAdapter implements MatchNotificationPort {
       log.error("Failed to enrich match notification: {}", e.getMessage());
       return new EnrichedNames("Pista", "Club");
     }
-  }
-
-  private void sendHtmlEmail(String to, String subject, String templateName, Context ctx)
-      throws Exception {
-
-    String html = templateEngine.process(templateName, ctx);
-    MimeMessage mime = mailSender.createMimeMessage();
-    MimeMessageHelper helper = new MimeMessageHelper(mime, true, "UTF-8");
-    helper.setFrom(from);
-    helper.setTo(to);
-    helper.setSubject(subject);
-    helper.setText(html, true);
-    mailSender.send(mime);
   }
 }
