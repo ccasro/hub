@@ -2,8 +2,8 @@ package com.ccasro.hub.modules.booking.usecases;
 
 import com.ccasro.hub.modules.booking.application.dto.CancelBookingCommand;
 import com.ccasro.hub.modules.booking.domain.Booking;
+import com.ccasro.hub.modules.booking.domain.events.BookingCancelledEvent;
 import com.ccasro.hub.modules.booking.domain.exception.BookingNotFoundException;
-import com.ccasro.hub.modules.booking.domain.ports.out.BookingNotificationPort;
 import com.ccasro.hub.modules.booking.domain.ports.out.BookingRepositoryPort;
 import com.ccasro.hub.modules.booking.domain.ports.out.PaymentPort;
 import com.ccasro.hub.modules.booking.domain.ports.out.PaymentRepositoryPort;
@@ -14,6 +14,7 @@ import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,10 +27,10 @@ public class CancelBookingService {
   private final BookingRepositoryPort bookingRepository;
   private final PaymentRepositoryPort paymentRepository;
   private final PaymentPort paymentPort;
-  private final BookingNotificationPort notificationPort;
   private final MatchRequestRepositoryPort matchRequestRepository;
   private final UserProfileRepositoryPort userRepository;
   private final CurrentUserProvider currentUser;
+  private final ApplicationEventPublisher eventPublisher;
   private final Clock clock;
 
   @Transactional
@@ -70,14 +71,13 @@ public class CancelBookingService {
 
     Booking saved = bookingRepository.save(booking);
 
-    try {
-      userRepository
-          .findById(currentUser.getUserId())
-          .map(p -> p.getEmail().value())
-          .ifPresent(playerEmail -> notificationPort.notifyBookingCancelled(saved, playerEmail));
-    } catch (Exception e) {
-      log.warn("Failed to send cancellation email: {}", e.getMessage());
-    }
+    userRepository
+        .findById(currentUser.getUserId())
+        .map(p -> p.getEmail().value())
+        .ifPresent(
+            email ->
+                eventPublisher.publishEvent(
+                    new BookingCancelledEvent(saved.getId().value(), email)));
 
     return saved;
   }

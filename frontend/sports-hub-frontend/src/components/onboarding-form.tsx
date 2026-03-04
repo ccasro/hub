@@ -1,5 +1,6 @@
 "use client"
 
+import {CityCombobox} from "@/components/forms/CityCombobox"
 import {useCallback, useRef, useState} from "react"
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
@@ -459,24 +460,25 @@ export function OnboardingForm() {
                         </Select>
                     </div>
 
-                    {/* City */}
+                    {/* City - con búsqueda */}
                     <div className="flex flex-col gap-2">
-                        <Label htmlFor="city" className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                        <Label htmlFor="citySearch" className="flex items-center gap-1.5 text-sm font-medium text-foreground">
                             Ciudad
                             <span className="text-destructive">*</span>
                         </Label>
-                        <Input
-                            id="city"
-                            value={data.city}
-                            onChange={(e) => update({city: e.target.value})}
-                            placeholder="Ej: Madrid, Barcelona, Sevilla..."
-                            className="h-12 border-border/60 bg-secondary/30 text-foreground placeholder:text-muted-foreground focus-visible:border-primary/50 focus-visible:ring-primary/20"
-                        />
-                    </div>
 
-                    <p className="text-xs text-muted-foreground">
-                        <span className="text-destructive">*</span> Campos obligatorios
-                    </p>
+                        {data.countryCode ? (
+                            <CityCombobox
+                                countryCode={data.countryCode}
+                                value={data.city}
+                                onChange={(city) => update({ city })}
+                            />
+                        ) : (
+                            <p className="text-xs text-muted-foreground italic">
+                                Selecciona un país primero
+                            </p>
+                        )}
+                    </div>
 
                     {/* Summary preview */}
                     <div className="mt-2 rounded-xl border border-border/50 bg-secondary/20 p-5">

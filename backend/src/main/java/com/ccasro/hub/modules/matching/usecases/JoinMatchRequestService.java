@@ -5,8 +5,8 @@ import com.ccasro.hub.modules.booking.domain.valueobjects.BookingStatus;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import com.ccasro.hub.modules.matching.domain.MatchRequest;
 import com.ccasro.hub.modules.matching.domain.PlayerTeam;
+import com.ccasro.hub.modules.matching.domain.events.MatchFullEvent;
 import com.ccasro.hub.modules.matching.domain.exception.MatchNotFoundException;
-import com.ccasro.hub.modules.matching.domain.ports.out.MatchNotificationPort;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchRequestRepositoryPort;
 import com.ccasro.hub.modules.matching.domain.valueobjects.InvitationToken;
 import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
@@ -15,6 +15,7 @@ import java.time.Clock;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +27,7 @@ public class JoinMatchRequestService {
   private final MatchRequestRepositoryPort matchRepository;
   private final BookingRepositoryPort bookingRepository;
   private final UserProfileRepositoryPort userRepository;
-  private final MatchNotificationPort notificationPort;
+  private final ApplicationEventPublisher eventPublisher;
   private final CurrentUserProvider currentUser;
   private final Clock clock;
 
@@ -44,7 +45,7 @@ public class JoinMatchRequestService {
 
     if (matchRequest.isFull()) {
       confirmBooking(matchRequest);
-      notifyMatchFull(matchRequest);
+      publishMatchFullEvent(matchRequest);
     }
 
     matchRepository.save(matchRequest);
@@ -69,7 +70,7 @@ public class JoinMatchRequestService {
             });
   }
 
-  private void notifyMatchFull(MatchRequest matchRequest) {
+  private void publishMatchFullEvent(MatchRequest matchRequest) {
     try {
       List<String> emails =
           matchRequest.getPlayers().stream()
@@ -82,9 +83,11 @@ public class JoinMatchRequestService {
               .filter(e -> e != null)
               .toList();
 
-      notificationPort.notifyMatchFull(matchRequest, emails);
+      if (!emails.isEmpty()) {
+        eventPublisher.publishEvent(new MatchFullEvent(matchRequest, emails));
+      }
     } catch (Exception e) {
-      log.warn("Failed to send match full notifications: {}", e.getMessage());
+      log.warn("Failed to queue match full notifications: {}", e.getMessage());
     }
   }
 }

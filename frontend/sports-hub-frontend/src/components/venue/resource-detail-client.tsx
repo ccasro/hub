@@ -634,7 +634,7 @@ export function ResourceDetailClient({ venue, resource, initialSlots, initialDat
                             </div>
                         )}
                         <div className="flex w-full gap-3">
-                            <Link href="/my/bookings" className="flex-1">
+                            <Link href="/dashboard/bookings" className="flex-1">
                                 <Button variant="outline" className="w-full border-border/60 text-foreground hover:bg-secondary/30">
                                     Mis reservas
                                 </Button>

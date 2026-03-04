@@ -16,7 +16,7 @@ public class SwaggerConfig {
     return new OpenAPI()
         .info(
             new Info()
-                .title("Padel Hub API")
+                .title("Sports Hub API")
                 .description("API hub for sports venue bookings")
                 .version("1.0.0"))
         .addSecurityItem(new SecurityRequirement().addList("Bearer Token"))

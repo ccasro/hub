@@ -1,17 +1,17 @@
 package com.ccasro.hub;
 
+import com.ccasro.hub.modules.booking.infrastructure.email.BrevoEmailSender;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.mail.javamail.JavaMailSender;
 
 @TestConfiguration
 public class TestMailConfig {
 
   @Bean
   @Primary
-  public JavaMailSender javaMailSender() {
-    return Mockito.mock(JavaMailSender.class);
+  public BrevoEmailSender brevoEmailSender() {
+    return Mockito.mock(BrevoEmailSender.class);
   }
 }

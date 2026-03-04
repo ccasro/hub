@@ -1,7 +1,7 @@
 package com.ccasro.hub.modules.booking.usecases;
 
 import com.ccasro.hub.modules.booking.domain.Booking;
-import com.ccasro.hub.modules.booking.domain.ports.out.BookingNotificationPort;
+import com.ccasro.hub.modules.booking.domain.events.BookingExpiredEvent;
 import com.ccasro.hub.modules.booking.domain.ports.out.BookingRepositoryPort;
 import com.ccasro.hub.modules.booking.domain.ports.out.PaymentRepositoryPort;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
@@ -9,6 +9,7 @@ import java.time.Clock;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +21,8 @@ public class ExpirePaymentHoldsJob {
 
   private final BookingRepositoryPort bookingRepository;
   private final PaymentRepositoryPort paymentRepository;
-  private final BookingNotificationPort notificationPort;
   private final UserProfileRepositoryPort userRepository;
+  private final ApplicationEventPublisher eventPublisher;
   private final Clock clock;
 
   @Scheduled(fixedDelayString = "PT1M")
@@ -49,14 +50,13 @@ public class ExpirePaymentHoldsJob {
 
             log.info("Expired hold released: booking={}", booking.getId().value());
 
-            try {
-              userRepository
-                  .findById(booking.getPlayerId())
-                  .map(p -> p.getEmail().value())
-                  .ifPresent(email -> notificationPort.notifyBookingExpired(booking, email));
-            } catch (Exception e) {
-              log.warn("Error sending expiration email: {}", e.getMessage());
-            }
+            userRepository
+                .findById(booking.getPlayerId())
+                .map(p -> p.getEmail().value())
+                .ifPresent(
+                    email ->
+                        eventPublisher.publishEvent(
+                            new BookingExpiredEvent(booking.getId().value(), email)));
 
           } catch (Exception e) {
             log.error(

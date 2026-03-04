@@ -17,6 +17,7 @@ const HOP_BY_HOP = new Set([
     "upgrade",
     "host",
     "content-length",
+    "content-encoding",
 ]);
 
 function responseHeaders(up: Response) {
@@ -38,6 +39,7 @@ async function handler(request: NextRequest) {
 
     const headers = new Headers();
     headers.set("Authorization", `Bearer ${token}`);
+    headers.set("Accept-Encoding", "identity");
     const ct = request.headers.get("content-type");
     if (ct) headers.set("content-type", ct);
     const accept = request.headers.get("accept");
@@ -56,7 +58,9 @@ async function handler(request: NextRequest) {
 
     if (upstream.status === 204) return new NextResponse(null, { status: 204 });
 
-    return new NextResponse(upstream.body, {
+    const body = await upstream.arrayBuffer();
+
+    return new NextResponse(body, {
         status: upstream.status,
         headers: responseHeaders(upstream),
     });
