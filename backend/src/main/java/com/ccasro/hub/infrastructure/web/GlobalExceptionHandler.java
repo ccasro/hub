@@ -11,14 +11,9 @@ import com.ccasro.hub.modules.venue.domain.exception.VenueImageNotFoundException
 import com.ccasro.hub.modules.venue.domain.exception.VenueNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
-import java.net.URI;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -32,13 +27,25 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.net.URI;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+  @Value("${app.expose-trace-id:false}")
+  private boolean exposeTraceId;
+
   @ExceptionHandler(AccessDeniedException.class)
   public ResponseEntity<ProblemDetail> handleAccessDenied(
       AccessDeniedException ex, HttpServletRequest request) {
+
+    log.warn("Access denied at {}: {}", request.getRequestURI(), ex.getMessage());
 
     return ResponseEntity.status(HttpStatus.FORBIDDEN)
         .body(
@@ -53,6 +60,8 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(AuthenticationException.class)
   public ResponseEntity<ProblemDetail> handleAuthentication(
       AuthenticationException ex, HttpServletRequest request) {
+
+    log.warn("Authentication failure at {}: {}", request.getRequestURI(), ex.getMessage());
 
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
         .body(
@@ -115,6 +124,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(ConstraintViolationException.class)
   public ResponseEntity<ProblemDetail> constraint(
       ConstraintViolationException ex, HttpServletRequest req) {
+
     ProblemDetail pd =
         problem(
             HttpStatus.BAD_REQUEST,
@@ -134,6 +144,9 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(DataIntegrityViolationException.class)
   public ResponseEntity<ProblemDetail> conflict(
       DataIntegrityViolationException ex, HttpServletRequest req) {
+
+    log.warn("DataIntegrityViolationException at {}: {}", req.getRequestURI(), ex.getMessage());
+
     ProblemDetail pd =
         problem(
             HttpStatus.CONFLICT,
@@ -146,8 +159,8 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(MissingServletRequestParameterException.class)
   public ResponseEntity<ProblemDetail> missingParam(
-      org.springframework.web.bind.MissingServletRequestParameterException ex,
-      HttpServletRequest req) {
+      MissingServletRequestParameterException ex, HttpServletRequest req) {
+
     ProblemDetail pd =
         problem(
             HttpStatus.BAD_REQUEST,
@@ -164,6 +177,8 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ProblemDetail> handleNotReadable(
       HttpMessageNotReadableException ex, HttpServletRequest request) {
 
+    log.warn("Malformed request body at {}: {}", request.getRequestURI(), ex.getMessage());
+
     return ResponseEntity.badRequest()
         .body(
             problem(
@@ -178,13 +193,15 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ProblemDetail> handleIllegalArgument(
       IllegalArgumentException ex, HttpServletRequest request) {
 
+    log.warn("IllegalArgumentException at {}: {}", request.getRequestURI(), ex.getMessage());
+
     return ResponseEntity.badRequest()
         .body(
             problem(
                 HttpStatus.BAD_REQUEST,
                 "/errors/bad-request",
                 "Bad Request",
-                ex.getMessage(),
+                "Invalid request",
                 request));
   }
 
@@ -252,10 +269,16 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ProblemDetail> handleNoSuchElement(
       NoSuchElementException ex, HttpServletRequest request) {
 
+    log.warn("NoSuchElementException at {}: {}", request.getRequestURI(), ex.getMessage());
+
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(
             problem(
-                HttpStatus.NOT_FOUND, "/errors/not-found", "Not Found", ex.getMessage(), request));
+                HttpStatus.NOT_FOUND,
+                "/errors/not-found",
+                "Not Found",
+                "Resource not found",
+                request));
   }
 
   @ExceptionHandler(SlotNotAvailableException.class)
@@ -271,9 +294,16 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ProblemDetail> handleIllegalState(
       IllegalStateException ex, HttpServletRequest request) {
 
+    log.warn("IllegalStateException at {}: {}", request.getRequestURI(), ex.getMessage());
+
     return ResponseEntity.status(HttpStatus.CONFLICT)
         .body(
-            problem(HttpStatus.CONFLICT, "/errors/conflict", "Conflict", ex.getMessage(), request));
+            problem(
+                HttpStatus.CONFLICT,
+                "/errors/conflict",
+                "Conflict",
+                "Operation not allowed in current state",
+                request));
   }
 
   @ExceptionHandler(BookingCancellationNotAllowedException.class)
@@ -293,6 +323,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MatchNotFoundException.class)
   public ResponseEntity<ProblemDetail> handleMatchNotFound(
       MatchNotFoundException ex, HttpServletRequest request) {
+
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(
             problem(
@@ -311,6 +342,7 @@ public class GlobalExceptionHandler {
   })
   public ResponseEntity<ProblemDetail> handleMatchConflict(
       RuntimeException ex, HttpServletRequest request) {
+
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
         .body(
             problem(
@@ -346,9 +378,11 @@ public class GlobalExceptionHandler {
     pd.setInstance(URI.create(request.getRequestURI()));
     pd.setProperty("timestamp", Instant.now().toString());
 
-    String traceId = MDC.get("traceId");
-    if (traceId != null && !traceId.isBlank()) {
-      pd.setProperty("traceId", traceId);
+    if (exposeTraceId) {
+      String traceId = MDC.get("traceId");
+      if (traceId != null && !traceId.isBlank()) {
+        pd.setProperty("traceId", traceId);
+      }
     }
 
     return pd;
