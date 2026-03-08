@@ -266,6 +266,9 @@ export interface MatchRequestResponse {
     pricePerPlayer: number | null
     expiresAt: string
     players?: MatchPlayer[]
+    venueName: string | null
+    resourceName: string | null
+    venueCity: string | null
 }
 
 export interface MatchInvitation {

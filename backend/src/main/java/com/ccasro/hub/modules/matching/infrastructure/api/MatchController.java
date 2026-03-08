@@ -138,7 +138,12 @@ public class MatchController {
   @Operation(tags = "Player - Match", summary = "Get matches I am participating in")
   public ResponseEntity<List<MatchRequestResponse>> getMyMatches() {
     return ResponseEntity.ok(
-        getMyMatchesService.execute().stream().map(MatchRequestResponse::from).toList());
+        getMyMatchesService.execute().stream()
+            .map(
+                v ->
+                    MatchRequestResponse.from(
+                        v.matchRequest(), v.resourceName(), v.venueName(), v.venueCity()))
+            .toList());
   }
 
   @GetMapping("/invitations")

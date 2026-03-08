@@ -21,7 +21,10 @@ public record MatchRequestResponse(
     int availableSlots,
     BigDecimal pricePerPlayer,
     Instant expiresAt,
-    List<MatchPlayerResponse> players) {
+    List<MatchPlayerResponse> players,
+    String venueName,
+    String resourceName,
+    String venueCity) {
   public record MatchPlayerResponse(
       String playerId,
       String team,
@@ -31,6 +34,11 @@ public record MatchRequestResponse(
       Instant checkedInAt) {}
 
   public static MatchRequestResponse from(MatchRequest m) {
+    return from(m, null, null, null);
+  }
+
+  public static MatchRequestResponse from(
+      MatchRequest m, String resourceName, String venueName, String venueCity) {
     return new MatchRequestResponse(
         m.getId().value(),
         m.getResourceId().value(),
@@ -54,6 +62,9 @@ public record MatchRequestResponse(
                         p.getJoinedAt(),
                         p.isCheckedIn(),
                         p.getCheckedInAt()))
-            .toList());
+            .toList(),
+        venueName,
+        resourceName,
+        venueCity);
   }
 }

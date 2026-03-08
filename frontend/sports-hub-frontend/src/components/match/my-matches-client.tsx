@@ -4,7 +4,7 @@ import {useRouter} from "next/navigation"
 import {Badge} from "@/components/ui/badge"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent} from "@/components/ui/card"
-import {ArrowLeft, Calendar, Clock, Swords} from "lucide-react"
+import {ArrowLeft, Calendar, Clock, MapPin, Swords} from "lucide-react"
 import type {MatchRequestResponse, UserProfile} from "@/types"
 
 interface Props {
@@ -65,6 +65,15 @@ export function MyMatchesClient({user, matches}: Props) {
                                 <Swords className="h-3 w-3"/>
                                 {FORMAT_LABELS[match.format]}
                             </span>
+                            {(match.venueName || match.resourceName) && (
+                                <span className="flex items-center gap-1">
+                                    <MapPin className="h-3 w-3 shrink-0"/>
+                                    <span className="truncate">
+                                        {[match.venueName, match.resourceName].filter(Boolean).join(" · ")}
+                                        {match.venueCity ? `, ${match.venueCity}` : ""}
+                                    </span>
+                                </span>
+                            )}
                         </div>
                     </div>
                     <div className="shrink-0 text-right">
