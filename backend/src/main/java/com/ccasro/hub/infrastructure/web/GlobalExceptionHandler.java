@@ -5,12 +5,21 @@ import com.ccasro.hub.modules.booking.domain.exception.BookingNotFoundException;
 import com.ccasro.hub.modules.booking.domain.exception.SlotNotAvailableException;
 import com.ccasro.hub.modules.iam.domain.exception.UserProfileNotFoundException;
 import com.ccasro.hub.modules.matching.domain.exception.*;
+import com.ccasro.hub.modules.matching.domain.exception.MatchCreationCooldownException;
+import com.ccasro.hub.modules.matching.domain.exception.PlayerMatchBannedException;
+import com.ccasro.hub.modules.matching.domain.exception.TooManyActiveMatchesException;
 import com.ccasro.hub.modules.resource.domain.exception.ResourceImageNotFoundException;
 import com.ccasro.hub.modules.resource.domain.exception.ResourceNotFoundException;
 import com.ccasro.hub.modules.venue.domain.exception.VenueImageNotFoundException;
 import com.ccasro.hub.modules.venue.domain.exception.VenueNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import java.net.URI;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,13 +35,6 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-
-import java.net.URI;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
 
 @Slf4j
 @RestControllerAdvice
@@ -338,7 +340,13 @@ public class GlobalExceptionHandler {
     MatchFullException.class,
     TeamFullException.class,
     PlayerAlreadyJoinedException.class,
-    MatchNotOpenException.class
+    PlayerTimeConflictException.class,
+    MatchNotOpenException.class,
+    InvitationAlreadyRespondedException.class,
+    MatchLeaveNotAllowedException.class,
+    PlayerMatchBannedException.class,
+    TooManyActiveMatchesException.class,
+    MatchCreationCooldownException.class
   })
   public ResponseEntity<ProblemDetail> handleMatchConflict(
       RuntimeException ex, HttpServletRequest request) {
@@ -349,6 +357,30 @@ public class GlobalExceptionHandler {
                 HttpStatus.UNPROCESSABLE_ENTITY,
                 "/errors/unprocessable",
                 "Match Error",
+                ex.getMessage(),
+                request));
+  }
+
+  @ExceptionHandler({InvitationNotYoursException.class, NotMatchOrganizerException.class})
+  public ResponseEntity<ProblemDetail> handleMatchForbidden(
+      RuntimeException ex, HttpServletRequest request) {
+
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        .body(
+            problem(
+                HttpStatus.FORBIDDEN, "/errors/forbidden", "Forbidden", ex.getMessage(), request));
+  }
+
+  @ExceptionHandler(InvitationNotFoundException.class)
+  public ResponseEntity<ProblemDetail> handleInvitationNotFound(
+      InvitationNotFoundException ex, HttpServletRequest request) {
+
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(
+            problem(
+                HttpStatus.NOT_FOUND,
+                "/errors/not-found",
+                "Invitation Not Found",
                 ex.getMessage(),
                 request));
   }

@@ -19,7 +19,10 @@ public record UserProfileResponse(
     String city,
     String countryCode,
     boolean onboardingCompleted,
-    Instant lastLoginAt) {
+    Instant lastLoginAt,
+    int noShowCount,
+    Instant matchBannedUntil,
+    boolean matchNotificationsEnabled) {
   public static UserProfileResponse from(UserProfile p) {
     return new UserProfileResponse(
         p.getId().value(),
@@ -37,6 +40,9 @@ public record UserProfileResponse(
         p.getCity(),
         p.getCountryCode() != null ? p.getCountryCode().value() : null,
         p.isOnboardingCompleted(),
-        p.getLastLoginAt());
+        p.getLastLoginAt(),
+        p.getNoShowCount(),
+        p.getMatchBannedUntil(),
+        p.isMatchNotificationsEnabled());
   }
 }

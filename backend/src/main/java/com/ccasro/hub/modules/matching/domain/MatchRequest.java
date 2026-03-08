@@ -8,6 +8,7 @@ import com.ccasro.hub.modules.matching.domain.valueobjects.InvitationToken;
 import com.ccasro.hub.modules.matching.domain.valueobjects.MatchRequestId;
 import com.ccasro.hub.modules.resource.domain.valueobjects.ResourceId;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
+import java.math.BigDecimal;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +16,7 @@ import java.util.List;
 
 public class MatchRequest {
 
-  private static final Duration TTL = Duration.ofHours(48);
+  private static final int CLOSE_BEFORE_MATCH_HOURS = 24;
 
   private final MatchRequestId id;
   private final UserId organizerId;
@@ -29,6 +30,7 @@ public class MatchRequest {
   private final InvitationToken invitationToken;
   private final GeoPoint searchCenter;
   private final double searchRadiusKm;
+  private final BigDecimal pricePerPlayer;
   private final Instant expiresAt;
   private final Instant createdAt;
 
@@ -46,12 +48,17 @@ public class MatchRequest {
       String customMessage,
       GeoPoint searchCenter,
       double searchRadiusKm,
+      BigDecimal pricePerPlayer,
       Clock clock) {
 
     List<MatchPlayer> players = new ArrayList<>();
     players.add(MatchPlayer.organizer(organizerId, clock));
 
     Instant now = clock.instant();
+    Instant expiresAt =
+        LocalDateTime.of(bookingDate, startTime)
+            .minusHours(CLOSE_BEFORE_MATCH_HOURS)
+            .toInstant(ZoneOffset.UTC);
     return new MatchRequest(
         MatchRequestId.generate(),
         organizerId,
@@ -65,9 +72,10 @@ public class MatchRequest {
         InvitationToken.generate(),
         searchCenter,
         searchRadiusKm,
-        MatchStatus.OPEN,
+        pricePerPlayer,
+        MatchStatus.AWAITING_ORGANIZER_PAYMENT,
         players,
-        now.plus(TTL),
+        expiresAt,
         now);
   }
 
@@ -84,6 +92,7 @@ public class MatchRequest {
       InvitationToken invitationToken,
       GeoPoint searchCenter,
       double searchRadiusKm,
+      BigDecimal pricePerPlayer,
       MatchStatus status,
       List<MatchPlayer> players,
       Instant expiresAt,
@@ -101,6 +110,7 @@ public class MatchRequest {
         invitationToken,
         searchCenter,
         searchRadiusKm,
+        pricePerPlayer,
         status,
         new ArrayList<>(players),
         expiresAt,
@@ -120,6 +130,7 @@ public class MatchRequest {
       InvitationToken invitationToken,
       GeoPoint searchCenter,
       double searchRadiusKm,
+      BigDecimal pricePerPlayer,
       MatchStatus status,
       List<MatchPlayer> players,
       Instant expiresAt,
@@ -136,10 +147,27 @@ public class MatchRequest {
     this.invitationToken = invitationToken;
     this.searchCenter = searchCenter;
     this.searchRadiusKm = searchRadiusKm;
+    this.pricePerPlayer = pricePerPlayer;
     this.status = status;
     this.players = players;
     this.expiresAt = expiresAt;
     this.createdAt = createdAt;
+  }
+
+  public void openForPlayers() {
+    if (status != MatchStatus.AWAITING_ORGANIZER_PAYMENT)
+      throw new IllegalStateException("Match is not awaiting organizer payment");
+    status = MatchStatus.OPEN;
+  }
+
+  public void cancelDueToPaymentTimeout() {
+    if (status != MatchStatus.AWAITING_ORGANIZER_PAYMENT)
+      throw new IllegalStateException("Match is not awaiting organizer payment");
+    status = MatchStatus.CANCELLED;
+  }
+
+  public boolean isAwaitingOrganizerPayment() {
+    return status == MatchStatus.AWAITING_ORGANIZER_PAYMENT;
   }
 
   public void join(UserId playerId, PlayerTeam team, Clock clock) {
@@ -161,7 +189,11 @@ public class MatchRequest {
   }
 
   public void cancel() {
-    if (status == MatchStatus.FULL) throw new MatchNotOpenException("Cannot cancel a full match");
+    if (status == MatchStatus.FULL)
+      throw new IllegalStateException(
+          "Match is full. To leave, use the leave or report-absence flow.");
+    if (status == MatchStatus.CANCELLED)
+      throw new IllegalStateException("Match is already cancelled");
     status = MatchStatus.CANCELLED;
   }
 
@@ -172,8 +204,30 @@ public class MatchRequest {
     }
   }
 
+  public void checkIn(UserId playerId, Clock clock) {
+    players.stream()
+        .filter(p -> p.getPlayerId().equals(playerId))
+        .findFirst()
+        .orElseThrow(() -> new IllegalStateException("Player is not a participant of this match"))
+        .checkIn(clock.instant());
+  }
+
+  public void reportAbsence(UserId playerId) {
+    boolean removed = players.removeIf(p -> p.getPlayerId().equals(playerId));
+    if (!removed) throw new IllegalStateException("Player is not a participant of this match");
+    if (status == MatchStatus.FULL) {
+      status = MatchStatus.OPEN;
+    }
+  }
+
   public void expire() {
     if (status == MatchStatus.OPEN) status = MatchStatus.EXPIRED;
+  }
+
+  public boolean isActive() {
+    return status == MatchStatus.AWAITING_ORGANIZER_PAYMENT
+        || status == MatchStatus.OPEN
+        || status == MatchStatus.FULL;
   }
 
   public boolean isExpired(Clock clock) {
@@ -254,5 +308,9 @@ public class MatchRequest {
 
   public Instant getCreatedAt() {
     return createdAt;
+  }
+
+  public BigDecimal getPricePerPlayer() {
+    return pricePerPlayer;
   }
 }

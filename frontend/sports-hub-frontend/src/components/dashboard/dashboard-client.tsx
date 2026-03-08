@@ -7,13 +7,15 @@ import {VenueGrid} from "@/components/dashboard/venue-grid"
 import {UpcomingBookings} from "@/components/dashboard/upcoming-bookings"
 import {Button} from "@/components/ui/button"
 import {Badge} from "@/components/ui/badge"
-import {Booking, UserProfile, Venue} from "@/types"
-import {CalendarCheck, MapPin, Sparkles, Swords, Trophy, Users, Zap} from "lucide-react"
+import {Booking, MatchRequestResponse, UserProfile, Venue} from "@/types"
+import {Bell, CalendarCheck, MapPin, Sparkles, Swords, Trophy, Users, Zap} from "lucide-react"
 
 interface Props {
     user: UserProfile
     venues: Venue[]
     bookings: Booking[]
+    pendingInvitations: number
+    matches: MatchRequestResponse[]
 }
 
 const SKILL_LABELS: Record<string, string> = {
@@ -29,11 +31,12 @@ const SPORT_LABELS: Record<string, string> = {
     BADMINTON: "Badminton",
 }
 
-export function DashboardClient({ user, venues, bookings }: Props) {
+export function DashboardClient({ user, venues, bookings, pendingInvitations, matches }: Props) {
     const [selectedCity, setSelectedCity] = useState(user.city ?? "Todas")
     const [searchQuery, setSearchQuery] = useState("")
 
-    const today = useMemo(() => new Date().toISOString().split("T")[0], [])
+    const now = useMemo(() => new Date(), [])
+    const today = useMemo(() => now.toISOString().split("T")[0], [now])
 
     const activeVenues = useMemo(
         () => venues.filter((v) => v.status === "ACTIVE"),
@@ -51,8 +54,15 @@ export function DashboardClient({ user, venues, bookings }: Props) {
     )
     
     const upcomingBookings = useMemo(
-        () => bookings.filter((b) => b.status === "CONFIRMED" && b.bookingDate >= today),
-        [bookings, today]
+        () => bookings.filter((b) => b.status === "CONFIRMED" && new Date(`${b.bookingDate}T${b.endTime}`) > now),
+        [bookings, now]
+    )
+
+    const activeMatches = useMemo(
+        () => matches
+            .filter((m) => (m.status === "OPEN" || m.status === "FULL") && new Date(`${m.bookingDate}T${m.endTime}`) > now)
+            .slice(0, 3),
+        [matches, now]
     )
 
     const skillLabel = SKILL_LABELS[user.skillLevel ?? ""] ?? "--"
@@ -67,6 +77,7 @@ export function DashboardClient({ user, venues, bookings }: Props) {
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 upcomingBookingsCount={upcomingBookings.length}
+                pendingInvitations={pendingInvitations}
                 cities={["Todas", ...Array.from(cities)]}
             />
 
@@ -97,6 +108,17 @@ export function DashboardClient({ user, venues, bookings }: Props) {
                             </div>
 
                             <div className="flex shrink-0 items-center gap-3">
+                                {pendingInvitations > 0 && (
+                                    <Link href="/match/invitations">
+                                        <Button variant="outline" className="gap-2 border-primary/40 bg-primary/5 text-foreground hover:bg-primary/10">
+                                            <Bell className="h-4 w-4 text-primary" />
+                                            Invitaciones
+                                            <Badge className="ml-1 h-5 min-w-5 justify-center rounded-full border-0 bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                                                {pendingInvitations}
+                                            </Badge>
+                                        </Button>
+                                    </Link>
+                                )}
                                 <Link href="/dashboard/bookings">
                                     <Button variant="outline" className="gap-2 border-border/60 bg-secondary/30 text-foreground hover:border-primary/40 hover:bg-secondary/50">
                                         <CalendarCheck className="h-4 w-4 text-primary" />
@@ -141,6 +163,48 @@ export function DashboardClient({ user, venues, bookings }: Props) {
                     <aside className="shrink-0 lg:w-80 xl:w-96">
                         <div className="lg:sticky lg:top-[calc(4rem+1.5rem)]">
                             <UpcomingBookings bookings={bookings} />
+
+                            {/* Próximos partidos */}
+                            <div className="mt-4 rounded-xl border border-border/50 bg-card p-5">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                                            <Swords className="h-4 w-4 text-primary" />
+                                        </div>
+                                        <h3 className="font-[var(--font-space-grotesk)] text-sm font-bold text-foreground">
+                                            Mis partidos
+                                        </h3>
+                                    </div>
+                                    <Link href="/match/my" className="text-xs text-primary hover:underline">
+                                        Ver todos
+                                    </Link>
+                                </div>
+
+                                {activeMatches.length === 0 ? (
+                                    <p className="text-xs text-muted-foreground">Sin partidos activos.</p>
+                                ) : (
+                                    <div className="flex flex-col gap-2">
+                                        {activeMatches.map((m) => (
+                                            <Link key={m.id} href={`/match/${m.id}`}>
+                                                <div className="flex items-center justify-between rounded-lg border border-border/40 bg-secondary/20 px-3 py-2.5 hover:bg-secondary/40 transition-colors">
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span className="text-xs font-medium text-foreground">
+                                                            {m.bookingDate} · {m.startTime.slice(0, 5)}
+                                                        </span>
+                                                        <span className="text-[11px] text-muted-foreground">
+                                                            {m.format === "ONE_VS_ONE" ? "1 vs 1" : "2 vs 2"} · {m.players?.length ?? 0}/{m.format === "ONE_VS_ONE" ? 2 : 4} jugadores
+                                                        </span>
+                                                    </div>
+                                                    <Badge className={`border text-[10px] font-medium ${m.status === "FULL" ? "bg-blue-500/10 text-blue-400 border-blue-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"}`}>
+                                                        {m.status === "FULL" ? "Completo" : "Abierto"}
+                                                    </Badge>
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
                             <div className="mt-4 rounded-xl border border-dashed border-primary/20 bg-primary/5 p-5">
                                 <div className="flex items-center gap-2">
                                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
@@ -153,12 +217,19 @@ export function DashboardClient({ user, venues, bookings }: Props) {
                                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                                     Encuentra oponentes de tu nivel cerca de ti. Matching inteligente por zona, horario y nivel.
                                 </p>
-                                <Link href="/match/search">
-                                    <Button size="sm" className="mt-3 gap-1.5 bg-primary text-xs font-medium">
-                                        <Swords className="h-3.5 w-3.5" />
-                                        Buscar partido
-                                    </Button>
-                                </Link>
+                                <div className="mt-3 flex gap-2">
+                                    <Link href="/match/search">
+                                        <Button size="sm" className="gap-1.5 bg-primary text-xs font-medium">
+                                            <Swords className="h-3.5 w-3.5" />
+                                            Buscar partido
+                                        </Button>
+                                    </Link>
+                                    <Link href="/match/my">
+                                        <Button size="sm" variant="outline" className="gap-1.5 border-border/50 text-xs">
+                                            Mis partidos
+                                        </Button>
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                     </aside>

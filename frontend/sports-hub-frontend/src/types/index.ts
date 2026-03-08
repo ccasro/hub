@@ -14,6 +14,8 @@ export interface UserProfile {
     onboardingCompleted: boolean;
     matchNotificationsEnabled: boolean;
     lastLoginAt: string;
+    noShowCount: number;
+    matchBannedUntil: string | null;
 }
 export interface AdminStats {
     totalUsers: number
@@ -246,6 +248,8 @@ export interface MatchPlayer {
     team: "TEAM_1" | "TEAM_2"
     role: "ORGANIZER" | "GUEST"
     joinedAt: string
+    checkedIn: boolean
+    checkedInAt: string | null
 }
 
 export interface MatchRequestResponse {
@@ -256,11 +260,31 @@ export interface MatchRequestResponse {
     endTime: string
     format: MatchFormat
     skillLevel: MatchSkillLevel
-    status: "OPEN" | "FULL" | "EXPIRED" | "CANCELLED"
+    status: "AWAITING_ORGANIZER_PAYMENT" | "OPEN" | "FULL" | "EXPIRED" | "CANCELLED"
     invitationToken: string
     availableSlots: number
+    pricePerPlayer: number | null
     expiresAt: string
     players?: MatchPlayer[]
+}
+
+export interface MatchInvitation {
+    id: string
+    matchRequestId: string
+    status: "PENDING" | "ACCEPTED" | "DECLINED" | "EXPIRED"
+    sentAt: string
+    respondedAt: string | null
+    bookingDate: string | null
+    startTime: string | null
+    endTime: string | null
+    format: MatchFormat | null
+    skillLevel: MatchSkillLevel | null
+    matchStatus: string | null
+    availableSlots: number
+    pricePerPlayer: number | null
+    resourceName: string | null
+    venueName: string | null
+    venueCity: string | null
 }
 
 export interface Page<T> {

@@ -28,6 +28,7 @@ import {
   Search,
   Settings,
   Swords,
+  Trophy,
   User,
   X,
   Zap,
@@ -42,6 +43,7 @@ interface DashboardNavbarProps {
   searchQuery: string
   onSearchChange: (query: string) => void
   upcomingBookingsCount?: number
+  pendingInvitations?: number
   cities?: string[]
 }
 
@@ -52,6 +54,7 @@ export function DashboardNavbar({
                                   searchQuery,
                                   onSearchChange,
                                   upcomingBookingsCount = 0,
+                                  pendingInvitations = 0,
                                   cities = [],
                                 }: DashboardNavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -124,16 +127,22 @@ export function DashboardNavbar({
               </Button>
             </Link>
 
-            {/* Notification bell */}
-            <Button
-                variant="ghost"
-                size="icon"
-                className="relative h-9 w-9 text-muted-foreground hover:text-foreground"
-                aria-label="Notificaciones"
-            >
-              <Bell className="h-4 w-4" />
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-primary" />
-            </Button>
+            {/* Notification bell — invitaciones */}
+            <Link href="/match/invitations">
+              <Button
+                  variant="ghost"
+                  size="icon"
+                  className="relative h-9 w-9 text-muted-foreground hover:text-foreground"
+                  aria-label="Invitaciones"
+              >
+                <Bell className="h-4 w-4" />
+                {pendingInvitations > 0 && (
+                    <Badge className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full border-0 bg-primary px-1 text-[9px] font-bold text-primary-foreground">
+                      {pendingInvitations}
+                    </Badge>
+                )}
+              </Button>
+            </Link>
 
             <ThemeToggle />
 
@@ -214,6 +223,23 @@ export function DashboardNavbar({
                       {upcomingBookingsCount > 0 && (
                           <Badge className="ml-auto h-5 min-w-5 justify-center rounded-full border-0 bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
                             {upcomingBookingsCount}
+                          </Badge>
+                      )}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/match/my" className="cursor-pointer gap-2 text-foreground focus:bg-secondary/50 focus:text-foreground">
+                      <Trophy className="h-4 w-4 text-muted-foreground" />
+                      Mis Partidos
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/match/invitations" className="cursor-pointer gap-2 text-foreground focus:bg-secondary/50 focus:text-foreground">
+                      <Bell className="h-4 w-4 text-muted-foreground" />
+                      Invitaciones
+                      {pendingInvitations > 0 && (
+                          <Badge className="ml-auto h-5 min-w-5 justify-center rounded-full border-0 bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                            {pendingInvitations}
                           </Badge>
                       )}
                     </Link>
@@ -329,6 +355,31 @@ export function DashboardNavbar({
                 {upcomingBookingsCount > 0 && (
                     <Badge className="h-5 min-w-5 justify-center rounded-full border-0 bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
                       {upcomingBookingsCount}
+                    </Badge>
+                )}
+              </Link>
+
+              <Link
+                  href="/match/my"
+                  className="flex items-center gap-2 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2.5"
+                  onClick={() => setMobileMenuOpen(false)}
+              >
+                <Trophy className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Mis Partidos</span>
+              </Link>
+
+              <Link
+                  href="/match/invitations"
+                  className="flex items-center justify-between rounded-lg border border-border/50 bg-secondary/30 px-3 py-2.5"
+                  onClick={() => setMobileMenuOpen(false)}
+              >
+                <div className="flex items-center gap-2">
+                  <Bell className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">Invitaciones</span>
+                </div>
+                {pendingInvitations > 0 && (
+                    <Badge className="h-5 min-w-5 justify-center rounded-full border-0 bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                      {pendingInvitations}
                     </Badge>
                 )}
               </Link>

@@ -10,4 +10,5 @@ public record UpdateMeCommand(
     String city,
     String countryCode,
     SportPreference preferredSport,
-    SkillLevel skillLevel) {}
+    SkillLevel skillLevel,
+    Boolean matchNotificationsEnabled) {}

@@ -1,11 +1,12 @@
 "use client"
+"use client"
 
 import {useState} from "react"
 import {useRouter} from "next/navigation"
 import {Badge} from "@/components/ui/badge"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent} from "@/components/ui/card"
-import {Calendar, CheckCircle2, Clock, Loader2, Swords, Users, XCircle,} from "lucide-react"
+import {Calendar, CheckCircle2, Clock, CreditCard, Loader2, Swords, Users, XCircle,} from "lucide-react"
 import type {MatchRequestResponse, UserProfile} from "@/types"
 
 interface Props {
@@ -138,6 +139,12 @@ export function MatchJoinClient({ user, matchRequest, token }: Props) {
                                 {matchRequest.availableSlots} plazas libres
                             </Badge>
                         )}
+                        {matchRequest.pricePerPlayer != null && (
+                            <Badge className="border-0 bg-primary/10 text-xs text-primary">
+                                <CreditCard className="mr-1 h-3 w-3"/>
+                                €{matchRequest.pricePerPlayer.toFixed(2)} / jugador
+                            </Badge>
+                        )}
                     </div>
                 </CardContent>
             </Card>
@@ -229,14 +236,22 @@ export function MatchJoinClient({ user, matchRequest, token }: Props) {
                             {error}
                         </p>
                     )}
+                    {matchRequest.pricePerPlayer != null && selectedTeam && (
+                        <p className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-primary">
+                            <CreditCard className="mr-1 inline h-3 w-3"/>
+                            Se cargará <strong>€{matchRequest.pricePerPlayer.toFixed(2)}</strong> al unirte al partido.
+                        </p>
+                    )}
                     <Button
                         onClick={handleJoin}
                         disabled={loading || !selectedTeam}
                         className="h-12 gap-2 bg-primary text-base font-semibold"
                     >
                         {loading
-                            ? <><Loader2 className="h-4 w-4 animate-spin" />Uniéndose...</>
-                            : <><Swords className="h-4 w-4" />Unirse al partido</>
+                            ? <><Loader2 className="h-4 w-4 animate-spin" />Procesando...</>
+                            : matchRequest.pricePerPlayer != null
+                                ? <><CreditCard className="h-4 w-4" />Pagar €{matchRequest.pricePerPlayer.toFixed(2)} y unirse</>
+                                : <><Swords className="h-4 w-4" />Unirse al partido</>
                         }
                     </Button>
                     <p className="text-center text-xs text-muted-foreground">

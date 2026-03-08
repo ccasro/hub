@@ -6,6 +6,7 @@ import com.ccasro.hub.shared.domain.valueobjects.CountryCode;
 import com.ccasro.hub.shared.domain.valueobjects.ImageUrl;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -32,6 +33,14 @@ public class UserProfile {
 
   private boolean active;
   private boolean onboardingCompleted;
+
+  private int noShowCount;
+  private Instant matchBannedUntil;
+  private Instant lastMatchCancelledAt;
+  private boolean matchNotificationsEnabled;
+
+  private static final int NO_SHOW_BAN_THRESHOLD = 3;
+  private static final Duration BAN_DURATION = Duration.ofDays(30);
 
   private final Instant createdAt;
   private Instant updatedAt;
@@ -89,7 +98,11 @@ public class UserProfile {
       boolean onboardingCompleted,
       Instant createdAt,
       Instant updatedAt,
-      Instant lastLoginAt) {
+      Instant lastLoginAt,
+      int noShowCount,
+      Instant matchBannedUntil,
+      Instant lastMatchCancelledAt,
+      boolean matchNotificationsEnabled) {
     UserProfile profile = new UserProfile(id, auth0Id, email, emailVerified, createdAt);
     profile.displayName = displayName;
     profile.description = description;
@@ -105,7 +118,23 @@ public class UserProfile {
     profile.onboardingCompleted = onboardingCompleted;
     profile.updatedAt = updatedAt;
     profile.lastLoginAt = lastLoginAt;
+    profile.noShowCount = noShowCount;
+    profile.matchBannedUntil = matchBannedUntil;
+    profile.lastMatchCancelledAt = lastMatchCancelledAt;
+    profile.matchNotificationsEnabled = matchNotificationsEnabled;
     return profile;
+  }
+
+  public void confirmNoShow(Clock clock) {
+    this.noShowCount++;
+    if (this.noShowCount >= NO_SHOW_BAN_THRESHOLD) {
+      this.matchBannedUntil = clock.instant().plus(BAN_DURATION);
+    }
+    this.updatedAt = clock.instant();
+  }
+
+  public boolean isMatchBanned(Clock clock) {
+    return matchBannedUntil != null && clock.instant().isBefore(matchBannedUntil);
   }
 
   public void recordLogin(Clock clock) {
@@ -121,6 +150,7 @@ public class UserProfile {
       CountryCode countryCode,
       SportPreference preferredSport,
       SkillLevel skillLevel,
+      Boolean matchNotificationsEnabled,
       Clock clock) {
     this.displayName = displayName;
     this.description = description;
@@ -129,6 +159,9 @@ public class UserProfile {
     this.countryCode = countryCode;
     this.preferredSport = preferredSport;
     this.skillLevel = skillLevel;
+    if (matchNotificationsEnabled != null) {
+      this.matchNotificationsEnabled = matchNotificationsEnabled;
+    }
     this.updatedAt = clock.instant();
     checkOnboardingCompleted();
   }
@@ -259,5 +292,21 @@ public class UserProfile {
 
   public Instant getLastLoginAt() {
     return lastLoginAt;
+  }
+
+  public int getNoShowCount() {
+    return noShowCount;
+  }
+
+  public Instant getMatchBannedUntil() {
+    return matchBannedUntil;
+  }
+
+  public Instant getLastMatchCancelledAt() {
+    return lastMatchCancelledAt;
+  }
+
+  public boolean isMatchNotificationsEnabled() {
+    return matchNotificationsEnabled;
   }
 }

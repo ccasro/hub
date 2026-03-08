@@ -3,6 +3,7 @@ package com.ccasro.hub.modules.booking.infrastructure.api;
 import com.ccasro.hub.modules.booking.domain.valueobjects.BookingId;
 import com.ccasro.hub.modules.booking.infrastructure.api.dto.FakePaymentRequest;
 import com.ccasro.hub.modules.booking.usecases.FakePaymentService;
+import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,16 @@ public class FakePaymentController {
   @PostMapping("/{bookingId}/fail")
   public ResponseEntity<Void> failPayment(@PathVariable UUID bookingId) {
     fakePaymentService.fail(BookingId.of(bookingId));
+    return ResponseEntity.ok().build();
+  }
+
+  @PostMapping("/{bookingId}/player/{playerId}/confirm")
+  public ResponseEntity<Void> confirmPlayerPayment(
+      @PathVariable UUID bookingId,
+      @PathVariable UUID playerId,
+      @RequestBody FakePaymentRequest request) {
+    fakePaymentService.confirmPlayerPayment(
+        BookingId.of(bookingId), new UserId(playerId), request.amount(), request.currency());
     return ResponseEntity.ok().build();
   }
 }

@@ -6,7 +6,9 @@ import com.ccasro.hub.modules.booking.domain.exception.BookingNotFoundException;
 import com.ccasro.hub.modules.booking.domain.ports.out.BookingRepositoryPort;
 import com.ccasro.hub.modules.booking.domain.ports.out.PaymentRepositoryPort;
 import com.ccasro.hub.modules.booking.domain.valueobjects.BookingId;
+import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import java.math.BigDecimal;
+import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ public class FakePaymentService {
   private final ConfirmBookingPaymentService confirmPaymentService;
   private final PaymentRepositoryPort paymentRepository;
   private final BookingRepositoryPort bookingRepository;
+  private final Clock clock;
 
   @Transactional
   public void confirm(BookingId bookingId, BigDecimal amount, String currency) {
@@ -56,6 +59,32 @@ public class FakePaymentService {
         bookingId.value());
 
     confirmPaymentService.execute(paymentIntentId);
+  }
+
+  @Transactional
+  public void confirmPlayerPayment(
+      BookingId bookingId, UserId playerId, BigDecimal amount, String currency) {
+    Payment payment =
+        paymentRepository
+            .findByBookingIdAndPlayerId(bookingId, playerId)
+            .orElseThrow(
+                () ->
+                    new RuntimeException(
+                        "Payment not found for booking "
+                            + bookingId.value()
+                            + " and player "
+                            + playerId.value()));
+
+    log.info(
+        "[FAKE PAYMENT] Player payment confirmed of {} {} for booking {} player {}",
+        amount,
+        currency,
+        bookingId.value(),
+        playerId.value());
+
+    // The booking is confirmed separately by MatchCompletionHandler when the match is full.
+    payment.markAsPaid(clock);
+    paymentRepository.save(payment);
   }
 
   @Transactional

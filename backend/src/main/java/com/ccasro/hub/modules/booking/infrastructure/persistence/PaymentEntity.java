@@ -21,6 +21,9 @@ public class PaymentEntity {
   @Column(name = "booking_id", nullable = false, columnDefinition = "uuid")
   private UUID bookingId;
 
+  @Column(name = "player_id", columnDefinition = "uuid")
+  private UUID playerId;
+
   @Column(name = "stripe_payment_intent_id", unique = true, nullable = false, length = 100)
   private String stripePaymentIntentId;
 

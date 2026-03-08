@@ -31,4 +31,10 @@ public class MatchPlayerEntity {
 
   @Column(name = "joined_at", nullable = false)
   private Instant joinedAt;
+
+  @Column(name = "checked_in", nullable = false)
+  private boolean checkedIn;
+
+  @Column(name = "checked_in_at")
+  private Instant checkedInAt;
 }

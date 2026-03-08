@@ -32,9 +32,9 @@ function formatTime(timeStr: string): string {
 }
 
 export function UpcomingBookings({ bookings }: UpcomingBookingsProps) {
-  const today = new Date().toISOString().split("T")[0];
+  const now = new Date();
   const upcoming = bookings
-    .filter((b) => b.status === "CONFIRMED" && b.bookingDate >= today)
+    .filter((b) => b.status === "CONFIRMED" && new Date(`${b.bookingDate}T${b.endTime}`) > now)
     .sort((a, b) => a.bookingDate.localeCompare(b.bookingDate) || a.startTime.localeCompare(b.startTime))
     .slice(0, 3);
 

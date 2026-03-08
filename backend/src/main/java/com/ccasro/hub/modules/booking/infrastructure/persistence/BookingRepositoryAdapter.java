@@ -75,8 +75,7 @@ public class BookingRepositoryAdapter implements BookingRepositoryPort {
   }
 
   @Override
-  public boolean existsConfirmedBooking(
-      ResourceId resourceId, LocalDate date, LocalTime startTime) {
-    return jpa.existsConfirmedBooking(resourceId.value(), date, startTime);
+  public boolean existsActiveBooking(ResourceId resourceId, LocalDate date, LocalTime startTime) {
+    return jpa.existsActiveBooking(resourceId.value(), date, startTime);
   }
 }

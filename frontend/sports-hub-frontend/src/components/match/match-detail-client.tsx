@@ -4,9 +4,21 @@ import {useRouter} from "next/navigation"
 import {Badge} from "@/components/ui/badge"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent} from "@/components/ui/card"
-import {ArrowLeft, Calendar, CheckCircle2, Clock, Copy, Share2, Swords, Users} from "lucide-react"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {ArrowLeft, Calendar, CheckCircle2, Clock, Copy, CreditCard, LogOut, MapPin, Share2, Swords, Users} from "lucide-react"
 import type {MatchRequestResponse, UserProfile} from "@/types"
 import {useCallback, useEffect, useState} from "react"
+import {toast} from "sonner"
 
 interface Props {
     user: UserProfile
@@ -26,6 +38,7 @@ const SKILL_LABELS: Record<string, string> = {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+    AWAITING_ORGANIZER_PAYMENT: { label: "Pendiente de pago", color: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
     OPEN:      { label: "Buscando jugadores", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
     FULL:      { label: "Partido completo",   color: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
     EXPIRED:   { label: "Expirado",           color: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
@@ -33,12 +46,17 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
 }
 
 // Estados en los que tiene sentido hacer polling
-const POLLING_STATES = new Set(["OPEN", "FULL"])
+const POLLING_STATES = new Set(["AWAITING_ORGANIZER_PAYMENT", "OPEN", "FULL"])
 
 export function MatchDetailClient({ user, matchRequest: initialMatch }: Props) {
     const router = useRouter()
     const [match, setMatch] = useState(initialMatch)
     const [copied, setCopied] = useState(false)
+    const [checkingIn, setCheckingIn] = useState(false)
+    const [reportingAbsence, setReportingAbsence] = useState(false)
+    const [cancelling, setCancelling]   = useState(false)
+    const [leaving, setLeaving]         = useState(false)
+    const [paying, setPaying]           = useState(false)
 
     // ── Polling ───────────────────────────────────────────────────
     const refresh = useCallback(async () => {
@@ -64,15 +82,140 @@ export function MatchDetailClient({ user, matchRequest: initialMatch }: Props) {
     const team1      = match.players?.filter(p => p.team === "TEAM_1") ?? []
     const team2      = match.players?.filter(p => p.team === "TEAM_2") ?? []
     const maxPerTeam = match.format === "ONE_VS_ONE" ? 1 : 2
-    const isOrganizer = match.players?.some(
-        p => p.playerId === user.id && p.role === "ORGANIZER"
-    ) ?? false
+    const currentPlayer = match.players?.find(p => p.playerId === user.id)
+    const isOrganizer   = currentPlayer?.role === "ORGANIZER"
+    const isPlayer      = currentPlayer !== undefined
+
+    // >48h antes del inicio → puede abandonar limpiamente; ≤48h → solo notificar ausencia
+    const hoursUntilMatch = (new Date(`${match.bookingDate}T${match.startTime}`).getTime() - Date.now()) / 3_600_000
+    const canLeave = hoursUntilMatch > 48
 
     const handleCopy = () => {
         const joinUrl = `${window.location.origin}/match/join/${match.invitationToken}`
         navigator.clipboard.writeText(joinUrl)
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
+    }
+
+    // ── Check-in (GPS) ────────────────────────────────────────────
+    const handleCheckIn = () => {
+        if (!navigator.geolocation) {
+            toast.error("Tu dispositivo no soporta geolocalización")
+            return
+        }
+
+        setCheckingIn(true)
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude, accuracy } = position.coords
+                try {
+                    const res = await fetch(
+                        `/api/proxy/api/match/requests/${match.id}/checkin?lat=${latitude}&lng=${longitude}&accuracy=${accuracy}`,
+                        { method: "POST" }
+                    )
+                    if (res.ok) {
+                        toast.success("¡Check-in realizado! Tu asistencia ha quedado registrada.")
+                        await refresh()
+                    } else {
+                        const err = await res.json().catch(() => ({}))
+                        toast.error(err.detail ?? "No se pudo completar el check-in")
+                    }
+                } catch {
+                    toast.error("Error de red. Inténtalo de nuevo.")
+                } finally {
+                    setCheckingIn(false)
+                }
+            },
+            (err) => {
+                setCheckingIn(false)
+                if (err.code === err.PERMISSION_DENIED) {
+                    toast.error("Permite el acceso a la ubicación para hacer check-in")
+                } else {
+                    toast.error("No se pudo obtener tu ubicación. Sal al exterior e inténtalo de nuevo.")
+                }
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        )
+    }
+
+    // ── Report absence ────────────────────────────────────────────
+    const handleReportAbsence = async () => {
+        setReportingAbsence(true)
+        try {
+            const res = await fetch(
+                `/api/proxy/api/match/requests/${match.id}/absence`,
+                { method: "POST" }
+            )
+            if (res.ok) {
+                toast.success("Ausencia notificada. Los demás jugadores han sido avisados.")
+                await refresh()
+            } else {
+                const err = await res.json().catch(() => ({}))
+                toast.error(err.detail ?? "No se pudo notificar la ausencia")
+            }
+        } catch {
+            toast.error("Error de red. Inténtalo de nuevo.")
+        } finally {
+            setReportingAbsence(false)
+        }
+    }
+
+    // ── Confirm organizer payment ─────────────────────────────────
+    const handleConfirmPayment = async () => {
+        setPaying(true)
+        try {
+            const res = await fetch(`/api/proxy/api/match/requests/${match.id}/confirm-payment`, { method: "POST" })
+            if (res.ok) {
+                toast.success("¡Pago confirmado! El partido está abierto y los jugadores han sido invitados.")
+                await refresh()
+            } else {
+                const err = await res.json().catch(() => ({}))
+                toast.error(err.detail ?? "No se pudo confirmar el pago")
+            }
+        } catch {
+            toast.error("Error de red. Inténtalo de nuevo.")
+        } finally {
+            setPaying(false)
+        }
+    }
+
+    // ── Cancel match (organizer) ──────────────────────────────────
+    const handleCancel = async () => {
+        setCancelling(true)
+        try {
+            const res = await fetch(`/api/proxy/api/match/requests/${match.id}`, {method: "DELETE"})
+            if (res.ok) {
+                toast.success("Partido cancelado. Los jugadores han sido notificados.")
+                await refresh()
+            } else {
+                const err = await res.json().catch(() => ({}))
+                toast.error(err.detail ?? "No se pudo cancelar el partido")
+            }
+        } catch {
+            toast.error("Error de red. Inténtalo de nuevo.")
+        } finally {
+            setCancelling(false)
+        }
+    }
+
+    // ── Leave match (non-organizer, >48h) ─────────────────────────
+    const handleLeave = async () => {
+        setLeaving(true)
+        try {
+            const res = await fetch(`/api/proxy/api/match/requests/${match.id}/leave`, {method: "DELETE"})
+            if (res.ok) {
+                toast.success("Has abandonado el partido.")
+                await refresh()
+            } else {
+                const err = await res.json().catch(() => ({}))
+                toast.error(err.detail ?? "No se pudo abandonar el partido")
+            }
+        } catch {
+            toast.error("Error de red. Inténtalo de nuevo.")
+        } finally {
+            setLeaving(false)
+        }
     }
 
     return (
@@ -135,9 +278,41 @@ export function MatchDetailClient({ user, matchRequest: initialMatch }: Props) {
                                 {SKILL_LABELS[match.skillLevel]}
                             </div>
                         </div>
+                        {match.pricePerPlayer != null && (
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Precio por jugador</p>
+                                <div className="mt-1 text-sm font-medium text-foreground">
+                                    {match.pricePerPlayer.toFixed(2)}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Organizer payment pending */}
+            {isOrganizer && match.status === "AWAITING_ORGANIZER_PAYMENT" && (
+                <Card className="border-amber-500/30 bg-amber-500/5">
+                    <CardContent className="flex flex-col gap-3 p-5">
+                        <div className="flex items-center gap-2">
+                            <CreditCard className="h-4 w-4 text-amber-400" />
+                            <p className="text-sm font-medium text-foreground">Pago pendiente</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Para confirmar la reserva y abrir el partido a otros jugadores, debes pagar tu parte (€{match.pricePerPlayer?.toFixed(2)}).
+                            Tienes 30 minutos desde la creación del partido.
+                        </p>
+                        <Button
+                            onClick={handleConfirmPayment}
+                            disabled={paying}
+                            className="h-10 gap-2 bg-amber-600 text-white hover:bg-amber-700"
+                        >
+                            <CreditCard className="h-4 w-4" />
+                            {paying ? "Procesando…" : `Pagar €${match.pricePerPlayer?.toFixed(2)} y abrir el partido`}
+                        </Button>
+                    </CardContent>
+                </Card>
+            )}
 
             {/* Score Board */}
             <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-secondary/40 to-secondary/20 p-6">
@@ -190,10 +365,12 @@ export function MatchDetailClient({ user, matchRequest: initialMatch }: Props) {
                                 <div key={i} className="flex items-center gap-2">
                                     <div className={`flex h-7 w-7 items-center justify-center rounded-full border text-xs font-bold ${
                                         players[i]
-                                            ? "bg-primary/20 border-primary/30 text-primary"
+                                            ? players[i].checkedIn
+                                                ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
+                                                : "bg-primary/20 border-primary/30 text-primary"
                                             : "bg-secondary/30 border-border/30 text-muted-foreground"
                                     }`}>
-                                        {players[i] ? "✓" : "?"}
+                                        {players[i] ? (players[i].checkedIn ? "✓" : "●") : "?"}
                                     </div>
                                     <div>
                                         <p className="text-xs font-medium text-foreground">
@@ -206,7 +383,12 @@ export function MatchDetailClient({ user, matchRequest: initialMatch }: Props) {
                                         </p>
                                         {players[i] && (
                                             <p className="text-[10px] text-muted-foreground">
-                                                {players[i].role === "ORGANIZER" ? "⚡ Creó el partido" : "✓ Confirmado"}
+                                                {players[i].checkedIn
+                                                    ? "📍 Check-in realizado"
+                                                    : players[i].role === "ORGANIZER"
+                                                        ? "⚡ Creó el partido"
+                                                        : "✓ Confirmado"
+                                                }
                                             </p>
                                         )}
                                     </div>
@@ -224,6 +406,139 @@ export function MatchDetailClient({ user, matchRequest: initialMatch }: Props) {
                     </Card>
                 ))}
             </div>
+
+            {/* Check-in — solo para jugadores del partido FULL que no han hecho check-in */}
+            {isPlayer && match.status === "FULL" && !currentPlayer?.checkedIn && (
+                <Card className="border-emerald-500/20 bg-emerald-500/5">
+                    <CardContent className="flex flex-col gap-3 p-5">
+                        <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-emerald-400" />
+                            <p className="text-sm font-medium text-foreground">Check-in al partido</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Registra tu asistencia cuando estés en la pista. Disponible 30 minutos antes y después de la hora de inicio.
+                        </p>
+                        <Button
+                            onClick={handleCheckIn}
+                            disabled={checkingIn}
+                            className="h-10 gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
+                        >
+                            <MapPin className="h-4 w-4" />
+                            {checkingIn ? "Obteniendo ubicación…" : "Hacer check-in"}
+                        </Button>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Check-in completado */}
+            {isPlayer && match.status === "FULL" && currentPlayer?.checkedIn && (
+                <div className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                    <p className="text-sm font-medium text-emerald-400">Check-in realizado</p>
+                </div>
+            )}
+
+            {/* Cancelar partido — solo organizador cuando está OPEN o AWAITING_ORGANIZER_PAYMENT */}
+            {isOrganizer && (match.status === "OPEN" || match.status === "AWAITING_ORGANIZER_PAYMENT") && (
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button
+                            variant="outline"
+                            className="h-10 gap-2 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                            disabled={cancelling}
+                        >
+                            <LogOut className="h-4 w-4"/>
+                            {cancelling ? "Cancelando…" : "Cancelar partido"}
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>¿Cancelar el partido?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Se cancelará la reserva de la pista y se notificará a todos los jugadores apuntados.
+                                Esta acción no se puede deshacer.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Volver</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={handleCancel}
+                                className="bg-red-600 text-white hover:bg-red-700"
+                            >
+                                Cancelar partido
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            )}
+
+            {/* Abandonar partido — non-organizer en OPEN/FULL, o organizer en FULL, >48h antes del inicio */}
+            {isPlayer && canLeave && (match.status === "OPEN" || match.status === "FULL") && (!isOrganizer || match.status === "FULL") && (
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button
+                            variant="outline"
+                            className="h-10 gap-2 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                            disabled={leaving}
+                        >
+                            <LogOut className="h-4 w-4"/>
+                            {leaving ? "Abandonando…" : "Abandonar partido"}
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>¿Abandonar el partido?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Saldrás del partido y tu plaza quedará libre para otro jugador.
+                                Solo es posible con más de 48h de antelación.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Volver</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={handleLeave}
+                                className="bg-red-600 text-white hover:bg-red-700"
+                            >
+                                Abandonar
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            )}
+
+            {/* Notificar ausencia — non-organizer en OPEN/FULL, o organizer en FULL, ≤48h antes */}
+            {isPlayer && !canLeave && (match.status === "OPEN" || match.status === "FULL") && (!isOrganizer || match.status === "FULL") && (
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button
+                            variant="outline"
+                            className="h-10 gap-2 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                            disabled={reportingAbsence}
+                        >
+                            <LogOut className="h-4 w-4"/>
+                            {reportingAbsence ? "Notificando…" : "No podré asistir"}
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>¿Confirmas que no podrás asistir?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Se notificará a los demás jugadores y se buscará un sustituto gratuito.
+                                Tu pago no será reembolsado.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={handleReportAbsence}
+                                className="bg-red-600 text-white hover:bg-red-700"
+                            >
+                                Notificar ausencia
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            )}
 
             {/* Compartir link — solo organizador y partido abierto */}
             {isOrganizer && match.status === "OPEN" && (
@@ -258,8 +573,8 @@ export function MatchDetailClient({ user, matchRequest: initialMatch }: Props) {
                 </Card>
             )}
 
-            {/* Unirse — solo si hay plazas y no es organizador */}
-            {match.status === "OPEN" && match.availableSlots > 0 && !isOrganizer && (
+            {/* Unirse — solo si hay plazas y no es jugador */}
+            {match.status === "OPEN" && match.availableSlots > 0 && !isPlayer && (
                 <Button
                     onClick={() => router.push(`/match/join/${match.invitationToken}`)}
                     className="h-11 gap-2 bg-primary font-medium"

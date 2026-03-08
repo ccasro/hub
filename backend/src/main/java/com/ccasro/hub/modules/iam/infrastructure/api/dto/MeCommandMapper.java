@@ -15,7 +15,8 @@ public final class MeCommandMapper {
         request.city(),
         request.countryCode(),
         request.preferredSport(),
-        request.skillLevel());
+        request.skillLevel(),
+        request.matchNotificationsEnabled());
   }
 
   public static ImageUrl toImageUrl(UpdateAvatarRequest request) {
