@@ -51,7 +51,8 @@ public class GetMyMatchesService {
         .map(
             m -> {
               ResourceLiteProjection resource = resources.get(m.getResourceId().value());
-              VenueLiteProjection venue = resource != null ? venues.get(resource.getVenueId()) : null;
+              VenueLiteProjection venue =
+                  resource != null ? venues.get(resource.getVenueId()) : null;
               return new MatchView(
                   m,
                   resource != null ? resource.getName() : null,
@@ -62,8 +63,5 @@ public class GetMyMatchesService {
   }
 
   public record MatchView(
-      MatchRequest matchRequest,
-      String resourceName,
-      String venueName,
-      String venueCity) {}
+      MatchRequest matchRequest, String resourceName, String venueName, String venueCity) {}
 }
