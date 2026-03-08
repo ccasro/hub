@@ -1,6 +1,7 @@
 package com.ccasro.hub.modules.matching.infrastructure.persistence;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -58,6 +59,9 @@ public class MatchRequestEntity {
 
   @Column(nullable = false, length = 20)
   private String status;
+
+  @Column(name = "price_per_player", precision = 10, scale = 2)
+  private BigDecimal pricePerPlayer;
 
   @Column(name = "expires_at", nullable = false)
   private Instant expiresAt;

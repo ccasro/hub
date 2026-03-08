@@ -30,7 +30,11 @@ public class UserProfileMapper {
         e.isOnboardingCompleted(),
         e.getCreatedAt(),
         e.getUpdatedAt(),
-        e.getLastLoginAt());
+        e.getLastLoginAt(),
+        e.getNoShowCount(),
+        e.getMatchBannedUntil(),
+        e.getLastMatchCancelledAt(),
+        e.isMatchNotificationsEnabled());
   }
 
   public UserProfileEntity toEntity(UserProfile d) {
@@ -61,5 +65,9 @@ public class UserProfileMapper {
     e.setOnboardingCompleted(d.isOnboardingCompleted());
     e.setUpdatedAt(d.getUpdatedAt());
     e.setLastLoginAt(d.getLastLoginAt());
+    e.setNoShowCount(d.getNoShowCount());
+    e.setMatchBannedUntil(d.getMatchBannedUntil());
+    e.setLastMatchCancelledAt(d.getLastMatchCancelledAt());
+    e.setMatchNotificationsEnabled(d.isMatchNotificationsEnabled());
   }
 }

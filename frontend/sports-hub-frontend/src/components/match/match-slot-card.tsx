@@ -1,10 +1,11 @@
 "use client"
 
+import {useState} from "react"
 import {useRouter} from "next/navigation"
 import {Badge} from "@/components/ui/badge"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent} from "@/components/ui/card"
-import {Building2, ChevronRight, Clock, Euro, MapPin, Swords, Users} from "lucide-react"
+import {Building2, ChevronRight, Clock, MapPin, Swords, Users} from "lucide-react"
 import type {MatchFormat, MatchSkillLevel, MatchSlotResult} from "@/types"
 
 interface Props {
@@ -22,8 +23,13 @@ const SPORT_COLORS: Record<string, string> = {
     BADMINTON: "bg-purple-500/10 text-purple-400",
 }
 
+
 export function MatchSlotCard({ slot, format, skillLevel, date, duration }: Props) {
     const router = useRouter()
+
+    const [tooSoon] = useState(
+        () => (new Date(`${date}T${slot.startTime.slice(0, 5)}`).getTime() - Date.now()) / 3_600_000 < 48,
+    )
 
     const handleCreate = () => {
         const params = new URLSearchParams({
@@ -67,7 +73,6 @@ export function MatchSlotCard({ slot, format, skillLevel, date, duration }: Prop
                             {slot.startTime.slice(0, 5)} — {slot.endTime.slice(0, 5)}
                         </span>
                         <span className="flex items-center gap-1">
-                            <Euro className="h-3 w-3" />
                             {slot.price > 0 ? `${slot.price} ${slot.currency}` : "Precio a convenir"}
                         </span>
                         <span className="flex items-center gap-1">
@@ -83,14 +88,20 @@ export function MatchSlotCard({ slot, format, skillLevel, date, duration }: Prop
                     </div>
                 </div>
 
-                <Button
-                    size="sm"
-                    onClick={handleCreate}
-                    className="h-9 shrink-0 gap-1.5 bg-primary text-xs font-medium"
-                >
-                    Crear partido
-                    <ChevronRight className="h-3.5 w-3.5" />
-                </Button>
+                {tooSoon ? (
+                    <span className="shrink-0 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-1.5 text-[10px] font-medium text-amber-400">
+                        &lt;48h
+                    </span>
+                ) : (
+                    <Button
+                        size="sm"
+                        onClick={handleCreate}
+                        className="h-9 shrink-0 gap-1.5 bg-primary text-xs font-medium"
+                    >
+                        Crear partido
+                        <ChevronRight className="h-3.5 w-3.5" />
+                    </Button>
+                )}
             </CardContent>
         </Card>
     )

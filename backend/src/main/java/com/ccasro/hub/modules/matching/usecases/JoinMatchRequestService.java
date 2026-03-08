@@ -1,21 +1,19 @@
 package com.ccasro.hub.modules.matching.usecases;
 
-import com.ccasro.hub.modules.booking.domain.ports.out.BookingRepositoryPort;
-import com.ccasro.hub.modules.booking.domain.valueobjects.BookingStatus;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import com.ccasro.hub.modules.matching.domain.MatchRequest;
 import com.ccasro.hub.modules.matching.domain.PlayerTeam;
-import com.ccasro.hub.modules.matching.domain.events.MatchFullEvent;
 import com.ccasro.hub.modules.matching.domain.exception.MatchNotFoundException;
+import com.ccasro.hub.modules.matching.domain.exception.PlayerMatchBannedException;
+import com.ccasro.hub.modules.matching.domain.exception.PlayerTimeConflictException;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchRequestRepositoryPort;
 import com.ccasro.hub.modules.matching.domain.valueobjects.InvitationToken;
 import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import java.time.Clock;
-import java.util.List;
+import java.time.LocalTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,9 +23,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class JoinMatchRequestService {
 
   private final MatchRequestRepositoryPort matchRepository;
-  private final BookingRepositoryPort bookingRepository;
+  private final MatchCompletionHandler matchCompletionHandler;
+  private final MatchPlayerPaymentService matchPlayerPaymentService;
   private final UserProfileRepositoryPort userRepository;
-  private final ApplicationEventPublisher eventPublisher;
   private final CurrentUserProvider currentUser;
   private final Clock clock;
 
@@ -36,58 +34,43 @@ public class JoinMatchRequestService {
 
     UserId playerId = currentUser.getUserId();
 
+    userRepository
+        .findById(playerId)
+        .ifPresent(
+            profile -> {
+              if (profile.isMatchBanned(clock)) throw new PlayerMatchBannedException();
+            });
+
     MatchRequest matchRequest =
         matchRepository
             .findByInvitationToken(token)
             .orElseThrow(() -> new MatchNotFoundException("Match not found"));
 
+    checkNoTimeConflict(playerId, matchRequest);
+
     matchRequest.join(playerId, team, clock);
 
+    matchPlayerPaymentService.createPaymentForPlayer(matchRequest, playerId);
+
     if (matchRequest.isFull()) {
-      confirmBooking(matchRequest);
-      publishMatchFullEvent(matchRequest);
+      matchCompletionHandler.onMatchFull(matchRequest);
     }
 
     matchRepository.save(matchRequest);
     return matchRequest;
   }
 
-  private void confirmBooking(MatchRequest matchRequest) {
-    bookingRepository
-        .findByResourceIdAndDate(matchRequest.getResourceId(), matchRequest.getBookingDate())
-        .stream()
-        .filter(b -> b.getStatus() == BookingStatus.PENDING_MATCH)
-        .filter(b -> b.getSlot().startTime().equals(matchRequest.getStartTime()))
-        .findFirst()
-        .ifPresent(
-            b -> {
-              b.confirmMatch(clock);
-              bookingRepository.save(b);
-              log.info(
-                  "Booking {} confirmed for match {}",
-                  b.getId().value(),
-                  matchRequest.getId().value());
-            });
-  }
-
-  private void publishMatchFullEvent(MatchRequest matchRequest) {
-    try {
-      List<String> emails =
-          matchRequest.getPlayers().stream()
-              .map(
-                  p ->
-                      userRepository
-                          .findById(p.getPlayerId())
-                          .map(u -> u.getEmail().value())
-                          .orElse(null))
-              .filter(e -> e != null)
-              .toList();
-
-      if (!emails.isEmpty()) {
-        eventPublisher.publishEvent(new MatchFullEvent(matchRequest, emails));
-      }
-    } catch (Exception e) {
-      log.warn("Failed to queue match full notifications: {}", e.getMessage());
-    }
+  private void checkNoTimeConflict(UserId playerId, MatchRequest target) {
+    LocalTime targetEnd = target.getStartTime().plusMinutes(target.getSlotDurationMinutes());
+    boolean conflict =
+        matchRepository.findActiveByPlayerAndDate(playerId, target.getBookingDate()).stream()
+            .anyMatch(
+                existing -> {
+                  LocalTime existingEnd =
+                      existing.getStartTime().plusMinutes(existing.getSlotDurationMinutes());
+                  return target.getStartTime().isBefore(existingEnd)
+                      && existing.getStartTime().isBefore(targetEnd);
+                });
+    if (conflict) throw new PlayerTimeConflictException();
   }
 }

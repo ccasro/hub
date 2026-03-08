@@ -88,7 +88,7 @@ export function MatchSearchClient({ user }: Props) {
     const router = useRouter();
 
     useEffect(() => {
-        fetch("/api/proxy/api/cities?countryCode=ESP")
+        fetch("/api/proxy/api/cities?countryCode=ES")
             .then(r => r.json())
             .then((data: CityDto[]) => {
                 setCities(data)

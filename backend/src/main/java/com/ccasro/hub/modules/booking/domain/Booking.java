@@ -112,7 +112,7 @@ public class Booking {
       SlotRange slot,
       BigDecimal price,
       String currency,
-      Duration ttl,
+      Instant expiresAt,
       Clock clock) {
 
     Instant now = clock.instant();
@@ -126,7 +126,7 @@ public class Booking {
             price,
             currency,
             now,
-            now.plus(ttl));
+            expiresAt);
     b.status = BookingStatus.PENDING_MATCH;
     b.paymentStatus = PaymentStatus.PENDING;
     return b;
@@ -138,6 +138,14 @@ public class Booking {
     this.status = BookingStatus.CONFIRMED;
     this.paymentStatus = PaymentStatus.PAID;
     this.expiresAt = null;
+    this.updatedAt = clock.instant();
+  }
+
+  public void revertToPendingMatch(Clock clock) {
+    if (this.status != BookingStatus.CONFIRMED)
+      throw new IllegalStateException("Booking is not CONFIRMED");
+    this.status = BookingStatus.PENDING_MATCH;
+    this.paymentStatus = PaymentStatus.PENDING;
     this.updatedAt = clock.instant();
   }
 

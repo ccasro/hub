@@ -104,7 +104,11 @@ public abstract class BaseIT {
                       true,
                       Instant.now(),
                       Instant.now(),
-                      Instant.now());
+                      Instant.now(),
+                      0,
+                      null,
+                      null,
+                      false);
               return users.save(p);
             });
   }

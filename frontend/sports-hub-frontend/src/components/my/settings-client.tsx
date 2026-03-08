@@ -58,7 +58,7 @@ const SETTINGS_KEY = "sportsHub.settings.v1"
 const DEFAULT_SETTINGS: LocalSettings = {
     emailBookings: true,
     emailMarketing: true,
-    emailMatching: false,
+    emailMatching: false, // overridden at runtime from user.matchNotificationsEnabled
     pushNotifications: true,
     profileVisible: true,
     showCity: true,
@@ -87,7 +87,10 @@ function saveLocalSettings(s: LocalSettings) {
 
 export function SettingsClient({ user: initialUser, upcomingCount }: Props) {
     const [me, setMe] = useState<UserProfile>(initialUser)
-    const [localSettings, setLocalSettings] = useState<LocalSettings>(() => loadLocalSettings())
+    const [localSettings, setLocalSettings] = useState<LocalSettings>(() => ({
+        ...loadLocalSettings(),
+        emailMatching: initialUser.matchNotificationsEnabled,
+    }))
 
     const [saving, setSaving] = useState(false)
     const [saved, setSaved] = useState(false)
@@ -106,6 +109,24 @@ export function SettingsClient({ user: initialUser, upcomingCount }: Props) {
         setSaving(true)
         setSaved(false)
         try {
+            const res = await fetch("/api/proxy/api/me", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    displayName: me.displayName,
+                    description: me.description,
+                    phoneNumber: me.phoneNumber,
+                    city: me.city,
+                    countryCode: me.countryCode,
+                    preferredSport: me.preferredSport,
+                    skillLevel: me.skillLevel,
+                    matchNotificationsEnabled: localSettings.emailMatching,
+                }),
+            })
+            if (res.ok) {
+                const updated: UserProfile = await res.json()
+                setMe(updated)
+            }
             saveLocalSettings(localSettings)
             setSaved(true)
             window.setTimeout(() => setSaved(false), 2000)

@@ -3,6 +3,7 @@ package com.ccasro.hub.modules.matching.infrastructure.notification;
 import com.ccasro.hub.modules.booking.application.port.out.ResourceReadPort;
 import com.ccasro.hub.modules.booking.application.port.out.VenueReadPort;
 import com.ccasro.hub.modules.booking.infrastructure.email.BrevoEmailSender;
+import com.ccasro.hub.modules.matching.domain.MatchInvitation;
 import com.ccasro.hub.modules.matching.domain.MatchRequest;
 import com.ccasro.hub.modules.matching.domain.PlayerTeam;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchNotificationPort;
@@ -36,7 +37,7 @@ public class MatchNotificationAdapter implements MatchNotificationPort {
   private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
   @Override
-  public void sendMatchInvitations(MatchRequest matchRequest, List<String> playerEmails) {
+  public void sendMatchInvitations(MatchRequest matchRequest, List<MatchInvitation> invitations) {
     var enriched = enrich(matchRequest);
     if (enriched == null) return;
 
@@ -57,8 +58,9 @@ public class MatchNotificationAdapter implements MatchNotificationPort {
           case ANY -> "Cualquier nivel";
         };
 
-    for (String email : playerEmails) {
+    for (MatchInvitation invitation : invitations) {
       try {
+        String email = invitation.getPlayerEmail();
         Context ctx = new Context(Locale.forLanguageTag("es"));
         ctx.setVariable("playerName", email.split("@")[0]);
         ctx.setVariable("organizerName", "Un jugador");
@@ -82,7 +84,10 @@ public class MatchNotificationAdapter implements MatchNotificationPort {
         String html = templateEngine.process("email/match-invitation", ctx);
         brevoEmailSender.send(email, "⚔️ Te invitan a un partido — SportsHub", html);
       } catch (Exception e) {
-        log.error("Failed to send match invitation to {}: {}", email, e.getMessage());
+        log.error(
+            "Failed to send match invitation to {}: {}",
+            invitation.getPlayerEmail(),
+            e.getMessage());
       }
     }
   }
@@ -157,6 +162,35 @@ public class MatchNotificationAdapter implements MatchNotificationPort {
         brevoEmailSender.send(email, "❌ Partido cancelado — SportsHub", html);
       } catch (Exception e) {
         log.error("Failed to send match cancelled email to {}: {}", email, e.getMessage());
+      }
+    }
+  }
+
+  @Override
+  public void notifyPlayerAbsence(MatchRequest matchRequest, List<String> remainingPlayerEmails) {
+    var enriched = enrich(matchRequest);
+
+    for (String email : remainingPlayerEmails) {
+      try {
+        Context ctx = new Context(Locale.forLanguageTag("es"));
+        ctx.setVariable("playerName", email.split("@")[0]);
+        ctx.setVariable("resourceName", enriched.resourceName());
+        ctx.setVariable("venueName", enriched.venueName());
+        ctx.setVariable("bookingDate", matchRequest.getBookingDate().format(DATE_FMT));
+        ctx.setVariable("startTime", matchRequest.getStartTime().format(TIME_FMT));
+        ctx.setVariable(
+            "endTime",
+            matchRequest
+                .getStartTime()
+                .plusMinutes(matchRequest.getSlotDurationMinutes())
+                .format(TIME_FMT));
+        ctx.setVariable("matchUrl", frontendUrl + "/match/" + matchRequest.getId().value());
+
+        String html = templateEngine.process("email/match-absence", ctx);
+        brevoEmailSender.send(
+            email, "⚠️ Un jugador ha avisado que no puede acudir — SportsHub", html);
+      } catch (Exception e) {
+        log.error("Failed to send absence notification to {}: {}", email, e.getMessage());
       }
     }
   }

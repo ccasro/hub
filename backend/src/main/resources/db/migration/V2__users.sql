@@ -33,6 +33,10 @@ CREATE TABLE user_profile (
     match_search_radius_km      INTEGER NOT NULL DEFAULT 10,
     city_id                     BIGINT REFERENCES city(id),
 
+    no_show_count               INTEGER NOT NULL DEFAULT 0,
+    match_banned_until          TIMESTAMPTZ,
+    last_match_cancelled_at     TIMESTAMPTZ,
+
     created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     last_login_at TIMESTAMPTZ

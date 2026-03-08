@@ -30,7 +30,7 @@ public interface BookingJpaRepository extends JpaRepository<BookingEntity, UUID>
         AND b.startTime = :startTime
         AND b.status != 'CANCELLED'
         """)
-  boolean existsConfirmedBooking(
+  boolean existsActiveBooking(
       @Param("resourceId") UUID resourceId,
       @Param("date") LocalDate date,
       @Param("startTime") LocalTime startTime);
@@ -38,10 +38,7 @@ public interface BookingJpaRepository extends JpaRepository<BookingEntity, UUID>
   @Query(
       """
         SELECT b FROM BookingEntity b
-        WHERE b.resourceId IN (
-            SELECT r.id FROM ResourceEntity r
-            WHERE r.venueId = :venueId
-        )
+        JOIN ResourceEntity r ON r.id = b.resourceId AND r.venueId = :venueId
         ORDER BY b.bookingDate DESC, b.startTime ASC
         """)
   Page<BookingEntity> findByVenueId(@Param("venueId") UUID venueId, Pageable pageable);

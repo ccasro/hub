@@ -45,8 +45,7 @@ public class CreateBookingService {
     LocalTime endTime = cmd.startTime().plusMinutes(resource.slotDuration().minutes());
     SlotRange slot = new SlotRange(cmd.startTime(), endTime);
 
-    if (bookingRepository.existsConfirmedBooking(
-        cmd.resourceId(), cmd.bookingDate(), cmd.startTime()))
+    if (bookingRepository.existsActiveBooking(cmd.resourceId(), cmd.bookingDate(), cmd.startTime()))
       throw new SlotNotAvailableException();
 
     BigDecimal price = resource.priceForSlot();

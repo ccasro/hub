@@ -14,8 +14,4 @@ public record GeoPoint(double latitude, double longitude) {
                 * Math.sin(dLon / 2);
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
-
-  public boolean isWithinRadiusKm(GeoPoint center, double radiusKm) {
-    return distanceKm(center) <= radiusKm;
-  }
 }

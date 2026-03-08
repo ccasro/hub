@@ -12,7 +12,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {Separator} from "@/components/ui/separator"
 import {DashboardNavbar} from "@/components/dashboard/dashboard-navbar"
 import {uploadToCloudinary} from "@/lib/cloudinary-upload"
-import {ArrowLeft, Camera, Check, Loader2, Trash2} from "lucide-react"
+import {AlertTriangle, ArrowLeft, Camera, Check, Loader2, Trash2} from "lucide-react"
 import type {UserProfile} from "@/types"
 
 
@@ -91,13 +91,25 @@ export function ProfileClient({ user: initialUser, upcomingCount }: Props) {
 
     const [saving, setSaving] = useState(false)
     const [saved, setSaved] = useState(false)
+    const [saveError, setSaveError] = useState<string | null>(null)
     const [avatarUploading, setAvatarUploading] = useState(false)
+
+    // Mirror backend regex: strips spaces, adds leading +, then ^+[1-9]\d{6,14}$
+    const PHONE_RE = /^\+[1-9]\d{6,14}$/
+    function validatePhone(raw: string): string | null {
+        if (!raw) return null
+        const normalized = raw.trim().replace(/\s/g, "")
+        const withPlus = normalized.startsWith("+") ? normalized : "+" + normalized
+        if (!PHONE_RE.test(withPlus)) return "Formato inválido. Usa el formato internacional: +34 600 000 000"
+        return null
+    }
 
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const update = (fields: Partial<FormState>) => {
         setForm((p) => ({ ...p, ...fields }))
         setSaved(false)
+        setSaveError(null)
     }
 
     const initials = useMemo(() => safeInitials(form.displayName), [form.displayName])
@@ -150,8 +162,16 @@ export function ProfileClient({ user: initialUser, upcomingCount }: Props) {
 
     async function handleSave() {
         if (!form.displayName.trim()) return
+
+        const phoneError = validatePhone(form.phoneNumber)
+        if (phoneError) {
+            setSaveError(phoneError)
+            return
+        }
+
         setSaving(true)
         setSaved(false)
+        setSaveError(null)
 
         try {
             const res = await fetch("/api/proxy/api/me", {
@@ -167,15 +187,19 @@ export function ProfileClient({ user: initialUser, upcomingCount }: Props) {
                     skillLevel: form.skillLevel || undefined,
                 }),
             })
-            if (!res.ok) throw new Error(`Save error ${res.status}`)
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}))
+                setSaveError(body?.detail ?? "Error al guardar los cambios. Inténtalo de nuevo.")
+                return
+            }
             const updated: UserProfile = await res.json()
 
             setMe(updated)
             setAvatarPreview(updated.avatarUrl ?? null)
             setForm(userToForm(updated))
             setSaved(true)
-        } catch (e) {
-            console.error(e)
+        } catch {
+            setSaveError("Error de red. Comprueba tu conexión e inténtalo de nuevo.")
         } finally {
             setSaving(false)
         }
@@ -294,8 +318,13 @@ export function ProfileClient({ user: initialUser, upcomingCount }: Props) {
                                 value={form.phoneNumber}
                                 onChange={(e) => update({ phoneNumber: e.target.value })}
                                 placeholder="+34 600 000 000"
-                                className="h-11 border-border/60 bg-secondary/30 text-foreground placeholder:text-muted-foreground focus-visible:border-primary/50 focus-visible:ring-primary/20"
+                                className={`h-11 border-border/60 bg-secondary/30 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/20 ${
+                                    saveError && saveError.includes("Formato") ? "border-destructive focus-visible:border-destructive" : "focus-visible:border-primary/50"
+                                }`}
                             />
+                            {saveError && saveError.includes("Formato") && (
+                                <p className="text-xs text-destructive">{saveError}</p>
+                            )}
                         </div>
 
                         <div className="flex flex-col gap-2">
@@ -406,8 +435,40 @@ export function ProfileClient({ user: initialUser, upcomingCount }: Props) {
                             <span className="text-sm text-muted-foreground">Miembro desde</span>
                             <span className="text-sm text-foreground">{memberSinceLabel}</span>
                         </div>
+                        {me.role === "PLAYER" && (
+                            <>
+                                <Separator className="bg-border/50" />
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-muted-foreground">No-shows registrados</span>
+                                    <span className={`text-sm font-medium ${me.noShowCount > 0 ? "text-amber-400" : "text-foreground"}`}>
+                                        {me.noShowCount} / 3
+                                    </span>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </section>
+
+                {/* Ban warning */}
+                {me.matchBannedUntil && new Date(me.matchBannedUntil) > new Date() && (
+                    <section className="mb-8 rounded-xl border border-red-500/30 bg-red-500/5 p-5">
+                        <div className="flex items-start gap-3">
+                            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
+                            <div>
+                                <p className="text-sm font-semibold text-red-400">Acceso a partidos suspendido</p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    No puedes unirte a nuevos partidos hasta el{" "}
+                                    <span className="font-medium text-foreground">
+                                        {new Date(me.matchBannedUntil).toLocaleDateString("es-ES", {
+                                            day: "numeric", month: "long", year: "numeric"
+                                        })}
+                                    </span>
+                                    {" "}debido a ausencias no notificadas.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+                )}
 
                 {/* Save bar */}
                 <div className="sticky bottom-0 -mx-4 border-t border-border/50 bg-background/95 px-4 py-4 backdrop-blur-xl lg:-mx-6 lg:px-6">
@@ -417,6 +478,12 @@ export function ProfileClient({ user: initialUser, upcomingCount }: Props) {
                                 <p className="flex items-center gap-1.5 text-sm text-green-400">
                                     <Check className="h-4 w-4" />
                                     Cambios guardados
+                                </p>
+                            )}
+                            {saveError && !saveError.includes("Formato") && (
+                                <p className="flex items-center gap-1.5 text-sm text-destructive">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    {saveError}
                                 </p>
                             )}
                         </div>

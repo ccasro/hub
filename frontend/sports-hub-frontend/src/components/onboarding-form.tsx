@@ -88,8 +88,18 @@ export function OnboardingForm() {
         update({avatarFile: file, avatarPreview: url})
     }
 
+    const PHONE_RE = /^\+[1-9]\d{6,14}$/
+    const phoneError =
+        data.phoneNumber.trim()
+            ? (() => {
+                const n = data.phoneNumber.trim().replace(/\s/g, "")
+                const withPlus = n.startsWith("+") ? n : "+" + n
+                return PHONE_RE.test(withPlus) ? null : "Formato inválido. Usa el formato internacional: +34 600 000 000"
+            })()
+            : null
+
     const canContinue = () => {
-        if (step === 1) return data.displayName.trim().length >= 2
+        if (step === 1) return data.displayName.trim().length >= 2 && !phoneError
         if (step === 2) return !!data.preferredSport && !!data.skillLevel
         if (step === 3) return !!data.countryCode && data.city.trim().length >= 2
         return true
@@ -319,8 +329,13 @@ export function OnboardingForm() {
                             value={data.phoneNumber}
                             onChange={(e) => update({phoneNumber: e.target.value})}
                             placeholder="+34 600 000 000"
-                            className="h-12 border-border/60 bg-secondary/30 text-foreground placeholder:text-muted-foreground focus-visible:border-primary/50 focus-visible:ring-primary/20"
+                            className={`h-12 border-border/60 bg-secondary/30 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/20 ${
+                                phoneError ? "border-destructive focus-visible:border-destructive" : "focus-visible:border-primary/50"
+                            }`}
                         />
+                        {phoneError && (
+                            <p className="text-xs text-destructive">{phoneError}</p>
+                        )}
                     </div>
 
                     {/* Description */}
@@ -582,16 +597,6 @@ export function OnboardingForm() {
                 )}
             </div>
 
-            {/* Skip */}
-            {step === 1 && (
-                <button
-                    type="button"
-                    onClick={() => setStep(step + 1)}
-                    className="mt-4 block w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                    Saltar este paso
-                </button>
-            )}
         </div>
     )
 }

@@ -31,5 +31,5 @@ public interface BookingRepositoryPort {
 
   List<Booking> findExpiredHolds(Instant now);
 
-  boolean existsConfirmedBooking(ResourceId resourceId, LocalDate date, LocalTime startTime);
+  boolean existsActiveBooking(ResourceId resourceId, LocalDate date, LocalTime startTime);
 }

@@ -5,8 +5,10 @@ import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import com.ccasro.hub.modules.iam.domain.valueobjects.Auth0Id;
 import com.ccasro.hub.modules.iam.domain.valueobjects.OwnerRequestStatus;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
-import java.util.List;
-import java.util.Optional;
+import com.ccasro.hub.shared.infrastructure.persistence.CityJpaRepository;
+import java.time.Instant;
+import java.util.*;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,7 @@ public class UserProfileRepositoryAdapter implements UserProfileRepositoryPort {
 
   private final UserProfileJpaRepository jpa;
   private final UserProfileMapper mapper;
+  private final CityJpaRepository cityJpa;
 
   @Override
   public Optional<UserProfile> findByAuth0Id(Auth0Id auth0Id) {
@@ -30,11 +33,27 @@ public class UserProfileRepositoryAdapter implements UserProfileRepositoryPort {
             .map(
                 managed -> {
                   mapper.updateEntity(user, managed);
+                  resolveCityId(user, managed);
                   return jpa.save(managed);
                 })
-            .orElseGet(() -> jpa.save(mapper.toEntity(user)));
+            .orElseGet(
+                () -> {
+                  UserProfileEntity entity = mapper.toEntity(user);
+                  resolveCityId(user, entity);
+                  return jpa.save(entity);
+                });
 
     return mapper.toDomain(saved);
+  }
+
+  private void resolveCityId(UserProfile user, UserProfileEntity entity) {
+    String city = user.getCity();
+    String countryCode = user.getCountryCode() != null ? user.getCountryCode().value() : null;
+    if (city != null && !city.isBlank() && countryCode != null && !countryCode.isBlank()) {
+      cityJpa
+          .findByNameIgnoreCaseAndCountryCode(city, countryCode)
+          .ifPresent(c -> entity.setCityId(c.getId()));
+    }
   }
 
   @Override
@@ -55,5 +74,22 @@ public class UserProfileRepositoryAdapter implements UserProfileRepositoryPort {
   @Override
   public List<UserProfile> findByOwnerRequestStatus(OwnerRequestStatus status) {
     return jpa.findByOwnerRequestStatus(status).stream().map(mapper::toDomain).toList();
+  }
+
+  @Override
+  public Map<UserId, String> findEmailsByIds(Set<UserId> ids) {
+    Set<UUID> uuids = ids.stream().map(UserId::value).collect(Collectors.toSet());
+    return jpa.findEmailsByIds(uuids).stream()
+        .collect(Collectors.toMap(p -> new UserId(p.getId()), UserEmailProjection::getEmail));
+  }
+
+  @Override
+  public boolean tryRecordMatchCancellation(UserId userId, Instant now, Instant cooldownThreshold) {
+    return jpa.tryRecordMatchCancellation(userId.value(), now, cooldownThreshold) > 0;
+  }
+
+  @Override
+  public long getCooldownHoursRemaining(UserId userId) {
+    return jpa.findCooldownHoursRemaining(userId.value()).orElse(0L);
   }
 }

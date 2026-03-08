@@ -1,6 +1,5 @@
 package com.ccasro.hub.modules.matching.domain.events;
 
-import com.ccasro.hub.modules.matching.domain.MatchRequest;
-import java.util.List;
+import java.util.UUID;
 
-public record MatchInvitationsEvent(MatchRequest matchRequest, List<String> emails) {}
+public record MatchInvitationsEvent(UUID matchRequestId) {}

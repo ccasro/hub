@@ -91,4 +91,13 @@ public class UserProfileEntity {
 
   @Column(name = "last_login_at")
   private Instant lastLoginAt;
+
+  @Column(name = "no_show_count", nullable = false)
+  private int noShowCount;
+
+  @Column(name = "match_banned_until")
+  private Instant matchBannedUntil;
+
+  @Column(name = "last_match_cancelled_at")
+  private Instant lastMatchCancelledAt;
 }

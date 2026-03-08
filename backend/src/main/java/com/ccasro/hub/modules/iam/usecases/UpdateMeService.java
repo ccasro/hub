@@ -35,6 +35,7 @@ public class UpdateMeService {
         command.countryCode() != null ? new CountryCode(command.countryCode()) : null,
         command.preferredSport(),
         command.skillLevel(),
+        command.matchNotificationsEnabled(),
         clock);
 
     repository.save(profile);

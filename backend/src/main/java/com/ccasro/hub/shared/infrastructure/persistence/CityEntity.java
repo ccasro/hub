@@ -2,6 +2,7 @@ package com.ccasro.hub.shared.infrastructure.persistence;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import org.locationtech.jts.geom.Point;
 
 @Entity
 @Table(name = "city")
@@ -23,4 +24,7 @@ public class CityEntity {
 
   @Column(nullable = false)
   private double longitude;
+
+  @Column(columnDefinition = "geography(Point,4326)")
+  private Point location;
 }

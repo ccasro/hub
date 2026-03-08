@@ -8,7 +8,7 @@ import {Card, CardContent} from "@/components/ui/card"
 import {Label} from "@/components/ui/label"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Textarea} from "@/components/ui/textarea"
-import {ArrowLeft, Building2, Calendar, Clock, Loader2, MapPin, Send, Swords, Users,} from "lucide-react"
+import {ArrowLeft, Building2, Calendar, Clock, CreditCard, Loader2, MapPin, Send, Swords, Users,} from "lucide-react"
 import type {MatchFormat, MatchSkillLevel, UserProfile} from "@/types"
 
 interface CityDto {
@@ -63,8 +63,15 @@ export function MatchCreateClient({ user }: Props) {
     const [cities, setCities]             = useState<CityDto[]>([])
     const [selectedCity, setSelectedCity] = useState<CityDto | null>(null)
 
-    const [loading, setLoading] = useState(false)
-    const [error, setError]     = useState<string | null>(null)
+    const [loading, setLoading]         = useState(false)
+    const [error, setError]             = useState<string | null>(null)
+    const [pendingMatch, setPendingMatch] = useState<{id: string; pricePerPlayer: number} | null>(null)
+    const [paying, setPaying]           = useState(false)
+
+    // El backend requiere mínimo 48h de antelación para crear un partido
+    const tooSoon = date && startTime
+        ? (new Date(`${date}T${startTime}`).getTime() - Date.now()) / 3_600_000 < 48
+        : false
 
     const endTime = (() => {
         if (!startTime) return ""
@@ -74,7 +81,7 @@ export function MatchCreateClient({ user }: Props) {
     })()
     
     useEffect(() => {
-        fetch("/api/proxy/api/cities?countryCode=ESP")
+        fetch("/api/proxy/api/cities?countryCode=ES")
             .then((r) => r.json())
             .then((data: CityDto[]) => {
                 setCities(data)
@@ -119,12 +126,94 @@ export function MatchCreateClient({ user }: Props) {
             }
 
             const data = await res.json()
-            router.push(`/match/${data.id}`)
+            if (data.status === "AWAITING_ORGANIZER_PAYMENT") {
+                setPendingMatch({ id: data.id, pricePerPlayer: data.pricePerPlayer })
+            } else {
+                router.push(`/match/${data.id}`)
+            }
         } catch (e) {
             setError(e instanceof Error ? e.message : "Error creando el partido")
         } finally {
             setLoading(false)
         }
+    }
+
+    const handleConfirmPayment = async () => {
+        if (!pendingMatch) return
+        setPaying(true)
+        setError(null)
+        try {
+            const res = await fetch(`/api/proxy/api/match/requests/${pendingMatch.id}/confirm-payment`, {
+                method: "POST",
+            })
+            if (!res.ok) {
+                const body = await res.json().catch(() => null)
+                throw new Error(body?.detail || `Error ${res.status}`)
+            }
+            router.push(`/match/${pendingMatch.id}`)
+        } catch (e) {
+            setError(e instanceof Error ? e.message : "Error confirmando el pago")
+        } finally {
+            setPaying(false)
+        }
+    }
+
+    if (pendingMatch) {
+        return (
+            <div className="mx-auto flex max-w-2xl flex-col gap-6 p-4 lg:p-8">
+                <div className="flex items-center gap-3">
+                    <div>
+                        <h1 className="font-[var(--font-space-grotesk)] text-2xl font-bold tracking-tight text-foreground">
+                            Confirmar pago
+                        </h1>
+                        <p className="text-sm text-muted-foreground">
+                            Paga tu parte para abrir el partido e invitar jugadores.
+                        </p>
+                    </div>
+                </div>
+
+                <Card className="border-border/50 bg-card">
+                    <CardContent className="flex flex-col gap-4 p-5">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            Resumen del pago
+                        </p>
+                        <div className="flex items-center justify-between rounded-lg border border-border/50 bg-secondary/30 px-4 py-3">
+                            <span className="text-sm text-muted-foreground">Tu parte (organizador)</span>
+                            <span className="text-lg font-bold text-foreground">
+                                €{pendingMatch.pricePerPlayer?.toFixed(2) ?? "—"}
+                            </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Tienes 30 minutos para completar el pago. Si no pagas, el slot se liberará automáticamente.
+                        </p>
+                    </CardContent>
+                </Card>
+
+                {error && (
+                    <p className="rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+                        {error}
+                    </p>
+                )}
+
+                <Button
+                    onClick={handleConfirmPayment}
+                    disabled={paying}
+                    className="h-12 gap-2 bg-primary text-base font-semibold"
+                >
+                    {paying
+                        ? <><Loader2 className="h-4 w-4 animate-spin" />Procesando pago...</>
+                        : <><CreditCard className="h-4 w-4" />Pagar y abrir el partido</>
+                    }
+                </Button>
+
+                <button
+                    onClick={() => router.push(`/match/${pendingMatch.id}`)}
+                    className="text-center text-xs text-muted-foreground underline-offset-2 hover:underline"
+                >
+                    Pagar más tarde (el partido se cancelará en 30 min si no pagas)
+                </button>
+            </div>
+        )
     }
 
     return (
@@ -308,6 +397,12 @@ export function MatchCreateClient({ user }: Props) {
                 )}
             </div>
 
+            {tooSoon && (
+                <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-400">
+                    Este slot está a menos de 48 horas. Solo puedes crear partidos con al menos 48h de antelación para que los jugadores tengan tiempo de organizarse.
+                </div>
+            )}
+
             {error && (
                 <p className="rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs text-destructive">
                     {error}
@@ -317,17 +412,17 @@ export function MatchCreateClient({ user }: Props) {
             {/* CTA */}
             <Button
                 onClick={handleCreate}
-                disabled={loading || !selectedCity}
+                disabled={loading || !selectedCity || tooSoon}
                 className="h-12 gap-2 bg-primary text-base font-semibold"
             >
                 {loading
                     ? <><Loader2 className="h-4 w-4 animate-spin" />Creando partido...</>
-                    : <><Send className="h-4 w-4" />Crear partido e invitar jugadores</>
+                    : <><Send className="h-4 w-4" />Continuar al pago</>
                 }
             </Button>
 
             <p className="text-center text-xs text-muted-foreground">
-                La pista quedará bloqueada durante 48h. Si no se completan los jugadores el slot se liberará automáticamente.
+                Deberás pagar tu parte para confirmar la reserva. Si no pagas en 30 minutos, el slot se liberará automáticamente.
             </p>
 
         </div>
