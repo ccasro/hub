@@ -58,6 +58,16 @@ async function handler(request: NextRequest) {
 
     if (upstream.status === 204) return new NextResponse(null, { status: 204 });
 
+    if (!upstream.ok) {
+        const contentType = upstream.headers.get("content-type") ?? "";
+        if (contentType.includes("application/json") || contentType.includes("problem+json")) {
+            const errorBody = await upstream.json().catch(() => null);
+            const message = errorBody?.detail ?? errorBody?.message ?? errorBody?.error ?? "An error occurred";
+            return NextResponse.json({ message }, { status: upstream.status });
+        }
+        return NextResponse.json({ message: "An error occurred" }, { status: upstream.status });
+    }
+
     const body = await upstream.arrayBuffer();
 
     return new NextResponse(body, {

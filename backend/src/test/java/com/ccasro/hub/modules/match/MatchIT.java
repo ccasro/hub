@@ -1,8 +1,6 @@
 package com.ccasro.hub.modules.match;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -239,7 +237,7 @@ public class MatchIT extends BaseIT {
   }
 
   @Test
-  void join_jugador_duplicado_devuelve_422() throws Exception {
+  void join_jugador_duplicado_devuelve_409() throws Exception {
     String token = createOpenMatchAndGetToken();
 
     mvc.perform(
@@ -259,11 +257,11 @@ public class MatchIT extends BaseIT {
                 .content("""
                 {"team": "TEAM_1"}
                 """))
-        .andExpect(status().isUnprocessableEntity());
+        .andExpect(status().isConflict());
   }
 
   @Test
-  void join_equipo_lleno_devuelve_422() throws Exception {
+  void join_equipo_lleno_devuelve_409() throws Exception {
     String token = createOpenMatchAndGetToken();
 
     mvc.perform(
@@ -282,7 +280,7 @@ public class MatchIT extends BaseIT {
                 .content("""
                 {"team": "TEAM_1"}
                 """))
-        .andExpect(status().isUnprocessableEntity());
+        .andExpect(status().isConflict());
   }
 
   @Test
@@ -357,10 +355,6 @@ public class MatchIT extends BaseIT {
   void create_en_cooldown_devuelve_422() throws Exception {
     UserProfile player = givenPlayer();
 
-    // Forzar cooldown: simular que el jugador canceló hace instantes.
-    // cooldownThreshold = ahora-1s → la condición IS NULL se cumple → escribe
-    // last_match_cancelled_at = now.
-    // getCooldownHoursRemaining verá ~24h restantes.
     users.tryRecordMatchCancellation(player.getId(), Instant.now(), Instant.now().minusSeconds(1));
 
     mvc.perform(
@@ -404,6 +398,42 @@ public class MatchIT extends BaseIT {
         .andExpect(jsonPath("$").isEmpty());
   }
 
+  // ── POST /api/match/requests/{id}/absence ─────────────────────────────────
+
+  @Test
+  void absence_sin_token_devuelve_401() throws Exception {
+    mvc.perform(post("/api/match/requests/00000000-0000-0000-0000-000000000001/absence"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void absence_devuelve_204_en_partido_full_1v1() throws Exception {
+    String matchId = createFullOneVsOneMatchAndGetId();
+
+    // PLAYER2 notifica que no podrá asistir → partido vuelve a OPEN
+    mvc.perform(
+            post("/api/match/requests/{id}/absence", matchId)
+                .header("Authorization", bearer(PLAYER2_TOKEN)))
+        .andExpect(status().isNoContent());
+
+    mvc.perform(
+            get("/api/match/requests/{id}", matchId).header("Authorization", bearer(PLAYER_TOKEN)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("OPEN"))
+        .andExpect(jsonPath("$.availableSlots").value(1));
+  }
+
+  @Test
+  void absence_no_participante_devuelve_409() throws Exception {
+    String matchId = createFullOneVsOneMatchAndGetId();
+
+    // OWNER nunca se unió al partido
+    mvc.perform(
+            post("/api/match/requests/{id}/absence", matchId)
+                .header("Authorization", bearer(OWNER_TOKEN)))
+        .andExpect(status().isConflict());
+  }
+
   // ── helpers ───────────────────────────────────────────────────────────────
 
   private String getIdFromToken(String token) throws Exception {
@@ -417,6 +447,21 @@ public class MatchIT extends BaseIT {
         .registerModule(new JavaTimeModule())
         .readTree(result.getResponse().getContentAsString())
         .get("id")
+        .asText();
+  }
+
+  private String getTokenFromId(String matchId) throws Exception {
+    MvcResult result =
+        mvc.perform(
+                get("/api/match/requests/{id}", matchId)
+                    .header("Authorization", bearer(PLAYER_TOKEN)))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    return new ObjectMapper()
+        .registerModule(new JavaTimeModule())
+        .readTree(result.getResponse().getContentAsString())
+        .get("invitationToken")
         .asText();
   }
 
@@ -548,7 +593,6 @@ public class MatchIT extends BaseIT {
     String token = createOpenMatchAndGetToken();
     String matchId = getIdFromToken(token);
 
-    // PLAYER2 se une al partido
     mvc.perform(
             post("/api/match/join/{token}", token)
                 .header("Authorization", bearer(PLAYER2_TOKEN))
@@ -556,13 +600,11 @@ public class MatchIT extends BaseIT {
                 .content("{\"team\": \"TEAM_2\"}"))
         .andExpect(status().isOk());
 
-    // PLAYER2 abandona
     mvc.perform(
             delete("/api/match/requests/{id}/leave", matchId)
                 .header("Authorization", bearer(PLAYER2_TOKEN)))
         .andExpect(status().isNoContent());
 
-    // El slot vuelve a estar disponible
     mvc.perform(
             get("/api/match/requests/{id}", matchId).header("Authorization", bearer(PLAYER_TOKEN)))
         .andExpect(status().isOk())
@@ -585,10 +627,52 @@ public class MatchIT extends BaseIT {
     String token = createOpenMatchAndGetToken();
     String matchId = getIdFromToken(token);
 
-    // PLAYER2 nunca se unió — intenta abandonar
     mvc.perform(
             delete("/api/match/requests/{id}/leave", matchId)
                 .header("Authorization", bearer(PLAYER2_TOKEN)))
+        .andExpect(status().isConflict());
+  }
+
+  @Test
+  void leave_y_rejoin_devuelve_409() throws Exception {
+    String token = createOpenMatchAndGetToken();
+    String matchId = getIdFromToken(token);
+
+    mvc.perform(
+            post("/api/match/join/{token}", token)
+                .header("Authorization", bearer(PLAYER2_TOKEN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"team\": \"TEAM_2\"}"))
+        .andExpect(status().isOk());
+
+    mvc.perform(
+            delete("/api/match/requests/{id}/leave", matchId)
+                .header("Authorization", bearer(PLAYER2_TOKEN)))
+        .andExpect(status().isNoContent());
+
+    mvc.perform(
+            post("/api/match/join/{token}", token)
+                .header("Authorization", bearer(PLAYER2_TOKEN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"team\": \"TEAM_2\"}"))
+        .andExpect(status().isConflict());
+  }
+
+  @Test
+  void absence_y_rejoin_devuelve_409() throws Exception {
+    String matchId = createFullOneVsOneMatchAndGetId();
+    String token = getTokenFromId(matchId);
+
+    mvc.perform(
+            post("/api/match/requests/{id}/absence", matchId)
+                .header("Authorization", bearer(PLAYER2_TOKEN)))
+        .andExpect(status().isNoContent());
+
+    mvc.perform(
+            post("/api/match/join/{token}", token)
+                .header("Authorization", bearer(PLAYER2_TOKEN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"team\": \"TEAM_2\"}"))
         .andExpect(status().isConflict());
   }
 
@@ -640,6 +724,63 @@ public class MatchIT extends BaseIT {
         }
         """
         .formatted(RESOURCE_ID, date.format(DateTimeFormatter.ISO_DATE), startTime);
+  }
+
+  /**
+   * Crea un partido 1v1, confirma el pago del organizador y hace que PLAYER2 se una (partido queda
+   * FULL). Devuelve el matchId.
+   *
+   * <p>IMPORTANTE: extrae el id y token directamente del body del POST de creación para evitar
+   * cargar la entidad en el contexto de Hibernate con un GET adicional antes del join.
+   */
+  private String createFullOneVsOneMatchAndGetId() throws Exception {
+    var mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+
+    MvcResult createResult =
+        mvc.perform(
+                post("/api/match/requests")
+                    .header("Authorization", bearer(PLAYER_TOKEN))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(buildOneVsOneBody()))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    var matchJson = mapper.readTree(createResult.getResponse().getContentAsString());
+    String matchId = matchJson.get("id").asText();
+    String invToken = matchJson.get("invitationToken").asText();
+
+    mvc.perform(
+            post("/api/match/requests/{id}/confirm-payment", matchId)
+                .header("Authorization", bearer(PLAYER_TOKEN)))
+        .andExpect(status().isOk());
+
+    mvc.perform(
+            post("/api/match/join/{token}", invToken)
+                .header("Authorization", bearer(PLAYER2_TOKEN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"team\": \"TEAM_2\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("FULL"));
+
+    return matchId;
+  }
+
+  private String buildOneVsOneBody() {
+    return """
+        {
+          "resourceId": "%s",
+          "bookingDate": "%s",
+          "startTime": "%s",
+          "slotDurationMinutes": 90,
+          "format": "ONE_VS_ONE",
+          "skillLevel": "ANY",
+          "customMessage": "1v1 test",
+          "searchLat": 40.4168,
+          "searchLng": -3.7038,
+          "searchRadiusKm": 10.0
+        }
+        """
+        .formatted(RESOURCE_ID, MATCH_DATE.format(DateTimeFormatter.ISO_DATE), SLOT_TIME);
   }
 
   private static LocalDate nextMonday() {

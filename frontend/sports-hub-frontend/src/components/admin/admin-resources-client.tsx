@@ -128,7 +128,7 @@ export function AdminResourcesClient({ resources: initialResources }: Props) {
             })
             if (!res.ok) {
                 const body = await res.json().catch(() => null)
-                throw new Error(body?.detail || `Error ${res.status}`)
+                throw new Error(body?.message || `Error ${res.status}`)
             }
 
             // Actualizar estado local

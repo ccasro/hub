@@ -12,6 +12,8 @@ public class MatchPlayer {
   private final Instant joinedAt;
   private boolean checkedIn;
   private Instant checkedInAt;
+  private Instant leftAt;
+  private LeaveReason leftReason;
 
   private MatchPlayer(
       UserId playerId,
@@ -19,22 +21,34 @@ public class MatchPlayer {
       PlayerRole role,
       Instant joinedAt,
       boolean checkedIn,
-      Instant checkedInAt) {
+      Instant checkedInAt,
+      Instant leftAt,
+      LeaveReason leftReason) {
     this.playerId = playerId;
     this.team = team;
     this.role = role;
     this.joinedAt = joinedAt;
     this.checkedIn = checkedIn;
     this.checkedInAt = checkedInAt;
+    this.leftAt = leftAt;
+    this.leftReason = leftReason;
   }
 
   public static MatchPlayer organizer(UserId playerId, Clock clock) {
     return new MatchPlayer(
-        playerId, PlayerTeam.TEAM_1, PlayerRole.ORGANIZER, clock.instant(), false, null);
+        playerId,
+        PlayerTeam.TEAM_1,
+        PlayerRole.ORGANIZER,
+        clock.instant(),
+        false,
+        null,
+        null,
+        null);
   }
 
   public static MatchPlayer guest(UserId playerId, PlayerTeam team, Clock clock) {
-    return new MatchPlayer(playerId, team, PlayerRole.GUEST, clock.instant(), false, null);
+    return new MatchPlayer(
+        playerId, team, PlayerRole.GUEST, clock.instant(), false, null, null, null);
   }
 
   public static MatchPlayer reconstitute(
@@ -43,13 +57,30 @@ public class MatchPlayer {
       PlayerRole role,
       Instant joinedAt,
       boolean checkedIn,
-      Instant checkedInAt) {
-    return new MatchPlayer(playerId, team, role, joinedAt, checkedIn, checkedInAt);
+      Instant checkedInAt,
+      Instant leftAt,
+      LeaveReason leftReason) {
+    return new MatchPlayer(
+        playerId, team, role, joinedAt, checkedIn, checkedInAt, leftAt, leftReason);
   }
 
   public void checkIn(Instant now) {
     this.checkedIn = true;
     this.checkedInAt = now;
+  }
+
+  public void markAsLeft(Instant now) {
+    this.leftAt = now;
+    this.leftReason = LeaveReason.LEAVE;
+  }
+
+  public void markAsAbsent(Instant now) {
+    this.leftAt = now;
+    this.leftReason = LeaveReason.ABSENCE;
+  }
+
+  public boolean hasLeft() {
+    return leftReason != null;
   }
 
   public UserId getPlayerId() {
@@ -74,5 +105,13 @@ public class MatchPlayer {
 
   public Instant getCheckedInAt() {
     return checkedInAt;
+  }
+
+  public Instant getLeftAt() {
+    return leftAt;
+  }
+
+  public LeaveReason getLeftReason() {
+    return leftReason;
   }
 }

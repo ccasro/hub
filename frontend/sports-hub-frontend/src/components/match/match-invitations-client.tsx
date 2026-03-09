@@ -55,7 +55,7 @@ function InvitationCard({ invitation, onResponded }: {
                 }, 800)
             } else {
                 const err = await res.json().catch(() => ({}))
-                toast.error(err.detail ?? "No se pudo aceptar la invitación")
+                toast.error(err.message ?? "No se pudo aceptar la invitación")
                 setLoading(false)
             }
         } catch {
@@ -75,7 +75,7 @@ function InvitationCard({ invitation, onResponded }: {
                 onResponded()
             } else {
                 const err = await res.json().catch(() => ({}))
-                toast.error(err.detail ?? "No se pudo rechazar la invitación")
+                toast.error(err.message ?? "No se pudo rechazar la invitación")
             }
         } catch {
             toast.error("Error de red. Inténtalo de nuevo.")

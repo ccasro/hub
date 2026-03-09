@@ -64,7 +64,7 @@ export function MatchJoinClient({ user, matchRequest, token }: Props) {
             })
             if (!res.ok) {
                 const body = await res.json().catch(() => null)
-                throw new Error(body?.detail || `Error ${res.status}`)
+                throw new Error(body?.message || `Error ${res.status}`)
             }
             const data = await res.json()
             setJoined(true)

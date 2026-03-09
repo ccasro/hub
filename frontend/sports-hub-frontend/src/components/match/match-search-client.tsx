@@ -135,7 +135,11 @@ export function MatchSearchClient({ user }: Props) {
             const res = await fetch(`/api/proxy/api/match/search?${params}`, { signal: controller.signal })
             clearTimeout(timeout)
 
-            const data: MatchSlotResult[] = res.ok ? await res.json() : []
+            if (!res.ok) {
+                const body = await res.json().catch(() => null)
+                throw new Error(body?.message ?? `Error ${res.status}`)
+            }
+            const data: MatchSlotResult[] = await res.json()
 
             const seen = new Set<string>()
             const combined = data.filter(s => {

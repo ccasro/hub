@@ -126,7 +126,7 @@ export interface Booking {
     endTime: string;
     pricePaid: number;
     currency: string;
-    status: "PENDING_PAYMENT" | "CONFIRMED" | "CANCELLED";
+    status: "PENDING_PAYMENT" | "CONFIRMED" | "CANCELLED" | "PENDING_MATCH";
     paymentStatus: "PENDING" | "PAID" | "FAILED" | "REFUNDED";
     expiresAt: string | null;
     cancelledAt: string | null;
@@ -135,6 +135,8 @@ export interface Booking {
     resourceName: string | null;
     venueName: string | null;
     venueCity: string | null;
+    matchRequestId: string | null;
+    leftMatch: boolean;
 }
 
 export interface CreateBookingResponse {

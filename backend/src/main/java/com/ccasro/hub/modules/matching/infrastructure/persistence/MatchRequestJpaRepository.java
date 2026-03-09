@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -21,6 +22,7 @@ public interface MatchRequestJpaRepository extends JpaRepository<MatchRequestEnt
         SELECT m FROM MatchRequestEntity m
         JOIN m.players p
         WHERE p.playerId = :playerId
+          AND p.leftAt IS NULL
         """)
   List<MatchRequestEntity> findByPlayerId(@Param("playerId") UUID playerId);
 
@@ -29,6 +31,7 @@ public interface MatchRequestJpaRepository extends JpaRepository<MatchRequestEnt
         SELECT m FROM MatchRequestEntity m
         JOIN m.players p
         WHERE p.playerId = :playerId
+          AND p.leftAt IS NULL
           AND m.bookingDate = :date
           AND m.status IN ('AWAITING_ORGANIZER_PAYMENT', 'OPEN', 'FULL')
         """)
@@ -94,4 +97,21 @@ public interface MatchRequestJpaRepository extends JpaRepository<MatchRequestEnt
       @Param("resourceId") UUID resourceId,
       @Param("date") LocalDate date,
       @Param("startTime") LocalTime startTime);
+
+  @Query(
+      """
+    SELECT m FROM MatchRequestEntity m
+    WHERE m.resourceId IN :resourceIds
+    AND m.status IN ('AWAITING_ORGANIZER_PAYMENT', 'OPEN', 'FULL')
+    """)
+  List<MatchRequestEntity> findActiveByResourceIds(@Param("resourceIds") Set<UUID> resourceIds);
+
+  @Query(
+      """
+    SELECT m.id FROM MatchRequestEntity m
+    JOIN m.players p
+    WHERE p.playerId = :playerId
+      AND p.leftAt IS NOT NULL
+    """)
+  Set<UUID> findMatchIdsWherePlayerLeft(@Param("playerId") UUID playerId);
 }

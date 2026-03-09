@@ -25,9 +25,10 @@ CREATE TABLE match_player (
     team             VARCHAR(10) NOT NULL,
     role             VARCHAR(20) NOT NULL,
     joined_at        TIMESTAMPTZ NOT NULL,
-    absence_reported BOOLEAN NOT NULL DEFAULT FALSE,
     checked_in       BOOLEAN NOT NULL DEFAULT FALSE,
     checked_in_at    TIMESTAMPTZ,
+    left_at          TIMESTAMPTZ,
+    left_reason      VARCHAR(20),
     CONSTRAINT match_player_unique UNIQUE (match_request_id, player_id)
 );
 

@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import {ArrowLeft, Calendar, CheckCircle2, Clock, Copy, CreditCard, LogOut, MapPin, Share2, Swords, Users} from "lucide-react"
 import type {MatchRequestResponse, UserProfile} from "@/types"
-import {useCallback, useEffect, useState} from "react"
+import {useCallback, useEffect, useRef, useState} from "react"
 import {toast} from "sonner"
 
 interface Props {
@@ -53,6 +53,7 @@ export function MatchDetailClient({ user, matchRequest: initialMatch }: Props) {
     const [match, setMatch] = useState(initialMatch)
     const [copied, setCopied] = useState(false)
     const [checkingIn, setCheckingIn] = useState(false)
+    const checkingInRef = useRef(false)
     const [reportingAbsence, setReportingAbsence] = useState(false)
     const [cancelling, setCancelling]   = useState(false)
     const [leaving, setLeaving]         = useState(false)
@@ -119,7 +120,7 @@ export function MatchDetailClient({ user, matchRequest: initialMatch }: Props) {
                         await refresh()
                     } else {
                         const err = await res.json().catch(() => ({}))
-                        toast.error(err.detail ?? "No se pudo completar el check-in")
+                        toast.error(err.message ?? "No se pudo completar el check-in")
                     }
                 } catch {
                     toast.error("Error de red. Inténtalo de nuevo.")
@@ -152,7 +153,7 @@ export function MatchDetailClient({ user, matchRequest: initialMatch }: Props) {
                 await refresh()
             } else {
                 const err = await res.json().catch(() => ({}))
-                toast.error(err.detail ?? "No se pudo notificar la ausencia")
+                toast.error(err.message ?? "No se pudo notificar la ausencia")
             }
         } catch {
             toast.error("Error de red. Inténtalo de nuevo.")
@@ -171,7 +172,7 @@ export function MatchDetailClient({ user, matchRequest: initialMatch }: Props) {
                 await refresh()
             } else {
                 const err = await res.json().catch(() => ({}))
-                toast.error(err.detail ?? "No se pudo confirmar el pago")
+                toast.error(err.message ?? "No se pudo confirmar el pago")
             }
         } catch {
             toast.error("Error de red. Inténtalo de nuevo.")
@@ -190,7 +191,7 @@ export function MatchDetailClient({ user, matchRequest: initialMatch }: Props) {
                 await refresh()
             } else {
                 const err = await res.json().catch(() => ({}))
-                toast.error(err.detail ?? "No se pudo cancelar el partido")
+                toast.error(err.message ?? "No se pudo cancelar el partido")
             }
         } catch {
             toast.error("Error de red. Inténtalo de nuevo.")
@@ -209,7 +210,7 @@ export function MatchDetailClient({ user, matchRequest: initialMatch }: Props) {
                 await refresh()
             } else {
                 const err = await res.json().catch(() => ({}))
-                toast.error(err.detail ?? "No se pudo abandonar el partido")
+                toast.error(err.message ?? "No se pudo abandonar el partido")
             }
         } catch {
             toast.error("Error de red. Inténtalo de nuevo.")
@@ -287,6 +288,17 @@ export function MatchDetailClient({ user, matchRequest: initialMatch }: Props) {
                             </div>
                         )}
                     </div>
+                    {(match.venueName || match.resourceName || match.venueCity) && (
+                        <div className="border-t border-border/40 pt-4">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Ubicación</p>
+                            <div className="mt-1 flex items-start gap-1.5 text-sm font-medium text-foreground">
+                                <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                                <span>
+                                    {[match.venueName, match.resourceName, match.venueCity].filter(Boolean).join(" · ")}
+                                </span>
+                            </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
@@ -488,9 +500,14 @@ export function MatchDetailClient({ user, matchRequest: initialMatch }: Props) {
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>¿Abandonar el partido?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Saldrás del partido y tu plaza quedará libre para otro jugador.
-                                Solo es posible con más de 48h de antelación.
+                            <AlertDialogDescription asChild>
+                                <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                                    <p>Tu plaza quedará libre y se te devolverá el pago.</p>
+                                    <ul className="list-disc pl-4 space-y-1 text-xs">
+                                        <li>Solo permitido con más de 48 horas de antelación.</li>
+                                        <li className="font-medium text-red-400">No podrás volver a unirte a este partido.</li>
+                                    </ul>
+                                </div>
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -499,7 +516,7 @@ export function MatchDetailClient({ user, matchRequest: initialMatch }: Props) {
                                 onClick={handleLeave}
                                 className="bg-red-600 text-white hover:bg-red-700"
                             >
-                                Abandonar
+                                Abandonar partido
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
@@ -522,9 +539,14 @@ export function MatchDetailClient({ user, matchRequest: initialMatch }: Props) {
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>¿Confirmas que no podrás asistir?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Se notificará a los demás jugadores y se buscará un sustituto gratuito.
-                                Tu pago no será reembolsado.
+                            <AlertDialogDescription asChild>
+                                <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                                    <p>Se avisará a los demás jugadores y se buscará un sustituto gratuito.</p>
+                                    <ul className="list-disc pl-4 space-y-1 text-xs">
+                                        <li className="font-medium text-red-400">Tu pago no será reembolsado.</li>
+                                        <li className="font-medium text-red-400">No podrás volver a unirte a este partido.</li>
+                                    </ul>
+                                </div>
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

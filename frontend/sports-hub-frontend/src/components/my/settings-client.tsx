@@ -94,8 +94,10 @@ export function SettingsClient({ user: initialUser, upcomingCount }: Props) {
 
     const [saving, setSaving] = useState(false)
     const [saved, setSaved] = useState(false)
+    const [saveError, setSaveError] = useState<string | null>(null)
     const [showOwnerDialog, setShowOwnerDialog] = useState(false)
     const [requesting, setRequesting] = useState(false)
+    const [requestError, setRequestError] = useState<string | null>(null)
     const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
     const ownerRequestStatus = me.ownerRequestStatus ?? "NONE"
@@ -108,6 +110,7 @@ export function SettingsClient({ user: initialUser, upcomingCount }: Props) {
     const handleSave = async () => {
         setSaving(true)
         setSaved(false)
+        setSaveError(null)
         try {
             const res = await fetch("/api/proxy/api/me", {
                 method: "PUT",
@@ -123,13 +126,18 @@ export function SettingsClient({ user: initialUser, upcomingCount }: Props) {
                     matchNotificationsEnabled: localSettings.emailMatching,
                 }),
             })
-            if (res.ok) {
-                const updated: UserProfile = await res.json()
-                setMe(updated)
+            if (!res.ok) {
+                const body = await res.json().catch(() => null)
+                setSaveError(body?.message ?? "Error al guardar los cambios")
+                return
             }
+            const updated: UserProfile = await res.json()
+            setMe(updated)
             saveLocalSettings(localSettings)
             setSaved(true)
             window.setTimeout(() => setSaved(false), 2000)
+        } catch {
+            setSaveError("Error de red. Inténtalo de nuevo.")
         } finally {
             setSaving(false)
         }
@@ -137,14 +145,20 @@ export function SettingsClient({ user: initialUser, upcomingCount }: Props) {
 
     const handleOwnerRequest = async () => {
         setRequesting(true)
+        setRequestError(null)
         try {
-            await fetch("/api/proxy/api/me/request-owner", { method: "POST" })
+            const ownerRes = await fetch("/api/proxy/api/me/request-owner", { method: "POST" })
+            if (!ownerRes.ok) {
+                const body = await ownerRes.json().catch(() => null)
+                setRequestError(body?.message ?? "Error al enviar la solicitud")
+                return
+            }
             const res = await fetch("/api/proxy/api/me")
             const updated: UserProfile = await res.json()
             setMe(updated)
             setShowOwnerDialog(false)
-        } catch (e) {
-            console.error(e)
+        } catch {
+            setRequestError("Error de red. Inténtalo de nuevo.")
         } finally {
             setRequesting(false)
         }
@@ -396,6 +410,9 @@ export function SettingsClient({ user: initialUser, upcomingCount }: Props) {
                                     Configuracion guardada
                                 </p>
                             )}
+                            {saveError && (
+                                <p className="text-sm text-destructive">{saveError}</p>
+                            )}
                         </div>
                         <Button onClick={handleSave} disabled={saving} className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
                             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" />Guardar cambios</>}
@@ -441,6 +458,9 @@ export function SettingsClient({ user: initialUser, upcomingCount }: Props) {
                             </p>
                         </div>
                     </div>
+                    {requestError && (
+                        <p className="text-sm text-destructive">{requestError}</p>
+                    )}
                     <DialogFooter className="gap-2 sm:gap-0">
                         <Button variant="outline" onClick={() => setShowOwnerDialog(false)} className="border-border/60 bg-secondary/30 text-foreground hover:bg-secondary/50">
                             Cancelar

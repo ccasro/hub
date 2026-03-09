@@ -69,7 +69,6 @@ public class MatchRequestEntity {
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
 
-  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-  @JoinColumn(name = "match_request_id")
+  @OneToMany(mappedBy = "matchRequest", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<MatchPlayerEntity> players = new ArrayList<>();
 }

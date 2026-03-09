@@ -2,6 +2,7 @@ package com.ccasro.hub.modules.matching.domain;
 
 import com.ccasro.hub.modules.matching.domain.exception.MatchNotOpenException;
 import com.ccasro.hub.modules.matching.domain.exception.PlayerAlreadyJoinedException;
+import com.ccasro.hub.modules.matching.domain.exception.PlayerAlreadyLeftException;
 import com.ccasro.hub.modules.matching.domain.exception.TeamFullException;
 import com.ccasro.hub.modules.matching.domain.valueobjects.GeoPoint;
 import com.ccasro.hub.modules.matching.domain.valueobjects.InvitationToken;
@@ -174,16 +175,25 @@ public class MatchRequest {
     if (status != MatchStatus.OPEN)
       throw new MatchNotOpenException("Match is not open for joining");
 
-    if (players.stream().anyMatch(p -> p.getPlayerId().equals(playerId)))
-      throw new PlayerAlreadyJoinedException("Player already joined this match");
+    players.stream()
+        .filter(p -> p.getPlayerId().equals(playerId))
+        .findFirst()
+        .ifPresent(
+            p -> {
+              if (p.hasLeft())
+                throw new PlayerAlreadyLeftException(
+                    "Player already left this match and cannot rejoin");
+              throw new PlayerAlreadyJoinedException("Player already joined this match");
+            });
 
-    long teamCount = players.stream().filter(p -> p.getTeam() == team).count();
+    List<MatchPlayer> active = activePlayers();
+    long teamCount = active.stream().filter(p -> p.getTeam() == team).count();
     if (teamCount >= format.getPlayersPerTeam())
       throw new TeamFullException("Team " + team + " is already full");
 
     players.add(MatchPlayer.guest(playerId, team, clock));
 
-    if (players.size() == format.getMaxPlayers()) {
+    if (active.size() + 1 == format.getMaxPlayers()) {
       status = MatchStatus.FULL;
     }
   }
@@ -197,9 +207,18 @@ public class MatchRequest {
     status = MatchStatus.CANCELLED;
   }
 
-  public void removePlayer(UserId playerId) {
-    boolean removed = players.removeIf(p -> p.getPlayerId().equals(playerId));
-    if (removed && status == MatchStatus.FULL) {
+  public void removePlayer(UserId playerId, Clock clock) {
+    boolean found =
+        players.stream()
+            .filter(p -> p.getPlayerId().equals(playerId) && !p.hasLeft())
+            .findFirst()
+            .map(
+                p -> {
+                  p.markAsLeft(clock.instant());
+                  return true;
+                })
+            .orElse(false);
+    if (found && status == MatchStatus.FULL) {
       status = MatchStatus.OPEN;
     }
   }
@@ -212,9 +231,18 @@ public class MatchRequest {
         .checkIn(clock.instant());
   }
 
-  public void reportAbsence(UserId playerId) {
-    boolean removed = players.removeIf(p -> p.getPlayerId().equals(playerId));
-    if (!removed) throw new IllegalStateException("Player is not a participant of this match");
+  public void reportAbsence(UserId playerId, Clock clock) {
+    boolean found =
+        players.stream()
+            .filter(p -> p.getPlayerId().equals(playerId) && !p.hasLeft())
+            .findFirst()
+            .map(
+                p -> {
+                  p.markAsAbsent(clock.instant());
+                  return true;
+                })
+            .orElse(false);
+    if (!found) throw new IllegalStateException("Player is not a participant of this match");
     if (status == MatchStatus.FULL) {
       status = MatchStatus.OPEN;
     }
@@ -243,7 +271,11 @@ public class MatchRequest {
   }
 
   public int availableSlots() {
-    return format.getMaxPlayers() - players.size();
+    return format.getMaxPlayers() - activePlayers().size();
+  }
+
+  private List<MatchPlayer> activePlayers() {
+    return players.stream().filter(p -> !p.hasLeft()).toList();
   }
 
   public MatchRequestId getId() {
@@ -299,6 +331,10 @@ public class MatchRequest {
   }
 
   public List<MatchPlayer> getPlayers() {
+    return activePlayers();
+  }
+
+  public List<MatchPlayer> getAllPlayers() {
     return Collections.unmodifiableList(players);
   }
 

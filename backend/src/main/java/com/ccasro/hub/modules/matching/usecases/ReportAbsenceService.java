@@ -48,7 +48,7 @@ public class ReportAbsenceService {
 
     boolean wasFullBeforeAbsence = match.isFull();
 
-    match.reportAbsence(playerId);
+    match.reportAbsence(playerId, clock);
     matchRepository.save(match);
 
     if (wasFullBeforeAbsence && match.isOpen()) {
@@ -65,6 +65,11 @@ public class ReportAbsenceService {
             .map(p -> p.getPlayerId().value().toString())
             .collect(Collectors.toSet());
 
+    Set<String> alreadyInvitedIds =
+        invitationRepository.findByMatchRequestId(match.getId().value()).stream()
+            .map(inv -> inv.getPlayerId().toString())
+            .collect(Collectors.toSet());
+
     Instant now = clock.instant();
     List<MatchInvitation> invitations =
         eligiblePlayerPort
@@ -75,6 +80,7 @@ public class ReportAbsenceService {
                 absentPlayerId.value().toString())
             .stream()
             .filter(p -> !currentPlayerIds.contains(p.userId()))
+            .filter(p -> !alreadyInvitedIds.contains(p.userId()))
             .map(
                 p ->
                     MatchInvitation.createFreeSubstitute(

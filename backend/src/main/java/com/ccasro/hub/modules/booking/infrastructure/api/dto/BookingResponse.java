@@ -27,14 +27,22 @@ public record BookingResponse(
     Instant expiresAt,
     String resourceName,
     String venueName,
-    String venueCity) {
+    String venueCity,
+    UUID matchRequestId,
+    boolean leftMatch) {
 
   public static BookingResponse from(Booking b) {
-    return base(b, null, null, null);
+    return base(b, null, null, null, null, false);
   }
 
   public static BookingResponse from(MyBookingView dto) {
-    return base(dto.booking(), dto.resourceName(), dto.venueName(), dto.venueCity());
+    return base(
+        dto.booking(),
+        dto.resourceName(),
+        dto.venueName(),
+        dto.venueCity(),
+        dto.matchRequestId(),
+        dto.leftMatch());
   }
 
   public static BookingResponse from(MyVenueBookingView dto) {
@@ -56,11 +64,18 @@ public record BookingResponse(
         null,
         dto.resourceName(),
         dto.venueName(),
-        dto.city());
+        dto.city(),
+        null,
+        false);
   }
 
   private static BookingResponse base(
-      Booking b, String resourceName, String venueName, String venueCity) {
+      Booking b,
+      String resourceName,
+      String venueName,
+      String venueCity,
+      UUID matchRequestId,
+      boolean leftMatch) {
     return new BookingResponse(
         b.getId().value(),
         b.getResourceId().value(),
@@ -79,6 +94,8 @@ public record BookingResponse(
         b.getExpiresAt(),
         resourceName,
         venueName,
-        venueCity);
+        venueCity,
+        matchRequestId,
+        leftMatch);
   }
 }

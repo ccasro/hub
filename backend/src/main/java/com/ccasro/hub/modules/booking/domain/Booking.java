@@ -150,9 +150,12 @@ public class Booking {
   }
 
   public void cancelMatch(Clock clock) {
-    if (this.status != BookingStatus.PENDING_MATCH)
-      throw new IllegalStateException("Booking is not in PENDING_MATCH status");
+    if (this.status != BookingStatus.PENDING_MATCH && this.status != BookingStatus.CONFIRMED)
+      throw new IllegalStateException("Booking is not in PENDING_MATCH or CONFIRMED status");
     this.status = BookingStatus.CANCELLED;
+    if (this.paymentStatus == PaymentStatus.PAID) {
+      this.paymentStatus = PaymentStatus.REFUNDED;
+    }
     this.cancelReason = "Match cancelled or expired";
     this.cancelledAt = clock.instant();
     this.updatedAt = clock.instant();

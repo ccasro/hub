@@ -3,6 +3,7 @@ package com.ccasro.hub.modules.booking.usecases;
 import com.ccasro.hub.modules.booking.application.dto.CancelBookingCommand;
 import com.ccasro.hub.modules.booking.domain.Booking;
 import com.ccasro.hub.modules.booking.domain.events.BookingCancelledEvent;
+import com.ccasro.hub.modules.booking.domain.exception.BookingCancellationNotAllowedException;
 import com.ccasro.hub.modules.booking.domain.exception.BookingNotFoundException;
 import com.ccasro.hub.modules.booking.domain.ports.out.BookingRepositoryPort;
 import com.ccasro.hub.modules.booking.domain.ports.out.PaymentPort;
@@ -42,22 +43,16 @@ public class CancelBookingService {
     if (!booking.isOwnedBy(currentUser.getUserId()))
       throw new AccessDeniedException("You are not the owner of this booking");
 
-    booking.cancel(cmd.reason(), clock);
+    matchRequestRepository
+        .findActiveByResourceAndSlot(
+            booking.getResourceId(), booking.getBookingDate(), booking.getSlot().startTime())
+        .ifPresent(
+            match -> {
+              throw new BookingCancellationNotAllowedException(
+                  "Esta reserva pertenece a un partido activo. Para salir del partido utiliza la opción 'Abandonar partido' o 'Cancelar partido' desde el detalle del partido.");
+            });
 
-    if (booking.isMatchBooking()) {
-      matchRequestRepository
-          .findActiveByResourceAndSlot(
-              booking.getResourceId(), booking.getBookingDate(), booking.getSlot().startTime())
-          .ifPresent(
-              match -> {
-                match.removePlayer(currentUser.getUserId());
-                matchRequestRepository.save(match);
-                log.info(
-                    "Player {} removed from match {} after booking cancellation",
-                    currentUser.getUserId().value(),
-                    match.getId().value());
-              });
-    }
+    booking.cancel(cmd.reason(), clock);
 
     if (booking.isPaid()) {
       paymentRepository

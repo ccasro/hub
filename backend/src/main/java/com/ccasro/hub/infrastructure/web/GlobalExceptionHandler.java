@@ -3,11 +3,9 @@ package com.ccasro.hub.infrastructure.web;
 import com.ccasro.hub.modules.booking.domain.exception.BookingCancellationNotAllowedException;
 import com.ccasro.hub.modules.booking.domain.exception.BookingNotFoundException;
 import com.ccasro.hub.modules.booking.domain.exception.SlotNotAvailableException;
+import com.ccasro.hub.modules.booking.domain.exception.SlotNotPricedException;
 import com.ccasro.hub.modules.iam.domain.exception.UserProfileNotFoundException;
 import com.ccasro.hub.modules.matching.domain.exception.*;
-import com.ccasro.hub.modules.matching.domain.exception.MatchCreationCooldownException;
-import com.ccasro.hub.modules.matching.domain.exception.PlayerMatchBannedException;
-import com.ccasro.hub.modules.matching.domain.exception.TooManyActiveMatchesException;
 import com.ccasro.hub.modules.resource.domain.exception.ResourceImageNotFoundException;
 import com.ccasro.hub.modules.resource.domain.exception.ResourceNotFoundException;
 import com.ccasro.hub.modules.venue.domain.exception.VenueImageNotFoundException;
@@ -283,6 +281,20 @@ public class GlobalExceptionHandler {
                 request));
   }
 
+  @ExceptionHandler(SlotNotPricedException.class)
+  public ResponseEntity<ProblemDetail> handleSlotNotPriced(
+      SlotNotPricedException ex, HttpServletRequest request) {
+
+    return ResponseEntity.badRequest()
+        .body(
+            problem(
+                HttpStatus.BAD_REQUEST,
+                "/errors/bad-request",
+                "Bad Request",
+                ex.getMessage(),
+                request));
+  }
+
   @ExceptionHandler(SlotNotAvailableException.class)
   public ResponseEntity<ProblemDetail> handleSlotNotAvailable(
       SlotNotAvailableException ex, HttpServletRequest request) {
@@ -340,7 +352,23 @@ public class GlobalExceptionHandler {
     MatchFullException.class,
     TeamFullException.class,
     PlayerAlreadyJoinedException.class,
-    PlayerTimeConflictException.class,
+    PlayerAlreadyLeftException.class,
+    PlayerTimeConflictException.class
+  })
+  public ResponseEntity<ProblemDetail> handleMatchConflict(
+      RuntimeException ex, HttpServletRequest request) {
+
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(
+            problem(
+                HttpStatus.CONFLICT,
+                "/errors/conflict",
+                "Match Conflict",
+                ex.getMessage(),
+                request));
+  }
+
+  @ExceptionHandler({
     MatchNotOpenException.class,
     InvitationAlreadyRespondedException.class,
     MatchLeaveNotAllowedException.class,
@@ -348,7 +376,7 @@ public class GlobalExceptionHandler {
     TooManyActiveMatchesException.class,
     MatchCreationCooldownException.class
   })
-  public ResponseEntity<ProblemDetail> handleMatchConflict(
+  public ResponseEntity<ProblemDetail> handleMatchBusinessRule(
       RuntimeException ex, HttpServletRequest request) {
 
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
@@ -356,7 +384,7 @@ public class GlobalExceptionHandler {
             problem(
                 HttpStatus.UNPROCESSABLE_ENTITY,
                 "/errors/unprocessable",
-                "Match Error",
+                "Match Rule Violation",
                 ex.getMessage(),
                 request));
   }

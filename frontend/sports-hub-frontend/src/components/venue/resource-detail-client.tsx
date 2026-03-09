@@ -131,8 +131,9 @@ export function ResourceDetailClient({ venue, resource, initialSlots, initialDat
                 }),
             })
             if (!res.ok) {
-                const txt = await res.text().catch(() => "")
-                throw new Error(txt || `Error ${res.status}`)
+                const body = await res.json().catch(() => null)
+                const msg = body?.message ?? `Error ${res.status}`
+                throw new Error(msg)
             }
             const data = await res.json()
             // booking creado → pasamos a fase 2
@@ -167,8 +168,9 @@ export function ResourceDetailClient({ venue, resource, initialSlots, initialDat
                 }
             )
             if (!res.ok) {
-                const txt = await res.text().catch(() => "")
-                throw new Error(txt || `Error ${res.status}`)
+                const body = await res.json().catch(() => null)
+                const msg = body?.message ?? `Error ${res.status}`
+                throw new Error(msg)
             }
             setPendingBooking(null)
             setBookingConfirmed(true)

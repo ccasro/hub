@@ -139,13 +139,16 @@ export function ProfileClient({ user: initialUser, upcomingCount }: Props) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ publicId, url }),
             })
-            if (!patchRes.ok) throw new Error(`Avatar patch error ${patchRes.status}`)
+            if (!patchRes.ok) {
+                const body = await patchRes.json().catch(() => null)
+                throw new Error(body?.message ?? `Error ${patchRes.status}`)
+            }
             const updatedProfile: UserProfile = await patchRes.json()
 
             setMe(updatedProfile)
             setAvatarPreview(updatedProfile.avatarUrl ?? url)
         } catch (err) {
-            console.error(err)
+            setSaveError(err instanceof Error ? err.message : "Error al actualizar el avatar")
             setAvatarPreview(me.avatarUrl ?? null)
         } finally {
             setAvatarUploading(false)
@@ -189,7 +192,7 @@ export function ProfileClient({ user: initialUser, upcomingCount }: Props) {
             })
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}))
-                setSaveError(body?.detail ?? "Error al guardar los cambios. Inténtalo de nuevo.")
+                setSaveError(body?.message ?? "Error al guardar los cambios. Inténtalo de nuevo.")
                 return
             }
             const updated: UserProfile = await res.json()

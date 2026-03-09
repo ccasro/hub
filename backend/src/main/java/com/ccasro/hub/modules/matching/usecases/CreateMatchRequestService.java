@@ -10,14 +10,17 @@ import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import com.ccasro.hub.modules.matching.application.dto.CreateMatchRequestCommand;
 import com.ccasro.hub.modules.matching.domain.MatchRequest;
 import com.ccasro.hub.modules.matching.domain.exception.MatchCreationCooldownException;
+import com.ccasro.hub.modules.matching.domain.exception.PlayerTimeConflictException;
 import com.ccasro.hub.modules.matching.domain.exception.TooManyActiveMatchesException;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchRequestRepositoryPort;
 import com.ccasro.hub.modules.resource.domain.ports.out.SlotAvailabilityPort;
 import com.ccasro.hub.modules.resource.domain.valueobjects.SlotRange;
 import com.ccasro.hub.shared.domain.MoneyUtils;
+import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
@@ -57,6 +60,10 @@ public class CreateMatchRequestService {
     if (activeCount >= MAX_CONCURRENT_MATCHES) {
       throw new TooManyActiveMatchesException();
     }
+
+    // Check that the organizer has no active match that overlaps with the requested time slot
+    checkNoTimeConflict(
+        cmd.organizerId(), cmd.bookingDate(), cmd.startTime(), cmd.slotDurationMinutes());
 
     var availableSlots =
         slotAvailabilityPort.findAvailableSlots(
@@ -126,5 +133,20 @@ public class CreateMatchRequestService {
             clock));
 
     return matchRequest;
+  }
+
+  private void checkNoTimeConflict(
+      UserId organizerId, LocalDate bookingDate, LocalTime startTime, int slotDurationMinutes) {
+    LocalTime endTime = startTime.plusMinutes(slotDurationMinutes);
+    boolean conflict =
+        matchRepository.findActiveByPlayerAndDate(organizerId, bookingDate).stream()
+            .anyMatch(
+                existing -> {
+                  LocalTime existingEnd =
+                      existing.getStartTime().plusMinutes(existing.getSlotDurationMinutes());
+                  return startTime.isBefore(existingEnd)
+                      && existing.getStartTime().isBefore(endTime);
+                });
+    if (conflict) throw new PlayerTimeConflictException();
   }
 }

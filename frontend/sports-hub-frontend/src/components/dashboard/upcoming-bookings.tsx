@@ -3,7 +3,7 @@
 import Link from "next/link";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {ArrowRight, Clock, MapPin, Ticket,} from "lucide-react";
+import {ArrowRight, Clock, MapPin, Swords, Ticket,} from "lucide-react";
 import type {Booking} from "@/types";
 
 interface UpcomingBookingsProps {
@@ -34,7 +34,7 @@ function formatTime(timeStr: string): string {
 export function UpcomingBookings({ bookings }: UpcomingBookingsProps) {
   const now = new Date();
   const upcoming = bookings
-    .filter((b) => b.status === "CONFIRMED" && new Date(`${b.bookingDate}T${b.endTime}`) > now)
+    .filter((b) => (b.status === "CONFIRMED" || b.status === "PENDING_MATCH") && !b.leftMatch && new Date(`${b.bookingDate}T${b.endTime}`) > now)
     .sort((a, b) => a.bookingDate.localeCompare(b.bookingDate) || a.startTime.localeCompare(b.startTime))
     .slice(0, 3);
 
@@ -80,59 +80,80 @@ export function UpcomingBookings({ bookings }: UpcomingBookingsProps) {
       </div>
 
       <div className="flex flex-col gap-3">
-        {upcoming.map((booking) => (
-          <div
-            key={booking.id}
-            className="group flex items-center gap-4 rounded-lg border border-border/30 bg-secondary/20 p-3.5 transition-colors hover:border-primary/20 hover:bg-secondary/30"
-          >
-            {/* Date block */}
-            <div className="flex h-12 w-14 shrink-0 flex-col items-center justify-center rounded-lg bg-primary/10">
-              <span className="text-[10px] font-semibold uppercase leading-none text-primary">
-                {formatDate(booking.bookingDate).split(" ")[0]}
-              </span>
-              <span className="mt-0.5 text-lg font-bold leading-none text-foreground">
-                {new Date(booking.bookingDate + "T00:00:00").getDate()}
-              </span>
-            </div>
-
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <p className="truncate text-sm font-semibold text-foreground">
-                {booking.venueName}
-              </p>
-              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Clock className="h-3 w-3 text-primary/70" />
-                  {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
+        {upcoming.map((booking) => {
+          const isMatchBooking = booking.matchRequestId != null
+          const cardContent = (
+            <div className={`group flex items-center gap-4 rounded-lg border p-3.5 transition-colors ${
+              isMatchBooking
+                ? "border-blue-500/20 bg-blue-500/5 hover:border-blue-500/30 hover:bg-blue-500/10"
+                : "border-border/30 bg-secondary/20 hover:border-primary/20 hover:bg-secondary/30"
+            }`}>
+              {/* Date block */}
+              <div className={`flex h-12 w-14 shrink-0 flex-col items-center justify-center rounded-lg ${isMatchBooking ? "bg-blue-500/10" : "bg-primary/10"}`}>
+                <span className={`text-[10px] font-semibold uppercase leading-none ${isMatchBooking ? "text-blue-400" : "text-primary"}`}>
+                  {formatDate(booking.bookingDate).split(" ")[0]}
                 </span>
-                {booking.venueCity && (
+                <span className="mt-0.5 text-lg font-bold leading-none text-foreground">
+                  {new Date(booking.bookingDate + "T00:00:00").getDate()}
+                </span>
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {booking.venueName}
+                  </p>
+                  {isMatchBooking && (
+                    <Swords className="h-3 w-3 shrink-0 text-blue-400" />
+                  )}
+                </div>
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3 text-primary/70" />
-                    {booking.venueCity}
+                    <Clock className="h-3 w-3 text-primary/70" />
+                    {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
                   </span>
+                  {booking.venueCity && (
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3 text-primary/70" />
+                      {booking.venueCity}
+                    </span>
+                  )}
+                </div>
+                {booking.resourceName && (
+                  <Badge
+                    variant="secondary"
+                    className="mt-1.5 h-5 border-0 bg-secondary/50 text-[10px] font-medium text-muted-foreground"
+                  >
+                    {booking.resourceName}
+                  </Badge>
                 )}
               </div>
-              {booking.resourceName && (
-                <Badge
-                  variant="secondary"
-                  className="mt-1.5 h-5 border-0 bg-secondary/50 text-[10px] font-medium text-muted-foreground"
-                >
-                  {booking.resourceName}
-                </Badge>
-              )}
-            </div>
 
-            {/* Price */}
-            <div className="shrink-0 text-right">
-              <p className="text-sm font-bold text-foreground">
-                {booking.pricePaid}{booking.currency === "EUR" ? "\u20AC" : booking.currency}
-              </p>
-              <Badge className="mt-1 h-5 border-0 bg-green-500/10 text-[10px] font-medium text-green-400">
-                Confirmada
-              </Badge>
+              {/* Price / status */}
+              <div className="shrink-0 text-right">
+                <p className="text-sm font-bold text-foreground">
+                  {booking.pricePaid}{booking.currency === "EUR" ? "\u20AC" : booking.currency}
+                </p>
+                <Badge className={`mt-1 h-5 border-0 text-[10px] font-medium ${
+                  isMatchBooking
+                    ? "bg-blue-500/10 text-blue-400"
+                    : "bg-green-500/10 text-green-400"
+                }`}>
+                  {isMatchBooking ? "Partido" : "Confirmada"}
+                </Badge>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+
+          return isMatchBooking ? (
+            <Link key={booking.id} href={`/match/${booking.matchRequestId}`}>
+              {cardContent}
+            </Link>
+          ) : (
+            <div key={booking.id}>{cardContent}</div>
+          )
+        })}
       </div>
     </section>
   );

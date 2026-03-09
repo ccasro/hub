@@ -148,7 +148,7 @@ export function AdminUsersClient({ users: initialUsers }: Props) {
             })
             if (!res.ok) {
                 const data = await res.json().catch(() => null)
-                throw new Error(data?.detail || `Error ${res.status}`)
+                throw new Error(data?.message || `Error ${res.status}`)
             }
 
             setUsers((prev) =>

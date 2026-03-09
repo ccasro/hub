@@ -16,7 +16,7 @@ import {Textarea} from "@/components/ui/textarea"
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {DashboardNavbar} from "@/components/dashboard/dashboard-navbar"
 import {Booking, UserProfile} from "@/types"
-import {AlertTriangle, ArrowLeft, CalendarDays, CheckCircle2, Clock, Euro, MapPin, Ticket, XCircle,} from "lucide-react"
+import {AlertTriangle, ArrowLeft, CalendarDays, CheckCircle2, Clock, Euro, MapPin, Swords, Ticket, XCircle,} from "lucide-react"
 
 interface Props {
     user: UserProfile
@@ -38,7 +38,7 @@ function StatusBadge({ status }: { status: Booking["status"] }) {
         CONFIRMED:       { className: "bg-green-500/10 text-green-400",      icon: CheckCircle2,   label: "Confirmada" },
         CANCELLED:       { className: "bg-destructive/10 text-destructive",   icon: XCircle,        label: "Cancelada" },
         PENDING_PAYMENT: { className: "bg-amber-500/10 text-amber-400",       icon: AlertTriangle,  label: "Pendiente pago" },
-        PENDING_MATCH:   { className: "bg-yellow-500/10 text-yellow-400", icon: Clock, label: "Pendiente partido"},
+        PENDING_MATCH:   { className: "bg-blue-500/10 text-blue-400",         icon: Swords,         label: "Partido en curso" },
     }
     const c = config[status] ?? { className: "bg-gray-500/10 text-gray-400", label: status, icon: Clock };
     const Icon = c.icon
@@ -81,7 +81,7 @@ export function BookingsClient({ user, bookings: initialBookings }: Props) {
 
     const upcoming = useMemo(() =>
             bookings
-                .filter((b) => b.status === "CONFIRMED" && b.bookingDate >= today)
+                .filter((b) => (b.status === "CONFIRMED" || b.status === "PENDING_MATCH") && !b.leftMatch && b.bookingDate >= today)
                 .sort((a, b) => a.bookingDate.localeCompare(b.bookingDate) || a.startTime.localeCompare(b.startTime)),
         [bookings, today]
     )
@@ -107,7 +107,7 @@ export function BookingsClient({ user, bookings: initialBookings }: Props) {
 
             if (!res.ok) {
                 const body = await res.json().catch(() => null)
-                const msg = body?.detail || body?.message || `Error ${res.status}`
+                const msg = body?.message || `Error ${res.status}`
                 throw new Error(msg)
             }
 
@@ -131,12 +131,15 @@ export function BookingsClient({ user, bookings: initialBookings }: Props) {
         setCancelError(null)
     }
 
-    const BookingCard = ({ booking, showCancel }: { booking: Booking; showCancel?: boolean }) => (
+    const BookingCard = ({ booking, showCancel }: { booking: Booking; showCancel?: boolean }) => {
+        const isMatchBooking = booking.matchRequestId != null
+
+        return (
         <div className="rounded-xl border border-border/50 bg-card p-4 transition-colors hover:border-border/80">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex items-start gap-4">
-                    <div className="flex h-14 w-16 shrink-0 flex-col items-center justify-center rounded-lg bg-primary/10">
-                        <span className="text-[10px] font-bold uppercase leading-none text-primary">
+                    <div className={`flex h-14 w-16 shrink-0 flex-col items-center justify-center rounded-lg ${isMatchBooking ? "bg-blue-500/10" : "bg-primary/10"}`}>
+                        <span className={`text-[10px] font-bold uppercase leading-none ${isMatchBooking ? "text-blue-400" : "text-primary"}`}>
                             {new Date(booking.bookingDate + "T00:00:00").toLocaleDateString("es-ES", { weekday: "short" })}
                         </span>
                         <span className="mt-0.5 text-xl font-bold leading-none text-foreground">
@@ -148,9 +151,17 @@ export function BookingsClient({ user, bookings: initialBookings }: Props) {
                     </div>
 
                     <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-foreground">
-                            {booking.venueName ?? "—"}
-                        </p>
+                        <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-foreground">
+                                {booking.venueName ?? "—"}
+                            </p>
+                            {isMatchBooking && (
+                                <Badge className="border-0 bg-blue-500/10 px-1.5 text-[10px] font-medium text-blue-400">
+                                    <Swords className="mr-1 h-2.5 w-2.5" />
+                                    Partido
+                                </Badge>
+                            )}
+                        </div>
                         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
                             <span className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <Clock className="h-3 w-3 text-primary/70" />
@@ -184,7 +195,18 @@ export function BookingsClient({ user, bookings: initialBookings }: Props) {
                         <StatusBadge status={booking.status} />
                         <PaymentBadge status={booking.paymentStatus} />
                     </div>
-                    {showCancel && booking.status === "CONFIRMED" && (
+                    {isMatchBooking ? (
+                        <Link href={`/match/${booking.matchRequestId}`}>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="mt-1 gap-1.5 text-xs text-blue-400 hover:bg-blue-500/10 hover:text-blue-300"
+                            >
+                                <Swords className="h-3.5 w-3.5" />
+                                Ver partido
+                            </Button>
+                        </Link>
+                    ) : showCancel && booking.status === "CONFIRMED" ? (
                         <Button
                             variant="ghost"
                             size="sm"
@@ -194,11 +216,12 @@ export function BookingsClient({ user, bookings: initialBookings }: Props) {
                             <XCircle className="h-3.5 w-3.5" />
                             Cancelar
                         </Button>
-                    )}
+                    ) : null}
                 </div>
             </div>
         </div>
-    )
+        )
+    }
 
     const EmptyState = ({ message }: { message: string }) => (
         <div className="flex flex-col items-center py-16">

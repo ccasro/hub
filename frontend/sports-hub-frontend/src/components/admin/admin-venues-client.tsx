@@ -127,7 +127,7 @@ export function AdminVenuesClient({ venues: initialVenues }: Props) {
             })
             if (!res.ok) {
                 const body = await res.json().catch(() => null)
-                throw new Error(body?.detail || `Error ${res.status}`)
+                throw new Error(body?.message || `Error ${res.status}`)
             }
 
             const newStatus: Venue["status"] =
@@ -283,7 +283,7 @@ export function AdminVenuesClient({ venues: initialVenues }: Props) {
                                         <td className="px-4 py-3">
                                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                                 <LayoutGrid className="h-3 w-3" />
-                                                {(v as any).resourceCount ?? "—"}
+                                                {v.resourceCount ?? "—"}
                                             </div>
                                         </td>
                                         <td className="px-4 py-3">
@@ -422,7 +422,7 @@ export function AdminVenuesClient({ venues: initialVenues }: Props) {
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <p className="text-xs font-medium text-muted-foreground">Pistas</p>
-                                        <p className="mt-0.5 text-foreground">{(detailVenue as any).resourceCount ?? "—"}</p>
+                                        <p className="mt-0.5 text-foreground">{detailVenue.resourceCount ?? "—"}</p>
                                     </div>
                                     <div>
                                         <p className="text-xs font-medium text-muted-foreground">Creado</p>

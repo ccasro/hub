@@ -4,10 +4,7 @@ import com.ccasro.hub.modules.matching.domain.MatchInvitation;
 import com.ccasro.hub.modules.matching.domain.MatchRequest;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchInvitationRepositoryPort;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchRequestRepositoryPort;
-import com.ccasro.hub.modules.resource.infrastructure.persistence.ResourceJpaRepository;
-import com.ccasro.hub.modules.resource.infrastructure.persistence.projection.ResourceLiteProjection;
-import com.ccasro.hub.modules.venue.infrastructure.persistence.VenueJpaRepository;
-import com.ccasro.hub.modules.venue.infrastructure.persistence.projection.VenueLiteProjection;
+import com.ccasro.hub.modules.matching.domain.ports.out.ResourceInfoPort;
 import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +21,7 @@ public class GetMyInvitationsService {
 
   private final MatchInvitationRepositoryPort invitationRepository;
   private final MatchRequestRepositoryPort matchRepository;
-  private final ResourceJpaRepository resourceRepository;
-  private final VenueJpaRepository venueRepository;
+  private final ResourceInfoPort resourceInfoPort;
   private final CurrentUserProvider currentUser;
 
   @Transactional(readOnly = true)
@@ -48,33 +44,21 @@ public class GetMyInvitationsService {
             .map(m -> m.getResourceId().value())
             .collect(Collectors.toSet());
 
-    Map<UUID, ResourceLiteProjection> resources =
-        resourceRepository.findLiteByIds(resourceIds).stream()
-            .collect(Collectors.toMap(ResourceLiteProjection::getId, r -> r));
-
-    Set<UUID> venueIds =
-        resources.values().stream()
-            .map(ResourceLiteProjection::getVenueId)
-            .collect(Collectors.toSet());
-
-    Map<UUID, VenueLiteProjection> venues =
-        venueRepository.findLiteByIds(venueIds).stream()
-            .collect(Collectors.toMap(VenueLiteProjection::getId, v -> v));
+    Map<UUID, ResourceInfoPort.ResourceInfo> infoMap =
+        resourceInfoPort.findByResourceIds(resourceIds);
 
     return invitations.stream()
         .map(
             inv -> {
               MatchRequest match = matchRequests.get(inv.getMatchRequestId());
-              ResourceLiteProjection resource =
-                  match != null ? resources.get(match.getResourceId().value()) : null;
-              VenueLiteProjection venue =
-                  resource != null ? venues.get(resource.getVenueId()) : null;
+              ResourceInfoPort.ResourceInfo info =
+                  match != null ? infoMap.get(match.getResourceId().value()) : null;
               return new MatchInvitationView(
                   inv,
                   match,
-                  resource != null ? resource.getName() : null,
-                  venue != null ? venue.getName() : null,
-                  venue != null ? venue.getCity() : null);
+                  info != null ? info.resourceName() : null,
+                  info != null ? info.venueName() : null,
+                  info != null ? info.venueCity() : null);
             })
         .toList();
   }

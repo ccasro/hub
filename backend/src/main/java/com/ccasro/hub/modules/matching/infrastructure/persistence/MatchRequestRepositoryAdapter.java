@@ -99,6 +99,17 @@ public class MatchRequestRepositoryAdapter implements MatchRequestRepositoryPort
   }
 
   @Override
+  public List<MatchRequest> findActiveByResourceIds(Set<UUID> resourceIds) {
+    if (resourceIds.isEmpty()) return List.of();
+    return jpaRepository.findActiveByResourceIds(resourceIds).stream().map(this::toDomain).toList();
+  }
+
+  @Override
+  public Set<UUID> findMatchIdsWherePlayerLeft(UserId playerId) {
+    return jpaRepository.findMatchIdsWherePlayerLeft(playerId.value());
+  }
+
+  @Override
   public Optional<MatchRequest> findActiveByResourceAndSlot(
       ResourceId resourceId, LocalDate date, LocalTime startTime) {
     return jpaRepository
@@ -119,7 +130,9 @@ public class MatchRequestRepositoryAdapter implements MatchRequestRepositoryPort
                         PlayerRole.valueOf(p.getRole()),
                         p.getJoinedAt(),
                         p.isCheckedIn(),
-                        p.getCheckedInAt()))
+                        p.getCheckedInAt(),
+                        p.getLeftAt(),
+                        p.getLeftReason() != null ? LeaveReason.valueOf(p.getLeftReason()) : null))
             .toList();
 
     return MatchRequest.reconstitute(
@@ -162,20 +175,20 @@ public class MatchRequestRepositoryAdapter implements MatchRequestRepositoryPort
     e.setCreatedAt(m.getCreatedAt());
 
     Set<UUID> incomingPlayerIds =
-        m.getPlayers().stream().map(p -> p.getPlayerId().value()).collect(Collectors.toSet());
+        m.getAllPlayers().stream().map(p -> p.getPlayerId().value()).collect(Collectors.toSet());
 
     e.getPlayers().removeIf(pe -> !incomingPlayerIds.contains(pe.getPlayerId()));
 
     Map<UUID, MatchPlayerEntity> existingByPlayerId =
         e.getPlayers().stream().collect(Collectors.toMap(MatchPlayerEntity::getPlayerId, pe -> pe));
 
-    m.getPlayers()
+    m.getAllPlayers()
         .forEach(
             p -> {
               MatchPlayerEntity pe = existingByPlayerId.get(p.getPlayerId().value());
               if (pe == null) {
                 pe = new MatchPlayerEntity();
-                pe.setMatchRequestId(m.getId().value());
+                pe.setMatchRequest(e);
                 pe.setPlayerId(p.getPlayerId().value());
                 pe.setTeam(p.getTeam().name());
                 pe.setRole(p.getRole().name());
@@ -184,6 +197,8 @@ public class MatchRequestRepositoryAdapter implements MatchRequestRepositoryPort
               }
               pe.setCheckedIn(p.isCheckedIn());
               pe.setCheckedInAt(p.getCheckedInAt());
+              pe.setLeftAt(p.getLeftAt());
+              pe.setLeftReason(p.getLeftReason() != null ? p.getLeftReason().name() : null);
             });
   }
 }

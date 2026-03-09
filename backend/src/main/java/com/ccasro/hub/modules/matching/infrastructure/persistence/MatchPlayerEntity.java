@@ -17,8 +17,9 @@ public class MatchPlayerEntity {
   @Column(columnDefinition = "uuid")
   private UUID id;
 
-  @Column(name = "match_request_id", nullable = false, columnDefinition = "uuid")
-  private UUID matchRequestId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "match_request_id", nullable = false)
+  private MatchRequestEntity matchRequest;
 
   @Column(name = "player_id", nullable = false, columnDefinition = "uuid")
   private UUID playerId;
@@ -37,4 +38,10 @@ public class MatchPlayerEntity {
 
   @Column(name = "checked_in_at")
   private Instant checkedInAt;
+
+  @Column(name = "left_at")
+  private Instant leftAt;
+
+  @Column(name = "left_reason", length = 20)
+  private String leftReason;
 }

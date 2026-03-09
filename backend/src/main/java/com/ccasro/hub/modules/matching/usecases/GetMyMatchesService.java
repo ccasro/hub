@@ -2,10 +2,7 @@ package com.ccasro.hub.modules.matching.usecases;
 
 import com.ccasro.hub.modules.matching.domain.MatchRequest;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchRequestRepositoryPort;
-import com.ccasro.hub.modules.resource.infrastructure.persistence.ResourceJpaRepository;
-import com.ccasro.hub.modules.resource.infrastructure.persistence.projection.ResourceLiteProjection;
-import com.ccasro.hub.modules.venue.infrastructure.persistence.VenueJpaRepository;
-import com.ccasro.hub.modules.venue.infrastructure.persistence.projection.VenueLiteProjection;
+import com.ccasro.hub.modules.matching.domain.ports.out.ResourceInfoPort;
 import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import java.util.List;
 import java.util.Map;
@@ -21,9 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class GetMyMatchesService {
 
   private final MatchRequestRepositoryPort matchRepository;
-  private final ResourceJpaRepository resourceRepository;
-  private final VenueJpaRepository venueRepository;
+  private final ResourceInfoPort resourceInfoPort;
   private final CurrentUserProvider currentUser;
+
+  public record MatchView(
+      MatchRequest matchRequest, String resourceName, String venueName, String venueCity) {}
 
   @Transactional(readOnly = true)
   public List<MatchView> execute() {
@@ -34,34 +33,17 @@ public class GetMyMatchesService {
     Set<UUID> resourceIds =
         matches.stream().map(m -> m.getResourceId().value()).collect(Collectors.toSet());
 
-    Map<UUID, ResourceLiteProjection> resources =
-        resourceRepository.findLiteByIds(resourceIds).stream()
-            .collect(Collectors.toMap(ResourceLiteProjection::getId, r -> r));
-
-    Set<UUID> venueIds =
-        resources.values().stream()
-            .map(ResourceLiteProjection::getVenueId)
-            .collect(Collectors.toSet());
-
-    Map<UUID, VenueLiteProjection> venues =
-        venueRepository.findLiteByIds(venueIds).stream()
-            .collect(Collectors.toMap(VenueLiteProjection::getId, v -> v));
+    Map<UUID, ResourceInfoPort.ResourceInfo> infoMap =
+        resourceInfoPort.findByResourceIds(resourceIds);
 
     return matches.stream()
         .map(
             m -> {
-              ResourceLiteProjection resource = resources.get(m.getResourceId().value());
-              VenueLiteProjection venue =
-                  resource != null ? venues.get(resource.getVenueId()) : null;
-              return new MatchView(
-                  m,
-                  resource != null ? resource.getName() : null,
-                  venue != null ? venue.getName() : null,
-                  venue != null ? venue.getCity() : null);
+              ResourceInfoPort.ResourceInfo info = infoMap.get(m.getResourceId().value());
+              return info != null
+                  ? new MatchView(m, info.resourceName(), info.venueName(), info.venueCity())
+                  : new MatchView(m, null, null, null);
             })
         .toList();
   }
-
-  public record MatchView(
-      MatchRequest matchRequest, String resourceName, String venueName, String venueCity) {}
 }

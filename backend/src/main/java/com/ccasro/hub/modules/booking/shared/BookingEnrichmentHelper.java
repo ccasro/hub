@@ -40,7 +40,9 @@ public class BookingEnrichmentHelper {
                   b,
                   r != null ? r.name() : null,
                   v != null ? v.name() : null,
-                  v != null ? v.city() : null);
+                  v != null ? v.city() : null,
+                  null,
+                  false);
             })
         .toList();
   }

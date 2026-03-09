@@ -44,4 +44,8 @@ public interface MatchRequestRepositoryPort {
   boolean cancelIfActive(MatchRequestId id);
 
   long countActiveByOrganizer(UserId organizerId);
+
+  List<MatchRequest> findActiveByResourceIds(Set<UUID> resourceIds);
+
+  Set<UUID> findMatchIdsWherePlayerLeft(UserId playerId);
 }

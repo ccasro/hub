@@ -55,7 +55,7 @@ public class LeaveMatchRequestService {
 
     matchPlayerPaymentService.refundPlayerPayment(match, playerId);
 
-    match.removePlayer(playerId);
+    match.removePlayer(playerId, clock);
     matchRepository.save(match);
 
     if (wasFullBeforeLeave && match.isOpen()) {

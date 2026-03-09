@@ -69,6 +69,7 @@ export function OwnerResourcesClient({ user, venues, resources: initialResources
         action: "suspend" | "reactivate"
     }>({ open: false, resource: null, action: "suspend" })
     const [acting, setActing] = useState(false)
+    const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
     const filtered = filterVenue === "all"
         ? resources
@@ -80,6 +81,7 @@ export function OwnerResourcesClient({ user, venues, resources: initialResources
     // ── Handlers ─────────────────────────────────────────────────
 
     const handleCreate = async (data: ResourceFormData) => {
+        setErrorMsg(null)
         try {
             const res = await fetch(`/api/proxy/api/owner/venues/${data.venueId}/resources`, {
                 method: "POST",
@@ -91,11 +93,14 @@ export function OwnerResourcesClient({ user, venues, resources: initialResources
                     slotDurationMinutes: data.slotDurationMinutes,
                 }),
             })
-            if (!res.ok) throw new Error(`Error ${res.status}`)
+            if (!res.ok) {
+                const body = await res.json().catch(() => null)
+                throw new Error(body?.message ?? `Error ${res.status}`)
+            }
             const created: Resource = await res.json()
             setResources((prev) => [created, ...prev])
         } catch (e) {
-            console.error(e)
+            setErrorMsg(e instanceof Error ? e.message : "Error creando pista")
         }
     }
 
@@ -135,30 +140,39 @@ export function OwnerResourcesClient({ user, venues, resources: initialResources
                 )
             )
         } catch (e) {
-            console.error(e)
+            setErrorMsg(e instanceof Error ? e.message : "Error guardando horarios")
         }
     }
 
     const handleAddPriceRule = async (resourceId: string, rule: Omit<PriceRule, "id">) => {
+        setErrorMsg(null)
         try {
             const res = await fetch(`/api/proxy/api/owner/resources/${resourceId}/price-rules`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(rule),
             })
-            if (!res.ok) throw new Error(`Error ${res.status}`)
+            if (!res.ok) {
+                const body = await res.json().catch(() => null)
+                throw new Error(body?.message ?? `Error ${res.status}`)
+            }
             const updated: Resource = await res.json()
             setResources((prev) => prev.map((r) => (r.id === resourceId ? updated : r)))
         } catch (e) {
-            console.error(e)
+            setErrorMsg(e instanceof Error ? e.message : "Error añadiendo tarifa")
         }
     }
 
     const handleDeletePriceRule = async (resourceId: string, ruleId: string) => {
+        setErrorMsg(null)
         try {
-            await fetch(`/api/proxy/api/owner/resources/${resourceId}/price-rules/${ruleId}`, {
+            const res = await fetch(`/api/proxy/api/owner/resources/${resourceId}/price-rules/${ruleId}`, {
                 method: "DELETE",
             })
+            if (!res.ok) {
+                const body = await res.json().catch(() => null)
+                throw new Error(body?.message ?? `Error ${res.status}`)
+            }
             setResources((prev) =>
                 prev.map((r) =>
                     r.id === resourceId
@@ -167,7 +181,7 @@ export function OwnerResourcesClient({ user, venues, resources: initialResources
                 )
             )
         } catch (e) {
-            console.error(e)
+            setErrorMsg(e instanceof Error ? e.message : "Error eliminando tarifa")
         }
     }
 
@@ -179,9 +193,13 @@ export function OwnerResourcesClient({ user, venues, resources: initialResources
             : `/api/proxy/api/owner/resources/${id}/reactivate`
 
         setActing(true)
+        setErrorMsg(null)
         try {
             const res = await fetch(endpoint, { method: "PATCH" })
-            if (!res.ok) throw new Error(`Error ${res.status}`)
+            if (!res.ok) {
+                const body = await res.json().catch(() => null)
+                throw new Error(body?.message ?? `Error ${res.status}`)
+            }
             setResources((prev) =>
                 prev.map((r) =>
                     r.id === id
@@ -191,7 +209,7 @@ export function OwnerResourcesClient({ user, venues, resources: initialResources
             )
             setConfirmDialog({ open: false, resource: null, action: "suspend" })
         } catch (e) {
-            console.error(e)
+            setErrorMsg(e instanceof Error ? e.message : "Error ejecutando accion")
         } finally {
             setActing(false)
         }
@@ -238,6 +256,13 @@ export function OwnerResourcesClient({ user, venues, resources: initialResources
                             </Button>
                         </div>
                     </div>
+
+                    {/* Error */}
+                    {errorMsg && (
+                        <div className="mt-6 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+                            {errorMsg}
+                        </div>
+                    )}
 
                     {/* Resources list */}
                     <div className="mt-8 flex flex-col gap-4">

@@ -122,7 +122,7 @@ export function MatchCreateClient({ user }: Props) {
 
             if (!res.ok) {
                 const body = await res.json().catch(() => null)
-                throw new Error(body?.detail || `Error ${res.status}`)
+                throw new Error(body?.message || `Error ${res.status}`)
             }
 
             const data = await res.json()
@@ -148,7 +148,7 @@ export function MatchCreateClient({ user }: Props) {
             })
             if (!res.ok) {
                 const body = await res.json().catch(() => null)
-                throw new Error(body?.detail || `Error ${res.status}`)
+                throw new Error(body?.message || `Error ${res.status}`)
             }
             router.push(`/match/${pendingMatch.id}`)
         } catch (e) {

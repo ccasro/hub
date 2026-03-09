@@ -6,6 +6,7 @@ import com.ccasro.hub.modules.booking.application.dto.CreateBookingResult;
 import com.ccasro.hub.modules.booking.domain.Booking;
 import com.ccasro.hub.modules.booking.domain.Payment;
 import com.ccasro.hub.modules.booking.domain.exception.SlotNotAvailableException;
+import com.ccasro.hub.modules.booking.domain.exception.SlotNotPricedException;
 import com.ccasro.hub.modules.booking.domain.ports.out.*;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import com.ccasro.hub.modules.resource.domain.valueobjects.SlotRange;
@@ -49,8 +50,7 @@ public class CreateBookingService {
       throw new SlotNotAvailableException();
 
     BigDecimal price = resource.priceForSlot();
-    if (price == null || price.compareTo(BigDecimal.ZERO) <= 0)
-      throw new IllegalStateException("This slot does not have a price set");
+    if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) throw new SlotNotPricedException();
 
     Booking booking =
         Booking.create(

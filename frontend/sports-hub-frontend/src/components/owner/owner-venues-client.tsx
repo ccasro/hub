@@ -104,7 +104,10 @@ export function OwnerVenuesClient({ user, venues: initialVenues }: Props) {
                     longitude: data.longitude,
                 }),
             })
-            if (!res.ok) throw new Error(`Error ${res.status}`)
+            if (!res.ok) {
+                const body = await res.json().catch(() => null)
+                throw new Error(body?.message ?? `Error ${res.status}`)
+            }
             const created: Venue = await res.json()
             setVenues((prev) => [{ ...created, resourceCount: 0 }, ...prev])
             setFormOpen(false)
@@ -131,7 +134,10 @@ export function OwnerVenuesClient({ user, venues: initialVenues }: Props) {
                     longitude: data.longitude,
                 }),
             })
-            if (!res.ok) throw new Error(`Error ${res.status}`)
+            if (!res.ok) {
+                const body = await res.json().catch(() => null)
+                throw new Error(body?.message ?? `Error ${res.status}`)
+            }
             const updated: Venue = await res.json()
             setVenues((prev) =>
                 prev.map((v) =>
@@ -172,7 +178,10 @@ export function OwnerVenuesClient({ user, venues: initialVenues }: Props) {
 
         try {
             const res = await fetch(endpoint, { method: "PATCH" })
-            if (!res.ok) throw new Error(`Error ${res.status}`)
+            if (!res.ok) {
+                const body = await res.json().catch(() => null)
+                throw new Error(body?.message ?? `Error ${res.status}`)
+            }
             const newStatus = confirmDialog.action === "suspend" ? "SUSPENDED" : "ACTIVE"
             setVenues((prev) =>
                 prev.map((v) => v.id === id ? { ...v, status: newStatus } : v)

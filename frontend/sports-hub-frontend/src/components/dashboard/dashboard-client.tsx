@@ -194,6 +194,11 @@ export function DashboardClient({ user, venues, bookings, pendingInvitations, ma
                                                         <span className="text-[11px] text-muted-foreground">
                                                             {m.format === "ONE_VS_ONE" ? "1 vs 1" : "2 vs 2"} · {m.players?.length ?? 0}/{m.format === "ONE_VS_ONE" ? 2 : 4} jugadores
                                                         </span>
+                                                        {(m.venueName || m.resourceName || m.venueCity) && (
+                                                            <span className="text-[11px] text-muted-foreground">
+                                                                {[m.venueName, m.resourceName, m.venueCity].filter(Boolean).join(" · ")}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                     <Badge className={`border text-[10px] font-medium ${m.status === "FULL" ? "bg-blue-500/10 text-blue-400 border-blue-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"}`}>
                                                         {m.status === "FULL" ? "Completo" : "Abierto"}

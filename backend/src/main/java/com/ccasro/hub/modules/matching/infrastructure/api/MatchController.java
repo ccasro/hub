@@ -125,13 +125,19 @@ public class MatchController {
   @GetMapping("/requests/{id}")
   @Operation(tags = "Player - Match", summary = "Get match request by id")
   public ResponseEntity<MatchRequestResponse> getById(@PathVariable UUID id) {
-    return ResponseEntity.ok(MatchRequestResponse.from(getMatchRequestService.findById(id)));
+    GetMatchRequestService.MatchView view = getMatchRequestService.findById(id);
+    return ResponseEntity.ok(
+        MatchRequestResponse.from(
+            view.matchRequest(), view.resourceName(), view.venueName(), view.venueCity()));
   }
 
   @GetMapping("/join/{token}")
   @Operation(tags = "Player - Match", summary = "Get match request by invitation token")
   public ResponseEntity<MatchRequestResponse> getByToken(@PathVariable String token) {
-    return ResponseEntity.ok(MatchRequestResponse.from(getMatchRequestService.findByToken(token)));
+    GetMatchRequestService.MatchView view = getMatchRequestService.findByToken(token);
+    return ResponseEntity.ok(
+        MatchRequestResponse.from(
+            view.matchRequest(), view.resourceName(), view.venueName(), view.venueCity()));
   }
 
   @GetMapping("/requests/my")
