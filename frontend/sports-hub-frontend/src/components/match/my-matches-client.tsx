@@ -28,8 +28,27 @@ const FORMAT_LABELS: Record<string, string> = {
 export function MyMatchesClient({user, matches}: Props) {
     const router = useRouter()
 
-    const active   = matches.filter(m => m.status === "AWAITING_ORGANIZER_PAYMENT" || m.status === "OPEN" || m.status === "FULL")
-    const finished = matches.filter(m => m.status === "EXPIRED" || m.status === "CANCELLED")
+    const now = new Date()
+    const nowStr = now.toISOString().slice(0, 10) // YYYY-MM-DD UTC, igual que el backend
+    const nowTime = `${String(now.getUTCHours()).padStart(2, "0")}:${String(now.getUTCMinutes()).padStart(2, "0")}:${String(now.getUTCSeconds()).padStart(2, "0")}`
+
+    const isMatchUpcoming = (m: MatchRequestResponse) =>
+        m.bookingDate > nowStr || (m.bookingDate === nowStr && m.startTime > nowTime)
+
+    const isPaymentWindowOpen = (m: MatchRequestResponse) =>
+        m.expiresAt != null && new Date(m.expiresAt) > now
+
+    const active   = matches.filter(m => {
+        if (m.status === "AWAITING_ORGANIZER_PAYMENT") return isPaymentWindowOpen(m) && isMatchUpcoming(m)
+        if (m.status === "OPEN" || m.status === "FULL") return isMatchUpcoming(m)
+        return false
+    })
+    const finished = matches.filter(m => {
+        if (m.status === "EXPIRED" || m.status === "CANCELLED") return true
+        if (m.status === "AWAITING_ORGANIZER_PAYMENT") return !isPaymentWindowOpen(m) || !isMatchUpcoming(m)
+        if (m.status === "OPEN" || m.status === "FULL") return !isMatchUpcoming(m)
+        return false
+    })
 
     const MatchCard = ({match}: { match: MatchRequestResponse }) => {
         const statusConf = STATUS_CONFIG[match.status] ?? STATUS_CONFIG.OPEN

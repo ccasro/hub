@@ -16,7 +16,18 @@ import {Textarea} from "@/components/ui/textarea"
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {DashboardNavbar} from "@/components/dashboard/dashboard-navbar"
 import {Booking, UserProfile} from "@/types"
-import {AlertTriangle, ArrowLeft, CalendarDays, CheckCircle2, Clock, Euro, MapPin, Swords, Ticket, XCircle,} from "lucide-react"
+import {
+    AlertTriangle,
+    ArrowLeft,
+    CalendarDays,
+    CheckCircle2,
+    Clock,
+    Euro,
+    MapPin,
+    Swords,
+    Ticket,
+    XCircle,
+} from "lucide-react"
 
 interface Props {
     user: UserProfile
@@ -73,24 +84,29 @@ export function BookingsClient({ user, bookings: initialBookings }: Props) {
 
     const today = useMemo(() => {
         const now = new Date()
-        const y = now.getFullYear()
-        const m = String(now.getMonth() + 1).padStart(2, "0")
-        const d = String(now.getDate()).padStart(2, "0")
-        return `${y}-${m}-${d}`
+        return now.toISOString().slice(0, 10)
     }, [])
+
+    const nowTime = useMemo(() => {
+        const now = new Date()
+        return `${String(now.getUTCHours()).padStart(2, "0")}:${String(now.getUTCMinutes()).padStart(2, "0")}:${String(now.getUTCSeconds()).padStart(2, "0")}`
+    }, [])
+
+    const isUpcoming = (b: Booking) =>
+        b.bookingDate > today || (b.bookingDate === today && b.startTime > nowTime)
 
     const upcoming = useMemo(() =>
             bookings
-                .filter((b) => (b.status === "CONFIRMED" || b.status === "PENDING_MATCH") && !b.leftMatch && b.bookingDate >= today)
+                .filter((b) => (b.status === "CONFIRMED" || b.status === "PENDING_MATCH") && !b.leftMatch && isUpcoming(b))
                 .sort((a, b) => a.bookingDate.localeCompare(b.bookingDate) || a.startTime.localeCompare(b.startTime)),
-        [bookings, today]
+        [bookings, today, nowTime]
     )
 
     const past = useMemo(() =>
             bookings
-                .filter((b) => (b.status === "CONFIRMED" && b.bookingDate < today) || b.status === "CANCELLED")
+                .filter((b) => (b.status === "CONFIRMED" && !isUpcoming(b)) || b.status === "CANCELLED")
                 .sort((a, b) => b.bookingDate.localeCompare(a.bookingDate)),
-        [bookings, today]
+        [bookings, today, nowTime]
     )
 
     const handleCancel = async () => {
@@ -113,12 +129,10 @@ export function BookingsClient({ user, bookings: initialBookings }: Props) {
 
             const updated: Booking = await res.json()
             setBookings((prev) => prev.map((b) => b.id === cancelTarget.id ? updated : b))
-            // Solo cerramos el dialog si fue exitoso
             setCancelTarget(null)
             setCancelReason("")
             setCancelError(null)
         } catch (e) {
-            // Mostramos el error DENTRO del dialog, no lo cerramos
             setCancelError(e instanceof Error ? e.message : "Error cancelando la reserva")
         } finally {
             setCancelling(false)
@@ -316,7 +330,7 @@ export function BookingsClient({ user, bookings: initialBookings }: Props) {
                                     <BookingCard
                                         key={b.id}
                                         booking={b}
-                                        showCancel={b.status === "CONFIRMED" && b.bookingDate >= today}
+                                        showCancel={b.status === "CONFIRMED" && isUpcoming(b)}
                                     />
                                 ))
                         }
