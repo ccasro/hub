@@ -10,14 +10,15 @@ import com.ccasro.hub.modules.matching.domain.valueobjects.MatchRequestId;
 import com.ccasro.hub.modules.resource.domain.valueobjects.ResourceId;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import java.math.BigDecimal;
-import java.time.*;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class MatchRequest {
-
-  private static final int CLOSE_BEFORE_MATCH_HOURS = 24;
 
   private final MatchRequestId id;
   private final UserId organizerId;
@@ -50,16 +51,13 @@ public class MatchRequest {
       GeoPoint searchCenter,
       double searchRadiusKm,
       BigDecimal pricePerPlayer,
+      Instant expiresAt,
       Clock clock) {
 
     List<MatchPlayer> players = new ArrayList<>();
     players.add(MatchPlayer.organizer(organizerId, clock));
 
     Instant now = clock.instant();
-    Instant expiresAt =
-        LocalDateTime.of(bookingDate, startTime)
-            .minusHours(CLOSE_BEFORE_MATCH_HOURS)
-            .toInstant(ZoneOffset.UTC);
     return new MatchRequest(
         MatchRequestId.generate(),
         organizerId,

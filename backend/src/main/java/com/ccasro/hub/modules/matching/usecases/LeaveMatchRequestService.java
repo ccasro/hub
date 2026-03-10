@@ -1,5 +1,6 @@
 package com.ccasro.hub.modules.matching.usecases;
 
+import com.ccasro.hub.infrastructure.config.MatchingProperties;
 import com.ccasro.hub.modules.matching.domain.MatchRequest;
 import com.ccasro.hub.modules.matching.domain.exception.MatchLeaveNotAllowedException;
 import com.ccasro.hub.modules.matching.domain.exception.MatchNotFoundException;
@@ -23,6 +24,7 @@ public class LeaveMatchRequestService {
   private final MatchRequestRepositoryPort matchRepository;
   private final MatchPlayerPaymentService matchPlayerPaymentService;
   private final CurrentUserProvider currentUser;
+  private final MatchingProperties matchingProperties;
   private final Clock clock;
 
   @Transactional
@@ -47,7 +49,7 @@ public class LeaveMatchRequestService {
 
     LocalDateTime matchStart = LocalDateTime.of(match.getBookingDate(), match.getStartTime());
     LocalDateTime now = LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC);
-    if (now.isAfter(matchStart.minusHours(48))) {
+    if (now.isAfter(matchStart.minusHours(matchingProperties.getLeaveMatchMinHoursBefore()))) {
       throw new MatchLeaveNotAllowedException();
     }
 

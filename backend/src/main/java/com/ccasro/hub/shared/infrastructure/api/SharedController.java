@@ -18,7 +18,7 @@ public class SharedController {
 
   @GetMapping("/api/cities")
   public ResponseEntity<List<CityReadPort.CityDto>> cities(
-      @RequestParam(defaultValue = "ESP") String countryCode) {
+      @RequestParam(defaultValue = "ES") String countryCode) {
     return ResponseEntity.ok(cityReadPort.findByCountry(countryCode));
   }
 }

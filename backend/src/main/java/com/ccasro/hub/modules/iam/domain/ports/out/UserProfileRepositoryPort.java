@@ -25,6 +25,8 @@ public interface UserProfileRepositoryPort {
 
   Map<UserId, String> findEmailsByIds(Set<UserId> ids);
 
+  void batchConfirmNoShows(Set<UserId> playerIds, int threshold, Instant bannedUntil, Instant now);
+
   /**
    * Atomically records a cancellation if the cooldown has expired. Time comes from the injected
    * Clock so tests can control it. Returns true if recorded, false if still in cooldown.

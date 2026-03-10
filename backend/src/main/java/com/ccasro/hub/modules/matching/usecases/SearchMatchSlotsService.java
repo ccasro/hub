@@ -41,9 +41,8 @@ public class SearchMatchSlotsService {
         venues.stream().collect(Collectors.toMap(VenueReadPort.VenueLite::id, v -> v));
 
     int eligibleCount =
-        eligiblePlayerPort
-            .findEligiblePlayers(query.center(), query.radiusKm(), query.skillLevel(), null)
-            .size();
+        eligiblePlayerPort.countEligiblePlayers(
+            query.center(), query.radiusKm(), query.skillLevel());
 
     List<MatchSlotResult> results = new ArrayList<>();
 
@@ -66,23 +65,7 @@ public class SearchMatchSlotsService {
                   query.slotDurationMinutes() <= 0
                       || java.time.Duration.between(slot.startTime(), slot.endTime()).toMinutes()
                           == query.slotDurationMinutes())
-          .map(
-              slot ->
-                  new MatchSlotResult(
-                      resource.id(),
-                      resource.name(),
-                      resource.type(),
-                      venue.id(),
-                      venue.name(),
-                      venue.city(),
-                      venue.latitude(),
-                      venue.longitude(),
-                      distanceKm,
-                      slot.startTime(),
-                      slot.endTime(),
-                      slot.price(),
-                      slot.currency(),
-                      eligibleCount))
+          .map(slot -> buildResult(resource, venue, slot, distanceKm, eligibleCount))
           .forEach(results::add);
     }
 
@@ -91,5 +74,28 @@ public class SearchMatchSlotsService {
             .thenComparing(MatchSlotResult::startTime));
 
     return results;
+  }
+
+  private MatchSlotResult buildResult(
+      ResourceReadPort.ResourceLite resource,
+      VenueReadPort.VenueLite venue,
+      SlotAvailabilityPort.SlotLite slot,
+      double distanceKm,
+      int eligibleCount) {
+    return new MatchSlotResult(
+        resource.id(),
+        resource.name(),
+        resource.type(),
+        venue.id(),
+        venue.name(),
+        venue.city(),
+        venue.latitude(),
+        venue.longitude(),
+        distanceKm,
+        slot.startTime(),
+        slot.endTime(),
+        slot.price(),
+        slot.currency(),
+        eligibleCount);
   }
 }

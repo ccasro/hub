@@ -5,9 +5,11 @@ import com.ccasro.hub.modules.booking.domain.valueobjects.BookingStatus;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import com.ccasro.hub.modules.matching.domain.MatchRequest;
 import com.ccasro.hub.modules.matching.domain.events.MatchFullEvent;
+import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import java.time.Clock;
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -48,16 +50,10 @@ public class MatchCompletionHandler {
 
   private void publishMatchFullEvent(MatchRequest matchRequest) {
     try {
-      List<String> emails =
-          matchRequest.getPlayers().stream()
-              .map(
-                  p ->
-                      userRepository
-                          .findById(p.getPlayerId())
-                          .map(u -> u.getEmail().value())
-                          .orElse(null))
-              .filter(Objects::nonNull)
-              .toList();
+      Set<UserId> playerIds =
+          matchRequest.getPlayers().stream().map(p -> p.getPlayerId()).collect(Collectors.toSet());
+
+      List<String> emails = List.copyOf(userRepository.findEmailsByIds(playerIds).values());
 
       if (!emails.isEmpty()) {
         eventPublisher.publishEvent(new MatchFullEvent(matchRequest, emails));

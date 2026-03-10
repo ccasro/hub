@@ -48,11 +48,13 @@ public class ResourceInfoJpaAdapter implements ResourceInfoPort {
         .collect(
             Collectors.toMap(
                 Map.Entry::getKey,
-                e -> {
-                  ResourceLiteProjection r = e.getValue();
-                  VenueLiteProjection v = venues.get(r.getVenueId());
-                  return new ResourceInfo(
-                      r.getName(), v != null ? v.getName() : null, v != null ? v.getCity() : null);
-                }));
+                e -> buildResourceInfo(e.getValue(), venues.get(e.getValue().getVenueId()))));
+  }
+
+  private ResourceInfo buildResourceInfo(ResourceLiteProjection r, VenueLiteProjection v) {
+    return new ResourceInfo(
+        r.getName(),
+        Optional.ofNullable(v).map(VenueLiteProjection::getName).orElse("Unknown Venue"),
+        Optional.ofNullable(v).map(VenueLiteProjection::getCity).orElse("Unknown City"));
   }
 }

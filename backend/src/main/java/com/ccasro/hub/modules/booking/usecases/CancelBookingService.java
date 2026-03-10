@@ -1,5 +1,6 @@
 package com.ccasro.hub.modules.booking.usecases;
 
+import com.ccasro.hub.infrastructure.config.BookingProperties;
 import com.ccasro.hub.modules.booking.application.dto.CancelBookingCommand;
 import com.ccasro.hub.modules.booking.domain.Booking;
 import com.ccasro.hub.modules.booking.domain.events.BookingCancelledEvent;
@@ -12,6 +13,7 @@ import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchRequestRepositoryPort;
 import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import java.time.Clock;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -32,6 +34,7 @@ public class CancelBookingService {
   private final UserProfileRepositoryPort userRepository;
   private final CurrentUserProvider currentUser;
   private final ApplicationEventPublisher eventPublisher;
+  private final BookingProperties bookingProperties;
   private final Clock clock;
 
   @Transactional
@@ -52,7 +55,7 @@ public class CancelBookingService {
                   "Esta reserva pertenece a un partido activo. Para salir del partido utiliza la opción 'Abandonar partido' o 'Cancelar partido' desde el detalle del partido.");
             });
 
-    booking.cancel(cmd.reason(), clock);
+    booking.cancel(cmd.reason(), bookingProperties.getCancellationMinHoursBefore(), clock);
 
     if (booking.isPaid()) {
       paymentRepository
@@ -66,13 +69,13 @@ public class CancelBookingService {
 
     Booking saved = bookingRepository.save(booking);
 
-    userRepository
-        .findById(currentUser.getUserId())
-        .map(p -> p.getEmail().value())
-        .ifPresent(
-            email ->
-                eventPublisher.publishEvent(
-                    new BookingCancelledEvent(saved.getId().value(), email)));
+    String email =
+        userRepository
+            .findEmailsByIds(Set.of(currentUser.getUserId()))
+            .get(currentUser.getUserId());
+    if (email != null) {
+      eventPublisher.publishEvent(new BookingCancelledEvent(saved.getId().value(), email));
+    }
 
     return saved;
   }

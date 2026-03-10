@@ -17,10 +17,26 @@ public interface UserProfileJpaRepository extends JpaRepository<UserProfileEntit
 
   Optional<UserProfileEntity> findByAuth0Id(String auth0Id);
 
-  /**
-   * Conditional UPDATE: sets last_match_cancelled_at = :now only if the previous value is null or
-   * older than :cooldownThreshold. Returns 1 if recorded, 0 if still in cooldown.
-   */
+  @Modifying(clearAutomatically = true)
+  @Query(
+      value =
+          """
+      UPDATE user_profile
+      SET no_show_count      = no_show_count + 1,
+          match_banned_until = CASE
+                                 WHEN no_show_count + 1 >= :threshold THEN :bannedUntil
+                                 ELSE match_banned_until
+                               END,
+          updated_at         = :now
+      WHERE id IN (:ids)
+      """,
+      nativeQuery = true)
+  void batchConfirmNoShows(
+      @Param("ids") Set<UUID> ids,
+      @Param("threshold") int threshold,
+      @Param("bannedUntil") Instant bannedUntil,
+      @Param("now") Instant now);
+
   @Modifying(clearAutomatically = true)
   @Query(
       value =
@@ -91,5 +107,28 @@ public interface UserProfileJpaRepository extends JpaRepository<UserProfileEntit
       @Param("lng") double lng,
       @Param("radiusMeters") double radiusMeters,
       @Param("excludeUserId") String excludeUserId,
+      @Param("skillLevel") String skillLevel);
+
+  @Query(
+      value =
+          """
+    SELECT COUNT(*)
+    FROM user_profile u
+    JOIN city c ON c.id = u.city_id
+    WHERE u.role = 'PLAYER'
+      AND u.active = true
+      AND u.match_notifications_enabled = true
+      AND (:skillLevel = 'ANY' OR u.skill_level = :skillLevel)
+      AND ST_DWithin(
+            c.location,
+            ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
+            :radiusMeters
+          )
+    """,
+      nativeQuery = true)
+  int countEligiblePlayers(
+      @Param("lat") double lat,
+      @Param("lng") double lng,
+      @Param("radiusMeters") double radiusMeters,
       @Param("skillLevel") String skillLevel);
 }

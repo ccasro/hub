@@ -15,6 +15,7 @@ import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalTime;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -64,8 +65,7 @@ public class CreateBookingService {
             clock);
     Booking saved = bookingRepository.save(booking);
 
-    String playerEmail =
-        userRepository.findById(playerId).map(p -> p.getEmail().value()).orElse(null);
+    String playerEmail = userRepository.findEmailsByIds(Set.of(playerId)).get(playerId);
 
     PaymentPort.PaymentIntent intent =
         paymentPort.createPaymentIntent(price, resource.currency(), saved.getId(), playerEmail);

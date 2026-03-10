@@ -1,5 +1,6 @@
 package com.ccasro.hub.modules.matching.usecases;
 
+import com.ccasro.hub.infrastructure.config.MatchingProperties;
 import com.ccasro.hub.modules.booking.domain.Booking;
 import com.ccasro.hub.modules.booking.domain.Payment;
 import com.ccasro.hub.modules.booking.domain.exception.SlotNotAvailableException;
@@ -17,25 +18,20 @@ import com.ccasro.hub.modules.resource.domain.ports.out.SlotAvailabilityPort;
 import com.ccasro.hub.modules.resource.domain.valueobjects.SlotRange;
 import com.ccasro.hub.shared.domain.MoneyUtils;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
-import java.math.BigDecimal;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.*;
+import java.util.List;
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CreateMatchRequestService {
-
-  static final int MAX_CONCURRENT_MATCHES = 2;
 
   private final MatchRequestRepositoryPort matchRepository;
   private final BookingRepositoryPort bookingRepository;
@@ -43,6 +39,7 @@ public class CreateMatchRequestService {
   private final PaymentRepositoryPort paymentRepository;
   private final UserProfileRepositoryPort userRepository;
   private final SlotAvailabilityPort slotAvailabilityPort;
+  private final MatchingProperties matchingProperties;
   private final Clock clock;
 
   @Transactional
@@ -57,7 +54,7 @@ public class CreateMatchRequestService {
     // Check active match limit. The slot uniqueness constraint in the booking table
     // acts as a safety net in the unlikely event of a concurrent race.
     long activeCount = matchRepository.countActiveByOrganizer(cmd.organizerId());
-    if (activeCount >= MAX_CONCURRENT_MATCHES) {
+    if (activeCount >= matchingProperties.getMaxConcurrentMatches()) {
       throw new TooManyActiveMatchesException();
     }
 
@@ -83,12 +80,17 @@ public class CreateMatchRequestService {
 
     LocalDateTime matchStart = LocalDateTime.of(cmd.bookingDate(), cmd.startTime());
     if (LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC)
-        .isAfter(matchStart.minusHours(48))) {
+        .isAfter(matchStart.minusHours(matchingProperties.getMinHoursBeforeCreation()))) {
       throw new IllegalArgumentException(
-          "Match must be created at least 48 hours before the scheduled start time");
+          "Match must be created at least "
+              + matchingProperties.getMinHoursBeforeCreation()
+              + " hours before the scheduled start time");
     }
 
-    Instant matchExpiresAt = matchStart.minusHours(24).toInstant(ZoneOffset.UTC);
+    Instant matchExpiresAt =
+        matchStart
+            .minusHours(matchingProperties.getMatchExpirationHoursBefore())
+            .toInstant(ZoneOffset.UTC);
 
     Booking booking =
         Booking.createForMatch(
@@ -115,11 +117,12 @@ public class CreateMatchRequestService {
             cmd.searchCenter(),
             cmd.searchRadiusKm(),
             playerShare,
+            matchExpiresAt,
             clock);
     matchRepository.save(matchRequest);
 
     String organizerEmail =
-        userRepository.findById(cmd.organizerId()).map(u -> u.getEmail().value()).orElse(null);
+        userRepository.findEmailsByIds(Set.of(cmd.organizerId())).get(cmd.organizerId());
     PaymentPort.PaymentIntent intent =
         paymentPort.createPaymentIntent(
             organizerShare, slotLite.currency(), savedBooking.getId(), organizerEmail);

@@ -1,5 +1,6 @@
 package com.ccasro.hub.modules.matching.infrastructure.persistence;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -36,7 +37,7 @@ public interface MatchRequestJpaRepository extends JpaRepository<MatchRequestEnt
           AND m.status IN ('AWAITING_ORGANIZER_PAYMENT', 'OPEN', 'FULL')
         """)
   List<MatchRequestEntity> findActiveByPlayerAndDate(
-      @Param("playerId") UUID playerId, @Param("date") java.time.LocalDate date);
+      @Param("playerId") UUID playerId, @Param("date") LocalDate date);
 
   @Query(
       """
@@ -44,7 +45,7 @@ public interface MatchRequestJpaRepository extends JpaRepository<MatchRequestEnt
         WHERE m.status = 'OPEN'
         AND m.expiresAt < :now
         """)
-  List<MatchRequestEntity> findOpenAndExpired(@Param("now") java.time.Instant now);
+  List<MatchRequestEntity> findOpenAndExpired(@Param("now") Instant now);
 
   @Query(
       """
@@ -52,8 +53,7 @@ public interface MatchRequestJpaRepository extends JpaRepository<MatchRequestEnt
         WHERE m.status = 'AWAITING_ORGANIZER_PAYMENT'
         AND m.createdAt < :deadline
         """)
-  List<MatchRequestEntity> findAwaitingPaymentExpired(
-      @Param("deadline") java.time.Instant deadline);
+  List<MatchRequestEntity> findAwaitingPaymentExpired(@Param("deadline") Instant deadline);
 
   @Query(
       value =
@@ -65,7 +65,7 @@ public interface MatchRequestJpaRepository extends JpaRepository<MatchRequestEnt
       """,
       nativeQuery = true)
   List<MatchRequestEntity> findFullEndedBetween(
-      @Param("from") java.time.Instant from, @Param("to") java.time.Instant to);
+      @Param("from") Instant from, @Param("to") Instant to);
 
   @Modifying
   @Query(

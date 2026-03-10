@@ -12,6 +12,7 @@ import com.ccasro.hub.modules.matching.domain.MatchRequest;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import java.time.Clock;
 import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -48,8 +49,7 @@ public class MatchPlayerPaymentService {
       return;
     }
 
-    String playerEmail =
-        userRepository.findById(playerId).map(u -> u.getEmail().value()).orElse(null);
+    String playerEmail = userRepository.findEmailsByIds(Set.of(playerId)).get(playerId);
 
     PaymentPort.PaymentIntent intent =
         paymentPort.createPaymentIntent(

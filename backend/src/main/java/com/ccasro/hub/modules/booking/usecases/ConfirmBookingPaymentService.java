@@ -8,6 +8,7 @@ import com.ccasro.hub.modules.booking.domain.ports.out.BookingRepositoryPort;
 import com.ccasro.hub.modules.booking.domain.ports.out.PaymentRepositoryPort;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import java.time.Clock;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -45,12 +46,10 @@ public class ConfirmBookingPaymentService {
 
     log.info("Paid confirmed for booking: {}", booking.getId().value());
 
-    userRepository
-        .findById(booking.getPlayerId())
-        .map(p -> p.getEmail().value())
-        .ifPresent(
-            email ->
-                eventPublisher.publishEvent(
-                    new BookingConfirmedEvent(booking.getId().value(), email)));
+    String email =
+        userRepository.findEmailsByIds(Set.of(booking.getPlayerId())).get(booking.getPlayerId());
+    if (email != null) {
+      eventPublisher.publishEvent(new BookingConfirmedEvent(booking.getId().value(), email));
+    }
   }
 }

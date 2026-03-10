@@ -12,6 +12,7 @@ import com.ccasro.hub.modules.booking.domain.valueobjects.BookingId;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import java.time.Clock;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -59,10 +60,9 @@ public class AdminBookingService {
     Booking saved = bookingRepository.save(booking);
 
     try {
-      userRepository
-          .findById(booking.getPlayerId())
-          .map(p -> p.getEmail().value())
-          .ifPresent(playerEmail -> notificationPort.notifyBookingCancelled(saved, playerEmail));
+      String playerEmail =
+          userRepository.findEmailsByIds(Set.of(booking.getPlayerId())).get(booking.getPlayerId());
+      if (playerEmail != null) notificationPort.notifyBookingCancelled(saved, playerEmail);
     } catch (Exception e) {
       log.warn("Failed to send cancellation notification for booking {}", saved.getId(), e);
     }

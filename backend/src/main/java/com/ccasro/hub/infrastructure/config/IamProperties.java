@@ -6,11 +6,12 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-@ConfigurationProperties(prefix = "booking")
+@ConfigurationProperties(prefix = "iam")
 @Component
 @Getter
 @Setter
-public class BookingProperties {
-  private Duration paymentHoldDuration = Duration.ofMinutes(5);
-  private int cancellationMinHoursBefore = 24;
+public class IamProperties {
+
+  private int noShowBanThreshold = 3;
+  private Duration noShowBanDuration = Duration.ofDays(30);
 }

@@ -1,10 +1,10 @@
 package com.ccasro.hub.modules.matching.usecases;
 
+import com.ccasro.hub.infrastructure.config.MatchingProperties;
 import com.ccasro.hub.modules.matching.domain.MatchRequest;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchInvitationRepositoryPort;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchRequestRepositoryPort;
 import java.time.Clock;
-import java.time.Duration;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,11 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class ExpireMatchRequestsJob {
 
-  private static final Duration ORGANIZER_PAYMENT_WINDOW = Duration.ofMinutes(30);
-
   private final MatchRequestRepositoryPort matchRepository;
   private final MatchInvitationRepositoryPort invitationRepository;
   private final MatchPlayerPaymentService matchPlayerPaymentService;
+  private final MatchingProperties matchingProperties;
   private final Clock clock;
 
   @Scheduled(fixedDelayString = "PT5M")
@@ -53,7 +52,7 @@ public class ExpireMatchRequestsJob {
   }
 
   private void cancelUnpaidOrganizerMatches() {
-    var deadline = clock.instant().minus(ORGANIZER_PAYMENT_WINDOW);
+    var deadline = clock.instant().minus(matchingProperties.getOrganizerPaymentWindow());
     List<MatchRequest> unpaid = matchRepository.findAwaitingPaymentExpired(deadline);
     if (unpaid.isEmpty()) return;
 

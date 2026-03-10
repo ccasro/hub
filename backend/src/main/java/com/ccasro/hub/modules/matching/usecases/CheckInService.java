@@ -1,5 +1,6 @@
 package com.ccasro.hub.modules.matching.usecases;
 
+import com.ccasro.hub.infrastructure.config.MatchingProperties;
 import com.ccasro.hub.modules.booking.application.port.out.ResourceReadPort;
 import com.ccasro.hub.modules.booking.application.port.out.VenueReadPort;
 import com.ccasro.hub.modules.matching.domain.MatchRequest;
@@ -25,20 +26,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class CheckInService {
 
-  private static final double CHECK_IN_RADIUS_KM = 0.2;
-  private static final int CHECK_IN_WINDOW_BEFORE_MINUTES = 30;
-  private static final int CHECK_IN_WINDOW_AFTER_MINUTES = 30;
-  private static final double MAX_GPS_ACCURACY_METERS = 100.0;
-
   private final MatchRequestRepositoryPort matchRepository;
   private final ResourceReadPort resourceReadPort;
   private final VenueReadPort venueReadPort;
   private final CurrentUserProvider currentUser;
+  private final MatchingProperties matchingProperties;
   private final Clock clock;
 
   @Transactional
   public void execute(UUID matchId, double playerLat, double playerLng, double accuracyMeters) {
-    if (accuracyMeters > MAX_GPS_ACCURACY_METERS) {
+    if (accuracyMeters > matchingProperties.getCheckIn().getMaxGpsAccuracyMeters()) {
       throw new IllegalStateException(
           "GPS accuracy is too low ("
               + (int) accuracyMeters
@@ -64,15 +61,17 @@ public class CheckInService {
   private void validateTimeWindow(MatchRequest match) {
     LocalDateTime matchStart = LocalDateTime.of(match.getBookingDate(), match.getStartTime());
     LocalDateTime now = LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC);
-    LocalDateTime windowStart = matchStart.minusMinutes(CHECK_IN_WINDOW_BEFORE_MINUTES);
-    LocalDateTime windowEnd = matchStart.plusMinutes(CHECK_IN_WINDOW_AFTER_MINUTES);
+    int windowBefore = matchingProperties.getCheckIn().getWindowBeforeMinutes();
+    int windowAfter = matchingProperties.getCheckIn().getWindowAfterMinutes();
+    LocalDateTime windowStart = matchStart.minusMinutes(windowBefore);
+    LocalDateTime windowEnd = matchStart.plusMinutes(windowAfter);
 
     if (now.isBefore(windowStart) || now.isAfter(windowEnd)) {
       throw new IllegalStateException(
           "Check-in is only available from "
-              + CHECK_IN_WINDOW_BEFORE_MINUTES
+              + windowBefore
               + " minutes before to "
-              + CHECK_IN_WINDOW_AFTER_MINUTES
+              + windowAfter
               + " minutes after the match starts");
     }
   }
@@ -102,11 +101,10 @@ public class CheckInService {
     GeoPoint playerLocation = new GeoPoint(playerLat, playerLng);
     double distanceKm = playerLocation.distanceKm(venueLocation);
 
-    if (distanceKm > CHECK_IN_RADIUS_KM) {
+    double radiusKm = matchingProperties.getCheckIn().getRadiusKm();
+    if (distanceKm > radiusKm) {
       throw new IllegalStateException(
-          "You must be within "
-              + (int) (CHECK_IN_RADIUS_KM * 1000)
-              + " meters of the venue to check in");
+          "You must be within " + (int) (radiusKm * 1000) + " meters of the venue to check in");
     }
   }
 }

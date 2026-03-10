@@ -6,7 +6,6 @@ import com.ccasro.hub.shared.domain.valueobjects.CountryCode;
 import com.ccasro.hub.shared.domain.valueobjects.ImageUrl;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import java.time.Clock;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -38,9 +37,6 @@ public class UserProfile {
   private Instant matchBannedUntil;
   private Instant lastMatchCancelledAt;
   private boolean matchNotificationsEnabled;
-
-  private static final int NO_SHOW_BAN_THRESHOLD = 3;
-  private static final Duration BAN_DURATION = Duration.ofDays(30);
 
   private final Instant createdAt;
   private Instant updatedAt;
@@ -123,14 +119,6 @@ public class UserProfile {
     profile.lastMatchCancelledAt = lastMatchCancelledAt;
     profile.matchNotificationsEnabled = matchNotificationsEnabled;
     return profile;
-  }
-
-  public void confirmNoShow(Clock clock) {
-    this.noShowCount++;
-    if (this.noShowCount >= NO_SHOW_BAN_THRESHOLD) {
-      this.matchBannedUntil = clock.instant().plus(BAN_DURATION);
-    }
-    this.updatedAt = clock.instant();
   }
 
   public boolean isMatchBanned(Clock clock) {

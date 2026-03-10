@@ -84,6 +84,13 @@ public class UserProfileRepositoryAdapter implements UserProfileRepositoryPort {
   }
 
   @Override
+  public void batchConfirmNoShows(
+      Set<UserId> playerIds, int threshold, Instant bannedUntil, Instant now) {
+    Set<UUID> uuids = playerIds.stream().map(UserId::value).collect(Collectors.toSet());
+    jpa.batchConfirmNoShows(uuids, threshold, bannedUntil, now);
+  }
+
+  @Override
   public boolean tryRecordMatchCancellation(UserId userId, Instant now, Instant cooldownThreshold) {
     return jpa.tryRecordMatchCancellation(userId.value(), now, cooldownThreshold) > 0;
   }

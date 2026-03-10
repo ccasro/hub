@@ -1,5 +1,6 @@
 package com.ccasro.hub.modules.matching.usecases;
 
+import com.ccasro.hub.infrastructure.config.MatchingProperties;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import com.ccasro.hub.modules.matching.domain.MatchRequest;
 import com.ccasro.hub.modules.matching.domain.exception.MatchNotFoundException;
@@ -11,7 +12,6 @@ import com.ccasro.hub.modules.matching.domain.valueobjects.MatchRequestId;
 import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import java.time.Clock;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -34,13 +34,13 @@ public class CancelMatchRequestService {
   private final UserProfileRepositoryPort userRepository;
   private final MatchNotificationPort notificationPort;
   private final CurrentUserProvider currentUser;
+  private final MatchingProperties matchingProperties;
   private final Clock clock;
 
   @Transactional
   public void execute(UUID matchId) {
     UserId currentUserId = currentUser.getUserId();
 
-    // Load match first to verify organizer before attempting atomic cancel
     MatchRequest match =
         matchRepository
             .findById(new MatchRequestId(matchId))
@@ -58,7 +58,7 @@ public class CancelMatchRequestService {
     }
 
     Instant now = clock.instant();
-    Instant cooldownThreshold = now.minus(Duration.ofHours(24));
+    Instant cooldownThreshold = now.minus(matchingProperties.getCancellationCooldown());
     userRepository.tryRecordMatchCancellation(currentUserId, now, cooldownThreshold);
 
     invitationRepository.expireByMatchRequestId(matchId, clock.instant());

@@ -16,4 +16,6 @@ public interface EligiblePlayerPort {
 
   List<EligiblePlayer> findEligiblePlayers(
       GeoPoint center, double radiusKm, MatchSkillLevel skillLevel, String excludeUserId);
+
+  int countEligiblePlayers(GeoPoint center, double radiusKm, MatchSkillLevel skillLevel);
 }

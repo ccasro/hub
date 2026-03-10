@@ -37,4 +37,10 @@ public class EligiblePlayerAdapter implements EligiblePlayerPort {
                     p.isMatchNotificationsEnabled()))
         .toList();
   }
+
+  @Override
+  public int countEligiblePlayers(GeoPoint center, double radiusKm, MatchSkillLevel skillLevel) {
+    return userRepository.countEligiblePlayers(
+        center.latitude(), center.longitude(), radiusKm * 1000, skillLevel.name());
+  }
 }
