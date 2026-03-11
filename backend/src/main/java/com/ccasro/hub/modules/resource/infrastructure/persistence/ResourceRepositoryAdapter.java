@@ -3,6 +3,7 @@ package com.ccasro.hub.modules.resource.infrastructure.persistence;
 import com.ccasro.hub.modules.resource.domain.Resource;
 import com.ccasro.hub.modules.resource.domain.exception.ResourceNotFoundException;
 import com.ccasro.hub.modules.resource.domain.ports.out.ResourceRepositoryPort;
+import com.ccasro.hub.modules.resource.domain.ports.out.ResourceSchedulePort;
 import com.ccasro.hub.modules.resource.domain.valueobjects.DayOfWeek;
 import com.ccasro.hub.modules.resource.domain.valueobjects.ResourceId;
 import com.ccasro.hub.modules.resource.domain.valueobjects.ResourceStatus;
@@ -20,7 +21,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 @Slf4j
-public class ResourceRepositoryAdapter implements ResourceRepositoryPort {
+public class ResourceRepositoryAdapter implements ResourceRepositoryPort, ResourceSchedulePort {
 
   private final ResourceJpaRepository jpa;
   private final ResourceScheduleJpaRepository jpaSchedule;

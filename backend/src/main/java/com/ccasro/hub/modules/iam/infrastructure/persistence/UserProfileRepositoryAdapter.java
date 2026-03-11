@@ -4,6 +4,7 @@ import com.ccasro.hub.modules.iam.domain.UserProfile;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import com.ccasro.hub.modules.iam.domain.valueobjects.Auth0Id;
 import com.ccasro.hub.modules.iam.domain.valueobjects.OwnerRequestStatus;
+import com.ccasro.hub.modules.matching.domain.ports.out.MatchPenaltyPort;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import com.ccasro.hub.shared.infrastructure.persistence.CityJpaRepository;
 import java.time.Instant;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class UserProfileRepositoryAdapter implements UserProfileRepositoryPort {
+public class UserProfileRepositoryAdapter implements UserProfileRepositoryPort, MatchPenaltyPort {
 
   private final UserProfileJpaRepository jpa;
   private final UserProfileMapper mapper;

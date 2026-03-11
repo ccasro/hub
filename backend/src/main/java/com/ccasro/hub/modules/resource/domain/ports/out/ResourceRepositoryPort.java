@@ -1,11 +1,9 @@
 package com.ccasro.hub.modules.resource.domain.ports.out;
 
 import com.ccasro.hub.modules.resource.domain.Resource;
-import com.ccasro.hub.modules.resource.domain.valueobjects.DayOfWeek;
 import com.ccasro.hub.modules.resource.domain.valueobjects.ResourceId;
 import com.ccasro.hub.modules.resource.domain.valueobjects.ResourceStatus;
 import com.ccasro.hub.modules.venue.domain.valueobjects.VenueId;
-import java.time.LocalTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -25,9 +23,4 @@ public interface ResourceRepositoryPort {
   List<Resource> findByStatus(ResourceStatus status);
 
   List<Resource> findAll(int page, int size);
-
-  Resource removeSchedule(ResourceId resourceId, DayOfWeek day);
-
-  Resource upsertSchedule(
-      ResourceId resourceId, DayOfWeek day, LocalTime opening, LocalTime closing);
 }

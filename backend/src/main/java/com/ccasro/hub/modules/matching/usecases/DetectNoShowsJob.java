@@ -2,8 +2,8 @@ package com.ccasro.hub.modules.matching.usecases;
 
 import com.ccasro.hub.infrastructure.config.IamProperties;
 import com.ccasro.hub.infrastructure.config.MatchingProperties;
-import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import com.ccasro.hub.modules.matching.domain.MatchRequest;
+import com.ccasro.hub.modules.matching.domain.ports.out.MatchPenaltyPort;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchRequestRepositoryPort;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import java.time.Clock;
@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DetectNoShowsJob {
 
   private final MatchRequestRepositoryPort matchRepository;
-  private final UserProfileRepositoryPort userRepository;
+  private final MatchPenaltyPort matchPenaltyPort;
   private final MatchingProperties matchingProperties;
   private final IamProperties iamProperties;
   private final Clock clock;
@@ -63,7 +63,7 @@ public class DetectNoShowsJob {
 
     Instant now = clock.instant();
     Instant bannedUntil = now.plus(iamProperties.getNoShowBanDuration());
-    userRepository.batchConfirmNoShows(
+    matchPenaltyPort.batchConfirmNoShows(
         noShows, iamProperties.getNoShowBanThreshold(), bannedUntil, now);
 
     log.info(

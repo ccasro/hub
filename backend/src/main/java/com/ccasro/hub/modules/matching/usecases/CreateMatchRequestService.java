@@ -13,6 +13,7 @@ import com.ccasro.hub.modules.matching.domain.MatchRequest;
 import com.ccasro.hub.modules.matching.domain.exception.MatchCreationCooldownException;
 import com.ccasro.hub.modules.matching.domain.exception.PlayerTimeConflictException;
 import com.ccasro.hub.modules.matching.domain.exception.TooManyActiveMatchesException;
+import com.ccasro.hub.modules.matching.domain.ports.out.MatchPenaltyPort;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchRequestRepositoryPort;
 import com.ccasro.hub.modules.resource.domain.ports.out.SlotAvailabilityPort;
 import com.ccasro.hub.modules.resource.domain.valueobjects.SlotRange;
@@ -37,6 +38,7 @@ public class CreateMatchRequestService {
   private final PaymentPort paymentPort;
   private final PaymentRepositoryPort paymentRepository;
   private final UserProfileRepositoryPort userRepository;
+  private final MatchPenaltyPort matchPenaltyPort;
   private final SlotAvailabilityPort slotAvailabilityPort;
   private final MatchingProperties matchingProperties;
   private final Clock clock;
@@ -45,7 +47,7 @@ public class CreateMatchRequestService {
   public MatchRequest execute(CreateMatchRequestCommand cmd) {
 
     // Check cancellation cooldown: read-only, cooldown threshold computed from the injected clock
-    long hoursLeft = userRepository.getCooldownHoursRemaining(cmd.organizerId());
+    long hoursLeft = matchPenaltyPort.getCooldownHoursRemaining(cmd.organizerId());
     if (hoursLeft > 0) {
       throw new MatchCreationCooldownException(hoursLeft);
     }

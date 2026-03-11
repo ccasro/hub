@@ -4,6 +4,7 @@ import com.ccasro.hub.modules.resource.application.dto.SetScheduleCommand;
 import com.ccasro.hub.modules.resource.domain.Resource;
 import com.ccasro.hub.modules.resource.domain.exception.ResourceNotFoundException;
 import com.ccasro.hub.modules.resource.domain.ports.out.ResourceRepositoryPort;
+import com.ccasro.hub.modules.resource.domain.ports.out.ResourceSchedulePort;
 import com.ccasro.hub.modules.venue.application.ports.in.VenueAccessPolicy;
 import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import java.time.Clock;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SetScheduleService {
 
   private final ResourceRepositoryPort resourceRepository;
+  private final ResourceSchedulePort resourceSchedulePort;
   private final VenueAccessPolicy venueAccessPolicy;
   private final CurrentUserProvider currentUser;
   private final Clock clock;
@@ -32,9 +34,9 @@ public class SetScheduleService {
     venueAccessPolicy.assertOwner(resource.getVenueId().value(), currentUser.getUserId());
 
     if (cmd.openingTime() == null || cmd.closingTime() == null) {
-      return resourceRepository.removeSchedule(cmd.resourceId(), cmd.dayOfWeek());
+      return resourceSchedulePort.removeSchedule(cmd.resourceId(), cmd.dayOfWeek());
     } else {
-      return resourceRepository.upsertSchedule(
+      return resourceSchedulePort.upsertSchedule(
           cmd.resourceId(), cmd.dayOfWeek(), cmd.openingTime(), cmd.closingTime());
     }
   }

@@ -8,6 +8,7 @@ import com.ccasro.hub.modules.matching.domain.exception.MatchNotFoundException;
 import com.ccasro.hub.modules.matching.domain.exception.NotMatchOrganizerException;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchInvitationRepositoryPort;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchNotificationPort;
+import com.ccasro.hub.modules.matching.domain.ports.out.MatchPenaltyPort;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchRequestRepositoryPort;
 import com.ccasro.hub.modules.matching.domain.valueobjects.MatchRequestId;
 import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
@@ -33,6 +34,7 @@ public class CancelMatchRequestService {
   private final MatchInvitationRepositoryPort invitationRepository;
   private final MatchPlayerPaymentService matchPlayerPaymentService;
   private final UserProfileRepositoryPort userRepository;
+  private final MatchPenaltyPort matchPenaltyPort;
   private final MatchNotificationPort notificationPort;
   private final CurrentUserProvider currentUser;
   private final MatchingProperties matchingProperties;
@@ -64,7 +66,7 @@ public class CancelMatchRequestService {
 
     Instant now = clock.instant();
     Instant cooldownThreshold = now.minus(matchingProperties.getCancellationCooldown());
-    userRepository.tryRecordMatchCancellation(currentUserId, now, cooldownThreshold);
+    matchPenaltyPort.tryRecordMatchCancellation(currentUserId, now, cooldownThreshold);
 
     invitationRepository.expireByMatchRequestId(matchId, clock.instant());
 
