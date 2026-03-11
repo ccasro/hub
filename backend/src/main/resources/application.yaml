@@ -1,6 +1,6 @@
 booking:
   payment-hold-duration: 5m
-  cancellation-min-hours-before: 24
+  cancellation-min-hours-before: 24h
 
 iam:
   no-show-ban-threshold: 3
@@ -8,17 +8,17 @@ iam:
 
 matching:
   max-concurrent-matches: 2
-  min-hours-before-creation: 48
-  match-expiration-hours-before: 24
+  min-hours-before-creation: 48h
+  match-expiration-hours-before: 24h
   organizer-payment-window: 30m
   cancellation-cooldown: 24h
   no-show-detection-window: 90m
   no-show-detection-job-delay: 15m
-  leave-match-min-hours-before: 48
+  leave-match-min-hours-before: 48h
   check-in:
     radius-km: 0.2
-    window-before-minutes: 30
-    window-after-minutes: 30
+    window-before-minutes: 30m
+    window-after-minutes: 30m
     max-gps-accuracy-meters: 100.0
 
 spring:

@@ -7,7 +7,8 @@ CREATE TABLE payment (
     currency                    VARCHAR(3) NOT NULL,
     status                      VARCHAR(20) NOT NULL DEFAULT 'PENDING',
     created_at                  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at                  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at                  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    version                     BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE INDEX idx_payment_player_id ON payment(player_id) WHERE player_id IS NOT NULL;

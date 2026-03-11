@@ -2,6 +2,7 @@ package com.ccasro.hub.infrastructure.web;
 
 import com.ccasro.hub.modules.booking.domain.exception.BookingCancellationNotAllowedException;
 import com.ccasro.hub.modules.booking.domain.exception.BookingNotFoundException;
+import com.ccasro.hub.modules.booking.domain.exception.PaymentNotFoundException;
 import com.ccasro.hub.modules.booking.domain.exception.SlotNotAvailableException;
 import com.ccasro.hub.modules.booking.domain.exception.SlotNotPricedException;
 import com.ccasro.hub.modules.iam.domain.exception.UserProfileNotFoundException;
@@ -26,6 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -141,6 +143,22 @@ public class GlobalExceptionHandler {
     return ResponseEntity.badRequest().body(pd);
   }
 
+  @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+  public ResponseEntity<ProblemDetail> handleOptimisticLock(
+      ObjectOptimisticLockingFailureException ex, HttpServletRequest request) {
+
+    log.warn("Optimistic locking conflict at {}: {}", request.getRequestURI(), ex.getMessage());
+
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(
+            problem(
+                HttpStatus.CONFLICT,
+                "/errors/conflict",
+                "Conflict",
+                "The resource was modified by another request, please try again",
+                request));
+  }
+
   @ExceptionHandler(DataIntegrityViolationException.class)
   public ResponseEntity<ProblemDetail> conflict(
       DataIntegrityViolationException ex, HttpServletRequest req) {
@@ -253,6 +271,22 @@ public class GlobalExceptionHandler {
         .body(
             problem(
                 HttpStatus.NOT_FOUND, "/errors/not-found", "Not Found", ex.getMessage(), request));
+  }
+
+  @ExceptionHandler(PaymentNotFoundException.class)
+  public ResponseEntity<ProblemDetail> handlePaymentNotFound(
+      PaymentNotFoundException ex, HttpServletRequest request) {
+
+    log.error("PaymentNotFoundException: {}", ex.getMessage());
+
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .body(
+            problem(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "/errors/internal-server-error",
+                "Internal Server Error",
+                "Unexpected error occurred",
+                request));
   }
 
   @ExceptionHandler(BookingNotFoundException.class)

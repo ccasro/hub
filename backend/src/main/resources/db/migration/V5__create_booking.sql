@@ -14,6 +14,7 @@ CREATE TABLE booking (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     expires_at      TIMESTAMPTZ,
+    version         BIGINT NOT NULL DEFAULT 0,
 
     CONSTRAINT booking_time_order CHECK (end_time > start_time)
 );

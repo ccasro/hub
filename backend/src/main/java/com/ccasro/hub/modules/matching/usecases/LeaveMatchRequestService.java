@@ -49,7 +49,7 @@ public class LeaveMatchRequestService {
 
     LocalDateTime matchStart = LocalDateTime.of(match.getBookingDate(), match.getStartTime());
     LocalDateTime now = LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC);
-    if (now.isAfter(matchStart.minusHours(matchingProperties.getLeaveMatchMinHoursBefore()))) {
+    if (now.isAfter(matchStart.minus(matchingProperties.getLeaveMatchMinHoursBefore()))) {
       throw new MatchLeaveNotAllowedException();
     }
 

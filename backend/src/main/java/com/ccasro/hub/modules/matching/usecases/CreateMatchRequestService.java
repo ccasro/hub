@@ -79,16 +79,16 @@ public class CreateMatchRequestService {
 
     LocalDateTime matchStart = LocalDateTime.of(cmd.bookingDate(), cmd.startTime());
     if (LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC)
-        .isAfter(matchStart.minusHours(matchingProperties.getMinHoursBeforeCreation()))) {
+        .isAfter(matchStart.minus(matchingProperties.getMinHoursBeforeCreation()))) {
       throw new IllegalArgumentException(
           "Match must be created at least "
-              + matchingProperties.getMinHoursBeforeCreation()
+              + matchingProperties.getMinHoursBeforeCreation().toHours()
               + " hours before the scheduled start time");
     }
 
     Instant matchExpiresAt =
         matchStart
-            .minusHours(matchingProperties.getMatchExpirationHoursBefore())
+            .minus(matchingProperties.getMatchExpirationHoursBefore())
             .toInstant(ZoneOffset.UTC);
 
     Booking booking =

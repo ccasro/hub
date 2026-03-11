@@ -62,6 +62,10 @@ public class BookingEntity {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
+  @Version
+  @Column(nullable = false)
+  private Long version;
+
   @Column(name = "expires_at")
   private Instant expiresAt;
 }

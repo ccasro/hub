@@ -2,7 +2,6 @@ package com.ccasro.hub.modules.matching.usecases;
 
 import com.ccasro.hub.infrastructure.config.MatchingProperties;
 import com.ccasro.hub.modules.matching.domain.MatchRequest;
-import com.ccasro.hub.modules.matching.domain.ports.out.MatchInvitationRepositoryPort;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchRequestRepositoryPort;
 import java.time.Clock;
 import java.util.List;
@@ -10,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -18,13 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class ExpireMatchRequestsJob {
 
   private final MatchRequestRepositoryPort matchRepository;
-  private final MatchInvitationRepositoryPort invitationRepository;
-  private final MatchPlayerPaymentService matchPlayerPaymentService;
+  private final MatchRequestExpirationService expirationService;
   private final MatchingProperties matchingProperties;
   private final Clock clock;
 
   @Scheduled(fixedDelayString = "PT5M")
-  @Transactional
   public void execute() {
     expireOpenMatches();
     cancelUnpaidOrganizerMatches();
@@ -37,14 +33,7 @@ public class ExpireMatchRequestsJob {
     log.info("Expiring {} open match requests", expired.size());
     for (MatchRequest match : expired) {
       try {
-        match.expire();
-        matchRepository.save(match);
-        invitationRepository.expireByMatchRequestId(match.getId().value(), clock.instant());
-        match
-            .getPlayers()
-            .forEach(p -> matchPlayerPaymentService.refundPlayerPayment(match, p.getPlayerId()));
-        matchPlayerPaymentService.cancelMatchBooking(match);
-        log.info("Expired match request {}", match.getId().value());
+        expirationService.expireMatch(match);
       } catch (Exception e) {
         log.error("Error expiring match request {}: {}", match.getId().value(), e.getMessage());
       }
@@ -59,12 +48,7 @@ public class ExpireMatchRequestsJob {
     log.info("Cancelling {} match requests where organizer did not pay in time", unpaid.size());
     for (MatchRequest match : unpaid) {
       try {
-        match.cancelDueToPaymentTimeout();
-        matchRepository.save(match);
-        invitationRepository.expireByMatchRequestId(match.getId().value(), clock.instant());
-        matchPlayerPaymentService.refundPlayerPayment(match, match.getOrganizerId());
-        matchPlayerPaymentService.cancelMatchBooking(match);
-        log.info("Cancelled unpaid match request {}", match.getId().value());
+        expirationService.cancelDueToPaymentTimeout(match);
       } catch (Exception e) {
         log.error(
             "Error cancelling unpaid match request {}: {}", match.getId().value(), e.getMessage());

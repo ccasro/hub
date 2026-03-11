@@ -69,6 +69,10 @@ public class MatchRequestEntity {
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
 
+  @Version
+  @Column(nullable = false)
+  private Long version;
+
   @OneToMany(mappedBy = "matchRequest", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<MatchPlayerEntity> players = new ArrayList<>();
 }

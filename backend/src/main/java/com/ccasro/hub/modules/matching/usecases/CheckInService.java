@@ -11,6 +11,7 @@ import com.ccasro.hub.modules.matching.domain.valueobjects.MatchRequestId;
 import com.ccasro.hub.shared.application.ports.CurrentUserProvider;
 import com.ccasro.hub.shared.domain.valueobjects.UserId;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -61,17 +62,17 @@ public class CheckInService {
   private void validateTimeWindow(MatchRequest match) {
     LocalDateTime matchStart = LocalDateTime.of(match.getBookingDate(), match.getStartTime());
     LocalDateTime now = LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC);
-    int windowBefore = matchingProperties.getCheckIn().getWindowBeforeMinutes();
-    int windowAfter = matchingProperties.getCheckIn().getWindowAfterMinutes();
-    LocalDateTime windowStart = matchStart.minusMinutes(windowBefore);
-    LocalDateTime windowEnd = matchStart.plusMinutes(windowAfter);
+    Duration windowBefore = matchingProperties.getCheckIn().getWindowBeforeMinutes();
+    Duration windowAfter = matchingProperties.getCheckIn().getWindowAfterMinutes();
+    LocalDateTime windowStart = matchStart.minus(windowBefore);
+    LocalDateTime windowEnd = matchStart.plus(windowAfter);
 
     if (now.isBefore(windowStart) || now.isAfter(windowEnd)) {
       throw new IllegalStateException(
           "Check-in is only available from "
-              + windowBefore
+              + windowBefore.toMinutes()
               + " minutes before to "
-              + windowAfter
+              + windowAfter.toMinutes()
               + " minutes after the match starts");
     }
   }

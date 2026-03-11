@@ -3,6 +3,7 @@ package com.ccasro.hub.modules.matching.usecases;
 import com.ccasro.hub.infrastructure.config.MatchingProperties;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import com.ccasro.hub.modules.matching.domain.MatchRequest;
+import com.ccasro.hub.modules.matching.domain.MatchStatus;
 import com.ccasro.hub.modules.matching.domain.exception.MatchNotFoundException;
 import com.ccasro.hub.modules.matching.domain.exception.NotMatchOrganizerException;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchInvitationRepositoryPort;
@@ -54,6 +55,10 @@ public class CancelMatchRequestService {
     // Returns false if a concurrent request already cancelled it (0 rows affected).
     boolean cancelled = matchRepository.cancelIfActive(new MatchRequestId(matchId));
     if (!cancelled) {
+      if (match.getStatus() == MatchStatus.CANCELLED) {
+        log.info("Match {} already cancelled, skipping duplicate request", matchId);
+        return;
+      }
       throw new IllegalStateException("Match is not in a cancellable state");
     }
 

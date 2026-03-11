@@ -15,7 +15,8 @@ CREATE TABLE match_request (
     price_per_player      DECIMAL(10,2),
     status                VARCHAR(30) NOT NULL DEFAULT 'OPEN',
     expires_at            TIMESTAMPTZ NOT NULL,
-    created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    version               BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE match_player (

@@ -4,8 +4,10 @@ import com.ccasro.hub.modules.booking.domain.Booking;
 import com.ccasro.hub.modules.booking.domain.Payment;
 import com.ccasro.hub.modules.booking.domain.events.BookingConfirmedEvent;
 import com.ccasro.hub.modules.booking.domain.exception.BookingNotFoundException;
+import com.ccasro.hub.modules.booking.domain.exception.PaymentNotFoundException;
 import com.ccasro.hub.modules.booking.domain.ports.out.BookingRepositoryPort;
 import com.ccasro.hub.modules.booking.domain.ports.out.PaymentRepositoryPort;
+import com.ccasro.hub.modules.booking.domain.valueobjects.PaymentStatus;
 import com.ccasro.hub.modules.iam.domain.ports.out.UserProfileRepositoryPort;
 import java.time.Clock;
 import java.util.Set;
@@ -31,7 +33,12 @@ public class ConfirmBookingPaymentService {
     Payment payment =
         paymentRepository
             .findByStripePaymentIntentId(paymentIntentId)
-            .orElseThrow(() -> new RuntimeException("Payment not found: " + paymentIntentId));
+            .orElseThrow(() -> new PaymentNotFoundException(paymentIntentId));
+
+    if (payment.getStatus() == PaymentStatus.PAID) {
+      log.info("Webhook already processed for paymentIntent {}, skipping", paymentIntentId);
+      return;
+    }
 
     Booking booking =
         bookingRepository

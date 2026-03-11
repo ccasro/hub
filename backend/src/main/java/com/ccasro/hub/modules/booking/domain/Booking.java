@@ -187,17 +187,17 @@ public class Booking {
     this.expiresAt = null;
   }
 
-  public void cancel(String reason, int minHoursBefore, Clock clock) {
+  public void cancel(String reason, Duration cancellationDeadline, Clock clock) {
     if (this.status == BookingStatus.CANCELLED)
       throw new IllegalStateException("Booking is already cancelled");
 
     LocalDateTime slotStart = LocalDateTime.of(bookingDate, slot.startTime());
     LocalDateTime now = LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC);
 
-    if (now.isAfter(slotStart.minusHours(minHoursBefore)))
+    if (now.isAfter(slotStart.minus(cancellationDeadline)))
       throw new BookingCancellationNotAllowedException(
           "Bookings cannot be cancelled within "
-              + minHoursBefore
+              + cancellationDeadline.toHours()
               + " hours of the scheduled start time");
 
     this.status = BookingStatus.CANCELLED;
