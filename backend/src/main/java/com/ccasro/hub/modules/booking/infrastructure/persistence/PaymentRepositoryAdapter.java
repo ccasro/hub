@@ -21,7 +21,9 @@ public class PaymentRepositoryAdapter implements PaymentRepositoryPort {
 
   @Override
   public Payment save(Payment payment) {
-    return mapper.toDomain(jpa.save(mapper.toEntity(payment)));
+    PaymentEntity entity = jpa.findById(payment.getId().value()).orElseGet(PaymentEntity::new);
+    mapper.fill(entity, payment);
+    return mapper.toDomain(jpa.save(entity));
   }
 
   @Override

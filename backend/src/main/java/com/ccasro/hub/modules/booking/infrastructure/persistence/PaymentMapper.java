@@ -24,6 +24,11 @@ public class PaymentMapper {
 
   public PaymentEntity toEntity(Payment d) {
     PaymentEntity e = new PaymentEntity();
+    fill(e, d);
+    return e;
+  }
+
+  public void fill(PaymentEntity e, Payment d) {
     e.setId(d.getId().value());
     e.setBookingId(d.getBookingId().value());
     e.setPlayerId(d.getPlayerId() != null ? d.getPlayerId().value() : null);
@@ -33,6 +38,5 @@ public class PaymentMapper {
     e.setStatus(d.getStatus());
     e.setCreatedAt(d.getCreatedAt());
     e.setUpdatedAt(d.getUpdatedAt());
-    return e;
   }
 }

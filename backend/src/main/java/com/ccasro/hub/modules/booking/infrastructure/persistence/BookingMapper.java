@@ -30,6 +30,11 @@ public class BookingMapper {
 
   public BookingEntity toEntity(Booking d) {
     BookingEntity e = new BookingEntity();
+    fill(e, d);
+    return e;
+  }
+
+  public void fill(BookingEntity e, Booking d) {
     e.setId(d.getId().value());
     e.setResourceId(d.getResourceId().value());
     e.setPlayerId(d.getPlayerId().value());
@@ -45,6 +50,5 @@ public class BookingMapper {
     e.setCreatedAt(d.getCreatedAt());
     e.setUpdatedAt(d.getUpdatedAt());
     e.setExpiresAt(d.getExpiresAt());
-    return e;
   }
 }

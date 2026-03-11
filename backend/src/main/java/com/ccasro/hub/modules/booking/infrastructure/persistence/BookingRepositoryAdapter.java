@@ -25,7 +25,9 @@ public class BookingRepositoryAdapter implements BookingRepositoryPort {
 
   @Override
   public Booking save(Booking booking) {
-    return mapper.toDomain(jpa.save(mapper.toEntity(booking)));
+    BookingEntity entity = jpa.findById(booking.getId().value()).orElseGet(BookingEntity::new);
+    mapper.fill(entity, booking);
+    return mapper.toDomain(jpa.save(entity));
   }
 
   @Override

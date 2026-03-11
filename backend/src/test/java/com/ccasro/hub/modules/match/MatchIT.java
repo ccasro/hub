@@ -1,27 +1,30 @@
 package com.ccasro.hub.modules.match;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.ccasro.hub.BaseIT;
 import com.ccasro.hub.modules.iam.domain.UserProfile;
 import com.ccasro.hub.modules.matching.domain.MatchInvitation;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchInvitationRepositoryPort;
+import com.ccasro.hub.modules.matching.domain.ports.out.MatchPenaltyPort;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 public class MatchIT extends BaseIT {
 
-  @org.springframework.beans.factory.annotation.Autowired
-  private MatchInvitationRepositoryPort invitations;
+  @Autowired private MatchInvitationRepositoryPort invitations;
+  @Autowired private MatchPenaltyPort penalties;
 
   private static final String RESOURCE_ID = "20000000-0000-0000-0000-000000000001";
   private static final LocalDate MATCH_DATE = nextMonday();
@@ -355,7 +358,8 @@ public class MatchIT extends BaseIT {
   void create_en_cooldown_devuelve_422() throws Exception {
     UserProfile player = givenPlayer();
 
-    users.tryRecordMatchCancellation(player.getId(), Instant.now(), Instant.now().minusSeconds(1));
+    penalties.tryRecordMatchCancellation(
+        player.getId(), Instant.now(), Instant.now().minusSeconds(1));
 
     mvc.perform(
             post("/api/match/requests")
