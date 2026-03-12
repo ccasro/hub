@@ -1,7 +1,6 @@
 package com.ccasro.hub.modules.matching.infrastructure.persistence;
 
 import com.ccasro.hub.modules.matching.domain.*;
-import com.ccasro.hub.modules.matching.domain.MatchRequest;
 import com.ccasro.hub.modules.matching.domain.ports.out.MatchRequestRepositoryPort;
 import com.ccasro.hub.modules.matching.domain.valueobjects.GeoPoint;
 import com.ccasro.hub.modules.matching.domain.valueobjects.InvitationToken;
@@ -12,15 +11,11 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -69,11 +64,13 @@ public class MatchRequestRepositoryAdapter implements MatchRequestRepositoryPort
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<MatchRequest> findOpenAndExpired() {
     return jpaRepository.findOpenAndExpired(clock.instant()).stream().map(this::toDomain).toList();
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<MatchRequest> findAwaitingPaymentExpired(Instant deadline) {
     return jpaRepository.findAwaitingPaymentExpired(deadline).stream().map(this::toDomain).toList();
   }
@@ -85,7 +82,7 @@ public class MatchRequestRepositoryAdapter implements MatchRequestRepositoryPort
 
   @Override
   public List<MatchRequest> findAllById(Set<UUID> ids) {
-    return jpaRepository.findAllById((Collection<UUID>) ids).stream().map(this::toDomain).toList();
+    return jpaRepository.findAllById(ids).stream().map(this::toDomain).toList();
   }
 
   @Override

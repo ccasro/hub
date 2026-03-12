@@ -20,27 +20,51 @@ public class CacheConfig {
 
     manager.registerCustomCache(
         "venues",
-        Caffeine.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).maximumSize(200).build());
+        Caffeine.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .maximumSize(200)
+            .recordStats()
+            .build());
 
     manager.registerCustomCache(
         "venue-detail",
-        Caffeine.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).maximumSize(500).build());
+        Caffeine.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .maximumSize(500)
+            .recordStats()
+            .build());
 
     manager.registerCustomCache(
         "venues-with-count",
-        Caffeine.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).maximumSize(200).build());
+        Caffeine.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .maximumSize(200)
+            .recordStats()
+            .build());
 
     manager.registerCustomCache(
         "slots",
-        Caffeine.newBuilder().expireAfterWrite(2, TimeUnit.MINUTES).maximumSize(1000).build());
+        Caffeine.newBuilder()
+            .expireAfterWrite(2, TimeUnit.MINUTES)
+            .maximumSize(1000)
+            .recordStats()
+            .build());
 
     manager.registerCustomCache(
         "cities",
-        Caffeine.newBuilder().expireAfterWrite(60, TimeUnit.MINUTES).maximumSize(100).build());
+        Caffeine.newBuilder()
+            .expireAfterWrite(60, TimeUnit.MINUTES)
+            .maximumSize(100)
+            .recordStats()
+            .build());
 
     manager.registerCustomCache(
         "venues-nearby",
-        Caffeine.newBuilder().expireAfterWrite(2, TimeUnit.MINUTES).maximumSize(500).build());
+        Caffeine.newBuilder()
+            .expireAfterWrite(2, TimeUnit.MINUTES)
+            .maximumSize(500)
+            .recordStats()
+            .build());
 
     return manager;
   }
