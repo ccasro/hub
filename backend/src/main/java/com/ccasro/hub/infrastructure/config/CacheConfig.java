@@ -34,6 +34,14 @@ public class CacheConfig {
         "slots",
         Caffeine.newBuilder().expireAfterWrite(2, TimeUnit.MINUTES).maximumSize(1000).build());
 
+    manager.registerCustomCache(
+        "cities",
+        Caffeine.newBuilder().expireAfterWrite(60, TimeUnit.MINUTES).maximumSize(100).build());
+
+    manager.registerCustomCache(
+        "venues-nearby",
+        Caffeine.newBuilder().expireAfterWrite(2, TimeUnit.MINUTES).maximumSize(500).build());
+
     return manager;
   }
 }

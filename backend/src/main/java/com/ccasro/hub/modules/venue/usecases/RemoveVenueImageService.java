@@ -30,7 +30,7 @@ public class RemoveVenueImageService {
   @Transactional
   @PreAuthorize("@authz.isOwner()")
   @CacheEvict(
-      value = {"venues", "venue-detail", "venues-with-count"},
+      value = {"venues", "venue-detail", "venues-with-count", "venues-nearby"},
       allEntries = true)
   public void execute(VenueId venueId, UUID imageId) {
     Venue venue = venueRepository.findById(venueId).orElseThrow(VenueNotFoundException::new);

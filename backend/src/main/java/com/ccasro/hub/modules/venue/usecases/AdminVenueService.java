@@ -33,7 +33,7 @@ public class AdminVenueService {
 
   @Transactional
   @CacheEvict(
-      value = {"venues", "venue-detail", "venues-with-count"},
+      value = {"venues", "venue-detail", "venues-with-count", "venues-nearby"},
       allEntries = true)
   public Venue approve(VenueId id) {
     Venue venue = venueRepository.findById(id).orElseThrow(VenueNotFoundException::new);
@@ -43,7 +43,7 @@ public class AdminVenueService {
 
   @Transactional
   @CacheEvict(
-      value = {"venues", "venue-detail", "venues-with-count"},
+      value = {"venues", "venue-detail", "venues-with-count", "venues-nearby"},
       allEntries = true)
   public Venue reject(VenueId id, String reason) {
     Venue venue = venueRepository.findById(id).orElseThrow(VenueNotFoundException::new);
@@ -53,7 +53,7 @@ public class AdminVenueService {
 
   @Transactional
   @CacheEvict(
-      value = {"venues", "venue-detail", "venues-with-count"},
+      value = {"venues", "venue-detail", "venues-with-count", "venues-nearby"},
       allEntries = true)
   public Venue adminSuspend(VenueId id, String reason) {
     Venue venue = venueRepository.findById(id).orElseThrow(VenueNotFoundException::new);

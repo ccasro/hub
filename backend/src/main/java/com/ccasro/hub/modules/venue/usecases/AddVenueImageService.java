@@ -26,7 +26,7 @@ public class AddVenueImageService {
   @Transactional
   @PreAuthorize("@authz.isOwner()")
   @CacheEvict(
-      value = {"venues", "venue-detail", "venues-with-count"},
+      value = {"venues", "venue-detail", "venues-with-count", "venues-nearby"},
       allEntries = true)
   public Venue execute(VenueId venueId, ImageUrl imageUrl) {
     Venue venue = venueRepository.findById(venueId).orElseThrow(VenueNotFoundException::new);

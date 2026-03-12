@@ -28,7 +28,7 @@ public class UpdateVenueService {
   @Transactional
   @PreAuthorize("@authz.isOwner()")
   @CacheEvict(
-      value = {"venues", "venue-detail", "venues-with-count"},
+      value = {"venues", "venue-detail", "venues-with-count", "venues-nearby"},
       allEntries = true)
   public Venue execute(UpdateVenueCommand cmd) {
     Venue venue = venueRepository.findById(cmd.venueId()).orElseThrow(VenueNotFoundException::new);

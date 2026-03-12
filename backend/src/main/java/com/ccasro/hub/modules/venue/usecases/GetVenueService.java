@@ -53,6 +53,9 @@ public class GetVenueService {
     return venueRepository.findByOwnerId(ownerId);
   }
 
+  @Cacheable(
+      value = "venues-nearby",
+      key = "T(Math).round(#lat * 100) + '_' + T(Math).round(#lng * 100) + '_' + #radiusMeters")
   public List<Venue> findNearby(double lat, double lng, double radiusMeters) {
     return venueRepository.findActiveNearby(lat, lng, radiusMeters);
   }
